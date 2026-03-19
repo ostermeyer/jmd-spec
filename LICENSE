@@ -1,0 +1,35 @@
+JMD Format Specification — License
+
+Copyright (c) 2026 Andreas Ostermeyer <andreas@ostermeyer.de>
+All rights reserved.
+
+The JMD Format Specification and all associated specification documents
+in this repository are licensed under the
+
+    Creative Commons Attribution-NonCommercial-ShareAlike 4.0
+    International License (CC BY-NC-SA 4.0)
+
+You are free to:
+
+  - Share: copy and redistribute the material in any medium or format
+  - Adapt: remix, transform, and build upon the material
+
+Under the following terms:
+
+  - Attribution: You must give appropriate credit, provide a link to
+    the license, and indicate if changes were made.
+  - NonCommercial: You may not use the material for commercial purposes
+    without a separate commercial license from the copyright holder.
+  - ShareAlike: If you remix, transform, or build upon the material,
+    you must distribute your contributions under the same license.
+
+Full license text:
+https://creativecommons.org/licenses/by-nc-sa/4.0/legalcode
+
+For commercial licensing inquiries, contact the copyright holder.
+
+This license applies to:
+  - jmd-spec-v0_3.md (and all future specification versions)
+  - All documents describing the JMD format specification
+
+This license does NOT apply to source code (see LICENSE-CODE).

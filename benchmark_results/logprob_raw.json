@@ -1,0 +1,135 @@
+{
+  "analyses": [
+    {
+      "model": "gpt-4o",
+      "json": {
+        "output_tokens": 189,
+        "total_tokens_with_logprobs": 189,
+        "structural_count": 112,
+        "content_count": 77,
+        "structural_ratio": 0.5925925925925926,
+        "mean_structural_logprob": -0.0003329923214555767,
+        "mean_content_logprob": -0.12025619385127381,
+        "mean_structural_prob": 0.999669549681838,
+        "tokens_per_second": 82.81893434239562,
+        "wall_clock_s": 2.282086838000396
+      },
+      "jmd": {
+        "output_tokens": 125,
+        "total_tokens_with_logprobs": 125,
+        "structural_count": 57,
+        "content_count": 68,
+        "structural_ratio": 0.456,
+        "mean_structural_logprob": -0.03591888562844135,
+        "mean_content_logprob": -0.1367719010881308,
+        "mean_structural_prob": 0.9727874056234926,
+        "tokens_per_second": 48.613302001874594,
+        "wall_clock_s": 2.5713126830014517
+      },
+      "delta": {
+        "structural_logprob_diff": -0.03558589330698578,
+        "content_logprob_diff": -0.016515707236856997,
+        "tps_diff": -34.20563234052103
+      }
+    },
+    {
+      "model": "gpt-4o",
+      "json": {
+        "output_tokens": 189,
+        "total_tokens_with_logprobs": 189,
+        "structural_count": 112,
+        "content_count": 77,
+        "structural_ratio": 0.5925925925925926,
+        "mean_structural_logprob": -0.00033568649358071766,
+        "mean_content_logprob": -0.12577898027654272,
+        "mean_structural_prob": 0.9996668188701073,
+        "tokens_per_second": 63.151643473249635,
+        "wall_clock_s": 2.992796222002653
+      },
+      "jmd": {
+        "output_tokens": 125,
+        "total_tokens_with_logprobs": 125,
+        "structural_count": 57,
+        "content_count": 68,
+        "structural_ratio": 0.456,
+        "mean_structural_logprob": -0.03948855943615963,
+        "mean_content_logprob": -0.14654311672039266,
+        "mean_structural_prob": 0.9707633548356661,
+        "tokens_per_second": 47.76541957045704,
+        "wall_clock_s": 2.6169559720001416
+      },
+      "delta": {
+        "structural_logprob_diff": -0.03915287294257891,
+        "content_logprob_diff": -0.020764136443849945,
+        "tps_diff": -15.386223902792594
+      }
+    },
+    {
+      "model": "gpt-4o",
+      "json": {
+        "output_tokens": 185,
+        "total_tokens_with_logprobs": 185,
+        "structural_count": 112,
+        "content_count": 73,
+        "structural_ratio": 0.6054054054054054,
+        "mean_structural_logprob": -0.0030706457201975673,
+        "mean_content_logprob": -0.13094542910943605,
+        "mean_structural_prob": 0.9973384087434788,
+        "tokens_per_second": 55.31344157881633,
+        "wall_clock_s": 3.344575834002171
+      },
+      "jmd": {
+        "output_tokens": 125,
+        "total_tokens_with_logprobs": 125,
+        "structural_count": 57,
+        "content_count": 68,
+        "structural_ratio": 0.456,
+        "mean_structural_logprob": -0.03346198284430875,
+        "mean_content_logprob": -0.14256713990009703,
+        "mean_structural_prob": 0.9739288748384284,
+        "tokens_per_second": 65.14520801196443,
+        "wall_clock_s": 1.9187904040009016
+      },
+      "delta": {
+        "structural_logprob_diff": -0.03039133712411118,
+        "content_logprob_diff": -0.011621710790660988,
+        "tps_diff": 9.831766433148097
+      }
+    }
+  ],
+  "aggregated": [
+    {
+      "model": "gpt-4o",
+      "n_runs": 3,
+      "json": {
+        "output_tokens": 187.66666666666666,
+        "total_tokens_with_logprobs": 187.66666666666666,
+        "structural_count": 112,
+        "content_count": 75.66666666666667,
+        "structural_ratio": 0.5968635301968636,
+        "mean_structural_logprob": -0.0012464415117446205,
+        "mean_content_logprob": -0.12566020107908418,
+        "mean_structural_prob": 0.998891592431808,
+        "tokens_per_second": 67.0946731314872,
+        "wall_clock_s": 2.8731529646684066
+      },
+      "jmd": {
+        "output_tokens": 125,
+        "total_tokens_with_logprobs": 125,
+        "structural_count": 57,
+        "content_count": 68,
+        "structural_ratio": 0.456,
+        "mean_structural_logprob": -0.03628980930296991,
+        "mean_content_logprob": -0.14196071923620684,
+        "mean_structural_prob": 0.9724932117658623,
+        "tokens_per_second": 53.84130986143202,
+        "wall_clock_s": 2.369019686334165
+      },
+      "delta": {
+        "structural_logprob_diff": -0.035043367791225286,
+        "content_logprob_diff": -0.016300518157122645,
+        "tps_diff": -13.253363270055175
+      }
+    }
+  ]
+}

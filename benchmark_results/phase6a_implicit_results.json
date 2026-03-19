@@ -1,0 +1,2251 @@
+{
+  "phase": "6a-implicit",
+  "name": "Situational Mode Awareness — Explicit vs Implicit Prompts",
+  "n_runs": 10,
+  "seed_base": 700,
+  "models": [
+    "Sonnet",
+    "GPT-5.4",
+    "Mistral"
+  ],
+  "prompt_styles": [
+    "explicit",
+    "implicit"
+  ],
+  "summary": {
+    "GPT-5.4": {
+      "explicit": {
+        "n_trials": 10,
+        "avg_switch_reliability_pct": 96.0,
+        "per_step": {
+          "schema": {
+            "correct_marker_pct": 100.0,
+            "markers_seen": {
+              "#!": 10
+            }
+          },
+          "data": {
+            "correct_marker_pct": 80.0,
+            "markers_seen": {
+              "#": 8,
+              "#?": 1,
+              "# Error": 1
+            }
+          },
+          "query": {
+            "correct_marker_pct": 100.0,
+            "markers_seen": {
+              "#?": 10
+            }
+          },
+          "delete": {
+            "correct_marker_pct": 100.0,
+            "markers_seen": {
+              "#-": 10
+            }
+          },
+          "error": {
+            "correct_marker_pct": 100.0,
+            "markers_seen": {
+              "# Error": 10
+            }
+          }
+        }
+      },
+      "implicit": {
+        "n_trials": 10,
+        "avg_switch_reliability_pct": 68.0,
+        "per_step": {
+          "schema": {
+            "correct_marker_pct": 100.0,
+            "markers_seen": {
+              "#!": 10
+            }
+          },
+          "data": {
+            "correct_marker_pct": 40.0,
+            "markers_seen": {
+              "#": 4,
+              "#?": 6
+            }
+          },
+          "query": {
+            "correct_marker_pct": 100.0,
+            "markers_seen": {
+              "#?": 10
+            }
+          },
+          "delete": {
+            "correct_marker_pct": 100.0,
+            "markers_seen": {
+              "#-": 10
+            }
+          },
+          "error": {
+            "correct_marker_pct": 0.0,
+            "markers_seen": {
+              "#?": 10
+            }
+          }
+        }
+      }
+    },
+    "Sonnet": {
+      "explicit": {
+        "n_trials": 10,
+        "avg_switch_reliability_pct": 100.0,
+        "per_step": {
+          "schema": {
+            "correct_marker_pct": 100.0,
+            "markers_seen": {
+              "#!": 10
+            }
+          },
+          "data": {
+            "correct_marker_pct": 100.0,
+            "markers_seen": {
+              "#": 10
+            }
+          },
+          "query": {
+            "correct_marker_pct": 100.0,
+            "markers_seen": {
+              "#?": 10
+            }
+          },
+          "delete": {
+            "correct_marker_pct": 100.0,
+            "markers_seen": {
+              "#-": 10
+            }
+          },
+          "error": {
+            "correct_marker_pct": 100.0,
+            "markers_seen": {
+              "# Error": 10
+            }
+          }
+        }
+      },
+      "implicit": {
+        "n_trials": 10,
+        "avg_switch_reliability_pct": 88.0,
+        "per_step": {
+          "schema": {
+            "correct_marker_pct": 100.0,
+            "markers_seen": {
+              "#!": 10
+            }
+          },
+          "data": {
+            "correct_marker_pct": 40.0,
+            "markers_seen": {
+              "#": 4,
+              "#?": 6
+            }
+          },
+          "query": {
+            "correct_marker_pct": 100.0,
+            "markers_seen": {
+              "#?": 10
+            }
+          },
+          "delete": {
+            "correct_marker_pct": 100.0,
+            "markers_seen": {
+              "#-": 10
+            }
+          },
+          "error": {
+            "correct_marker_pct": 100.0,
+            "markers_seen": {
+              "# Error": 10
+            }
+          }
+        }
+      }
+    }
+  },
+  "trials": [
+    {
+      "model": "gpt-5.4",
+      "prompt_style": "explicit",
+      "seed": 700,
+      "switch_reliability": 1.0,
+      "input_tokens": 1714,
+      "output_tokens": 290,
+      "server_ms": 8124.0,
+      "cost_usd": 0.008635,
+      "steps": [
+        {
+          "step": "schema",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#!",
+          "raw_output": "#! InventoryItem\nid: string | readonly\nname: string\nsku: string\ndescription: string | optional\ndepartment: string\ncategory: string | optional\nlocation: string\nsupplier_id: string | optional\nsupplier_name: string | optional\nunit_cost: float\nquantity_on_hand: integer\nreorder_point: integer\nreorder_quantity: integer | optional\nunit_of_measure: string | optional\nstatus: string | enum(active, discontinued, backordered, pending)\nlast_restocked_at: datetime | optional\nexpiration_date: date | optional\ns"
+        },
+        {
+          "step": "data",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#",
+          "raw_output": "# Inventory\n## items[]\n- name: Cafeteria Item #7\n  id: INV-2006\n  qty: 30\n  min: 45"
+        },
+        {
+          "step": "query",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#?",
+          "raw_output": "#? Inventory\nquantity: <min_quantity\nid: ?\nname: ?\nquantity: ?\nmin_quantity: ?"
+        },
+        {
+          "step": "delete",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#-",
+          "raw_output": "#- InventoryItem\nid: INV-2007"
+        },
+        {
+          "step": "error",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "# Error",
+          "raw_output": "# Error\ncode: not_found\nmessage: Item INV-9999 does not exist in the system.\nsuggestion: Verify the item ID and try again. If the problem persists, check available inventory records or create the item first."
+        }
+      ]
+    },
+    {
+      "model": "gpt-5.4",
+      "prompt_style": "explicit",
+      "seed": 701,
+      "switch_reliability": 0.8,
+      "input_tokens": 1697,
+      "output_tokens": 271,
+      "server_ms": 8059.0,
+      "cost_usd": 0.008307499999999999,
+      "steps": [
+        {
+          "step": "schema",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#!",
+          "raw_output": "#! InventoryItem\nid: string | readonly\nname: string\ndescription: string | optional\nsku: string\ndepartment: string\ncategory: string | optional\nlocation: string\nsupplier: string | optional\nunit_cost: float\nquantity_on_hand: integer\nreorder_level: integer\nreorder_quantity: integer | optional\nreorder_needed: boolean | readonly\ntotal_value: float | readonly\nstatus: string | enum(active, discontinued, backordered, pending)\nunit_of_measure: string | optional\nbarcode: string | optional\nlast_restocked_at"
+        },
+        {
+          "step": "data",
+          "correct_marker": false,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#?",
+          "raw_output": "#? Inventory\nid: INV-2000\n?: ?\n\n#? Inventory\nid: INV-2001\n?: ?\n\n#? Inventory\nid: INV-2002\n?: ?"
+        },
+        {
+          "step": "query",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#?",
+          "raw_output": "#? Inventory\nquantity: <min_quantity\nid: ?\nname: ?\nquantity: ?\nmin_quantity: ?"
+        },
+        {
+          "step": "delete",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#-",
+          "raw_output": "#- InventoryItem\nid: INV-2006"
+        },
+        {
+          "step": "error",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "# Error",
+          "raw_output": "# Error\ncode: not_found\nmessage: Item INV-9999 does not exist in the system.\nsuggestion: Verify the item ID and try again. If the problem persists, check whether the item was deleted or never created."
+        }
+      ]
+    },
+    {
+      "model": "gpt-5.4",
+      "prompt_style": "explicit",
+      "seed": 702,
+      "switch_reliability": 1.0,
+      "input_tokens": 1712,
+      "output_tokens": 297,
+      "server_ms": 7413.0,
+      "cost_usd": 0.008735,
+      "steps": [
+        {
+          "step": "schema",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#!",
+          "raw_output": "#! InventoryItem\nid: string | readonly\nname: string\nsku: string\ndescription: string | optional\ndepartment: string\ncategory: string | optional\nlocation: string\naisle: string | optional\nbin: string | optional\nquantity_on_hand: integer\nunit: string | optional\nunit_cost: float\ntotal_value: float | readonly\nreorder_point: integer | optional\nreorder_quantity: integer | optional\nreorder_needed: boolean | readonly\nsupplier_id: string | optional\nsupplier_name: string | optional\nbarcode: string | optional"
+        },
+        {
+          "step": "data",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#",
+          "raw_output": "# Inventory\n## items[]\n- name: Electronics Item #3\n  id: INV-2002\n  qty: 0\n  min: 50"
+        },
+        {
+          "step": "query",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#?",
+          "raw_output": "#? Inventory\nquantity: <min_quantity\nid: ?\nname: ?\nquantity: ?\nmin_quantity: ?"
+        },
+        {
+          "step": "delete",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#-",
+          "raw_output": "#- InventoryItem\nid: INV-2007"
+        },
+        {
+          "step": "error",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "# Error",
+          "raw_output": "# Error\ncode: not_found\nmessage: Item INV-9999 does not exist in the system.\nsuggestion: Verify the item ID and try again. If the problem persists, check available inventory records or create the item first."
+        }
+      ]
+    },
+    {
+      "model": "gpt-5.4",
+      "prompt_style": "explicit",
+      "seed": 703,
+      "switch_reliability": 1.0,
+      "input_tokens": 1712,
+      "output_tokens": 259,
+      "server_ms": 6445.0,
+      "cost_usd": 0.008165,
+      "steps": [
+        {
+          "step": "schema",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#!",
+          "raw_output": "#! InventoryItem\nid: string | readonly\nname: string\ndescription: string | optional\nsku: string\ndepartment: string\ncategory: string | optional\nlocation: string\nsupplier: string | optional\nunit_cost: float\nquantity_on_hand: integer\nreorder_level: integer\nreorder_quantity: integer | optional\nreorder_needed: boolean | readonly\ntotal_value: float | readonly\nstatus: string | enum(active, discontinued, backordered, pending)\nunit_of_measure: string | optional\nbarcode: string | optional\ncreated_at: datet"
+        },
+        {
+          "step": "data",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#",
+          "raw_output": "# Inventory\n## items[]\n- item_number: 7\n  id: INV-2006\n  category: Furniture\n  qty: 20\n  min: 48"
+        },
+        {
+          "step": "query",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#?",
+          "raw_output": "#? Inventory\nquantity: <min_quantity\nid: ?\nname: ?\nquantity: ?\nmin_quantity: ?"
+        },
+        {
+          "step": "delete",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#-",
+          "raw_output": "#- Inventory\nid: INV-2000"
+        },
+        {
+          "step": "error",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "# Error",
+          "raw_output": "# Error\ncode: not_found\nmessage: Item INV-9999 does not exist in the system.\nsuggestion: Verify the item ID and try again. If you believe this is an error, check available inventory records or contact support."
+        }
+      ]
+    },
+    {
+      "model": "gpt-5.4",
+      "prompt_style": "explicit",
+      "seed": 704,
+      "switch_reliability": 1.0,
+      "input_tokens": 1697,
+      "output_tokens": 280,
+      "server_ms": 7008.0,
+      "cost_usd": 0.008442499999999999,
+      "steps": [
+        {
+          "step": "schema",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#!",
+          "raw_output": "#! InventoryItem\nid: string | readonly\nname: string\nsku: string\ndescription: string | optional\ndepartment: string\ncategory: string | optional\nlocation: string\nsupplier_id: string | optional\nsupplier_name: string | optional\nunit_cost: float\nquantity_on_hand: integer\nreorder_level: integer\nreorder_quantity: integer | optional\ntotal_value: float | readonly\nreorder_needed: boolean | readonly\nstatus: string | enum(active, discontinued, backordered, pending)\nunit_of_measure: string | optional\nlot_numb"
+        },
+        {
+          "step": "data",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#",
+          "raw_output": "# Inventory[]\n- id: INV-2000\n- id: INV-2001\n- id: INV-2002"
+        },
+        {
+          "step": "query",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#?",
+          "raw_output": "#? Inventory\nquantity: <min_quantity\nid: ?\nname: ?\nquantity: ?\nmin_quantity: ?"
+        },
+        {
+          "step": "delete",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#-",
+          "raw_output": "#- Inventory\nid: INV-2002"
+        },
+        {
+          "step": "error",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "# Error",
+          "raw_output": "# Error\ncode: not_found\nmessage: Item INV-9999 does not exist in the system.\nsuggestion: Verify the item ID and try again. If the problem persists, check whether the item was deleted or never created."
+        }
+      ]
+    },
+    {
+      "model": "gpt-5.4",
+      "prompt_style": "explicit",
+      "seed": 705,
+      "switch_reliability": 1.0,
+      "input_tokens": 1697,
+      "output_tokens": 241,
+      "server_ms": 6280.0,
+      "cost_usd": 0.0078575,
+      "steps": [
+        {
+          "step": "schema",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#!",
+          "raw_output": "#! InventoryItem\nid: string | readonly\nname: string\nsku: string\ndescription: string | optional\ndepartment: string\ncategory: string | optional\nlocation: string\nsupplier: string | optional\nunit_cost: float\nquantity_on_hand: integer\nreorder_level: integer\nreorder_quantity: integer | optional\nreorder_needed: boolean | readonly\ntotal_value: float | readonly\nstatus: string | enum(active, discontinued, backordered)\nlast_restocked_at: datetime | optional\ncreated_at: datetime | readonly\nupdated_at: datet"
+        },
+        {
+          "step": "data",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#",
+          "raw_output": "# Inventory[]\n- id: INV-2000\n- id: INV-2001\n- id: INV-2002"
+        },
+        {
+          "step": "query",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#?",
+          "raw_output": "#? Inventory\nquantity: <min_quantity\nid: ?\nname: ?\nquantity: ?\nmin_quantity: ?"
+        },
+        {
+          "step": "delete",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#-",
+          "raw_output": "#- Inventory\nid: INV-2003"
+        },
+        {
+          "step": "error",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "# Error",
+          "raw_output": "# Error\ncode: not_found\nmessage: Item INV-9999 does not exist in the system.\nsuggestion: Verify the item ID and try again. If the problem persists, check available inventory records or create the item first."
+        }
+      ]
+    },
+    {
+      "model": "gpt-5.4",
+      "prompt_style": "explicit",
+      "seed": 706,
+      "switch_reliability": 1.0,
+      "input_tokens": 1697,
+      "output_tokens": 250,
+      "server_ms": 6237.0,
+      "cost_usd": 0.0079925,
+      "steps": [
+        {
+          "step": "schema",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#!",
+          "raw_output": "#! InventoryItem\nid: string | readonly\nname: string\ndescription: string | optional\nsku: string\nbarcode: string | optional\ndepartment: string\ncategory: string | optional\nlocation: string\nsupplier: string | optional\nunit_cost: float\nquantity_on_hand: integer\nreorder_level: integer\nreorder_quantity: integer | optional\ntotal_value: float | readonly\nreorder_needed: boolean | readonly\nstatus: string | enum(active, discontinued, backordered, out_of_stock)\nunit_of_measure: string | optional\ncreated_at: "
+        },
+        {
+          "step": "data",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#",
+          "raw_output": "# Inventory[]\n- id: INV-2000\n- id: INV-2001\n- id: INV-2002"
+        },
+        {
+          "step": "query",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#?",
+          "raw_output": "#? Inventory\nquantity: <min_quantity\nid: ?\nname: ?\nquantity: ?\nmin_quantity: ?"
+        },
+        {
+          "step": "delete",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#-",
+          "raw_output": "#- InventoryItem\nid: INV-2001"
+        },
+        {
+          "step": "error",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "# Error",
+          "raw_output": "# Error\ncode: not_found\nmessage: Item INV-9999 does not exist in the system.\nsuggestion: Verify the item ID and try again. If the problem persists, check available inventory records or create the item first."
+        }
+      ]
+    },
+    {
+      "model": "gpt-5.4",
+      "prompt_style": "explicit",
+      "seed": 707,
+      "switch_reliability": 0.8,
+      "input_tokens": 1697,
+      "output_tokens": 301,
+      "server_ms": 6562.0,
+      "cost_usd": 0.0087575,
+      "steps": [
+        {
+          "step": "schema",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#!",
+          "raw_output": "#! InventoryItem\nid: string | readonly\nname: string\nsku: string\ndescription: string | optional\ndepartment: string\ncategory: string | optional\nlocation: string\nsupplier: string | optional\nunit_cost: float\nquantity_on_hand: integer\nreorder_level: integer\nreorder_quantity: integer | optional\ntotal_value: float | readonly\nreorder_needed: boolean | readonly\nstatus: string | enum(active, discontinued, backordered, pending)\nunit_of_measure: string | optional\nbarcode: string | optional\nlot_number: strin"
+        },
+        {
+          "step": "data",
+          "correct_marker": false,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "# Error",
+          "raw_output": "# Error\ncode: missing_data_source\nmessage: I don’t have access to your inventory database or records for INV-2000, INV-2001, and INV-2002.\nsuggestion: Provide the inventory dataset or connect a data source, and I can return all fields for those items in JMD format."
+        },
+        {
+          "step": "query",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#?",
+          "raw_output": "#? Inventory\nquantity: <min_quantity\nid: ?\nname: ?\nquantity: ?\nmin_quantity: ?"
+        },
+        {
+          "step": "delete",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#-",
+          "raw_output": "#- Inventory\nid: INV-2006"
+        },
+        {
+          "step": "error",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "# Error",
+          "raw_output": "# Error\ncode: not_found\nmessage: Item INV-9999 does not exist in the system.\nsuggestion: Verify the item ID and try again. If the problem persists, check whether the item was deleted or never created."
+        }
+      ]
+    },
+    {
+      "model": "gpt-5.4",
+      "prompt_style": "explicit",
+      "seed": 708,
+      "switch_reliability": 1.0,
+      "input_tokens": 1697,
+      "output_tokens": 300,
+      "server_ms": 6424.0,
+      "cost_usd": 0.0087425,
+      "steps": [
+        {
+          "step": "schema",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#!",
+          "raw_output": "#! InventoryItem\nid: string | readonly\nname: string\nsku: string\ndescription: string | optional\ndepartment: string\ncategory: string | optional\nlocation: string\naisle: string | optional\nbin: string | optional\nquantity_on_hand: integer\nunit: string | optional\nunit_cost: float\ntotal_value: float | readonly\nreorder_point: integer | optional\nreorder_quantity: integer | optional\nreorder_needed: boolean | readonly\nsupplier_id: string | optional\nsupplier_name: string | optional\nstatus: string | enum(acti"
+        },
+        {
+          "step": "data",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#",
+          "raw_output": "# Inventory[]\n- id: INV-2000\n- id: INV-2001\n- id: INV-2002"
+        },
+        {
+          "step": "query",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#?",
+          "raw_output": "#? Inventory\nquantity: <min_quantity\nid: ?\nname: ?\nquantity: ?\nmin_quantity: ?"
+        },
+        {
+          "step": "delete",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#-",
+          "raw_output": "#- InventoryItem\nid: INV-2002"
+        },
+        {
+          "step": "error",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "# Error",
+          "raw_output": "# Error\ncode: not_found\nmessage: Item INV-9999 does not exist in the system.\nsuggestion: Verify the item ID and try again. If the problem persists, check whether the item was deleted or never created."
+        }
+      ]
+    },
+    {
+      "model": "gpt-5.4",
+      "prompt_style": "explicit",
+      "seed": 709,
+      "switch_reliability": 1.0,
+      "input_tokens": 1714,
+      "output_tokens": 316,
+      "server_ms": 6453.0,
+      "cost_usd": 0.009025,
+      "steps": [
+        {
+          "step": "schema",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#!",
+          "raw_output": "#! InventoryItem\nid: string | readonly\nname: string\nsku: string\ndescription: string | optional\ndepartment: string\ncategory: string | optional\nlocation: string\naisle: string | optional\nbin: string | optional\nquantity_on_hand: integer\nunit: string | optional\nunit_cost: float\ntotal_value: float | readonly\nreorder_point: integer | optional\nreorder_quantity: integer | optional\nreorder_needed: boolean | readonly\nsupplier_id: string | optional\nsupplier_name: string | optional\nbarcode: string | optional"
+        },
+        {
+          "step": "data",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#",
+          "raw_output": "# Inventory\n## items[]\n- name: Cafeteria Item #3\n  id: INV-2002\n  qty: 4\n  min: 29"
+        },
+        {
+          "step": "query",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#?",
+          "raw_output": "#? Inventory\nquantity: <min_quantity\nid: ?\nname: ?\nquantity: ?\nmin_quantity: ?"
+        },
+        {
+          "step": "delete",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#-",
+          "raw_output": "#- Inventory\nid: INV-2003"
+        },
+        {
+          "step": "error",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "# Error",
+          "raw_output": "# Error\ncode: not_found\nmessage: Item INV-9999 does not exist in the system.\nsuggestion: Verify the item ID and try again. If you believe this is an error, check available inventory records or contact support."
+        }
+      ]
+    },
+    {
+      "model": "gpt-5.4",
+      "prompt_style": "implicit",
+      "seed": 700,
+      "switch_reliability": 0.8,
+      "input_tokens": 1666,
+      "output_tokens": 215,
+      "server_ms": 4739.0,
+      "cost_usd": 0.007390000000000001,
+      "steps": [
+        {
+          "step": "schema",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#!",
+          "raw_output": "#! InventoryItem\nid: string | readonly\nname: string\ndepartment: string\nlocation: string\nsku: string\ndescription: string | optional\nquantity_on_hand: integer\nunit_cost: float\ntotal_value: float | readonly\nreorder_point: integer\nreorder_needed: boolean | readonly\nsupplier_name: string | optional\nlast_restocked_at: datetime | optional\nstatus: string | enum(active, discontinued, backordered)"
+        },
+        {
+          "step": "data",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#",
+          "raw_output": "# InventoryItems\n## items[]\n- id: INV-2006\n  item_number: 7\n  category: Cafeteria\n  quantity: 30\n  minimum_quantity: 45\n  status: below_minimum\n  attention_needed: true"
+        },
+        {
+          "step": "query",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#?",
+          "raw_output": "#? Inventory\nquantity: <min_quantity\nid: ?\nname: ?\nquantity: ?\nmin_quantity: ?"
+        },
+        {
+          "step": "delete",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#-",
+          "raw_output": "#- Inventory\nid: INV-2007\nname: Furniture Item #8"
+        },
+        {
+          "step": "error",
+          "correct_marker": false,
+          "parses": true,
+          "content_correct": false,
+          "marker_found": "#?",
+          "raw_output": "#? Item\nid: INV-9999\n?: ?"
+        }
+      ]
+    },
+    {
+      "model": "gpt-5.4",
+      "prompt_style": "implicit",
+      "seed": 701,
+      "switch_reliability": 0.6,
+      "input_tokens": 1646,
+      "output_tokens": 194,
+      "server_ms": 4587.0,
+      "cost_usd": 0.007025,
+      "steps": [
+        {
+          "step": "schema",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#!",
+          "raw_output": "#! InventoryItem\nid: string | readonly\nname: string\ndepartment: string\nlocation: string\nsku: string\ndescription: string | optional\nquantity_on_hand: integer\nunit_cost: float\ntotal_value: float | readonly\nreorder_level: integer\nreorder_needed: boolean | readonly\nsupplier_id: string | optional\nstatus: string | enum(active, discontinued, backordered)\nlast_restocked_at: datetime | optional\ncreated_at: datetime | readonly\nupdated_at: datetime | readonly"
+        },
+        {
+          "step": "data",
+          "correct_marker": false,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#?",
+          "raw_output": "#? Items\nid: INV-2000\nid: INV-2001\nid: INV-2002\n?: ?"
+        },
+        {
+          "step": "query",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#?",
+          "raw_output": "#? Inventory\nquantity: <min_quantity\nid: ?\nname: ?\nquantity: ?\nmin_quantity: ?"
+        },
+        {
+          "step": "delete",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#-",
+          "raw_output": "#- Inventory\nid: INV-2006"
+        },
+        {
+          "step": "error",
+          "correct_marker": false,
+          "parses": true,
+          "content_correct": false,
+          "marker_found": "#?",
+          "raw_output": "#? Item\nid: INV-9999\n?: ?"
+        }
+      ]
+    },
+    {
+      "model": "gpt-5.4",
+      "prompt_style": "implicit",
+      "seed": 702,
+      "switch_reliability": 0.8,
+      "input_tokens": 1665,
+      "output_tokens": 199,
+      "server_ms": 5514.0,
+      "cost_usd": 0.0071475,
+      "steps": [
+        {
+          "step": "schema",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#!",
+          "raw_output": "#! InventoryItem\nid: string | readonly\nname: string\ndepartment: string\nlocation: string\nsku: string\ndescription: string | optional\nquantity_on_hand: integer\nunit_cost: float\ntotal_value: float | readonly\nreorder_point: integer\nreorder_needed: boolean | readonly\nsupplier_name: string | optional\nlast_restocked_at: datetime | optional\nstatus: string | enum(active, discontinued, backordered)"
+        },
+        {
+          "step": "data",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#",
+          "raw_output": "# InventoryItems\n## items[]\n- id: INV-2002\n  name: Electronics Item #3\n  category: Electronics\n  qty: 0\n  min: 50\n  status: needs_attention"
+        },
+        {
+          "step": "query",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#?",
+          "raw_output": "#? Inventory\nquantity: <min_quantity\nid: ?\nname: ?\nquantity: ?\nmin_quantity: ?"
+        },
+        {
+          "step": "delete",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#-",
+          "raw_output": "#- Inventory\nid: INV-2007"
+        },
+        {
+          "step": "error",
+          "correct_marker": false,
+          "parses": true,
+          "content_correct": false,
+          "marker_found": "#?",
+          "raw_output": "#? Item\nid: INV-9999\n?: ?"
+        }
+      ]
+    },
+    {
+      "model": "gpt-5.4",
+      "prompt_style": "implicit",
+      "seed": 703,
+      "switch_reliability": 0.8,
+      "input_tokens": 1665,
+      "output_tokens": 207,
+      "server_ms": 4981.0,
+      "cost_usd": 0.0072675000000000005,
+      "steps": [
+        {
+          "step": "schema",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#!",
+          "raw_output": "#! InventoryItem\nid: string | readonly\nname: string\ndepartment: string\nlocation: string\nsku: string\ndescription: string | optional\nquantity_on_hand: integer\nunit_cost: float\ntotal_value: float | readonly\nreorder_point: integer\nreorder_needed: boolean | readonly\nsupplier_name: string | optional\nsupplier_contact: string | optional\nlast_restocked_at: datetime | optional\nstatus: string | enum(active, discontinued, backordered)"
+        },
+        {
+          "step": "data",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#",
+          "raw_output": "# InventoryItems\n## items[]\n- id: INV-2006\n  item_number: 7\n  category: Furniture\n  qty: 20\n  min: 48\n  attention: below_minimum_stock"
+        },
+        {
+          "step": "query",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#?",
+          "raw_output": "#? Inventory\nquantity: <min_quantity\nid: ?\nname: ?\nquantity: ?\nmin_quantity: ?"
+        },
+        {
+          "step": "delete",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#-",
+          "raw_output": "#- Inventory\nid: INV-2000"
+        },
+        {
+          "step": "error",
+          "correct_marker": false,
+          "parses": true,
+          "content_correct": false,
+          "marker_found": "#?",
+          "raw_output": "#? Item\nid: INV-9999\n?: ?"
+        }
+      ]
+    },
+    {
+      "model": "gpt-5.4",
+      "prompt_style": "implicit",
+      "seed": 704,
+      "switch_reliability": 0.6,
+      "input_tokens": 1646,
+      "output_tokens": 201,
+      "server_ms": 5170.0,
+      "cost_usd": 0.007129999999999999,
+      "steps": [
+        {
+          "step": "schema",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#!",
+          "raw_output": "#! InventoryItem\nid: string | readonly\nname: string\ndepartment: string\nlocation: string\nsku: string\ndescription: string | optional\nquantity_on_hand: integer\nunit_cost: float\ntotal_value: float | readonly\nreorder_point: integer\nreorder_needed: boolean | readonly\nsupplier_name: string | optional\nsupplier_id: string | optional\nstatus: string | enum(active, discontinued, backordered)\nlast_restocked_at: datetime | optional\ncreated_at: datetime | readonly\nupdated_at: datetime | readonly"
+        },
+        {
+          "step": "data",
+          "correct_marker": false,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#?",
+          "raw_output": "#? Items\nid: INV-2000\nid: INV-2001\nid: INV-2002\n?: ?"
+        },
+        {
+          "step": "query",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#?",
+          "raw_output": "#? Inventory\nquantity: <min_quantity\nid: ?\nname: ?\nquantity: ?\nmin_quantity: ?"
+        },
+        {
+          "step": "delete",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#-",
+          "raw_output": "#- Inventory\nid: INV-2002"
+        },
+        {
+          "step": "error",
+          "correct_marker": false,
+          "parses": true,
+          "content_correct": false,
+          "marker_found": "#?",
+          "raw_output": "#? Item\nid: INV-9999\n?: ?"
+        }
+      ]
+    },
+    {
+      "model": "gpt-5.4",
+      "prompt_style": "implicit",
+      "seed": 705,
+      "switch_reliability": 0.6,
+      "input_tokens": 1646,
+      "output_tokens": 181,
+      "server_ms": 4646.0,
+      "cost_usd": 0.006829999999999999,
+      "steps": [
+        {
+          "step": "schema",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#!",
+          "raw_output": "#! InventoryItem\nid: string | readonly\nname: string\ndepartment: string\nlocation: string\nsku: string\ndescription: string | optional\nquantity_on_hand: integer\nunit_cost: float\ntotal_value: float | readonly\nreorder_point: integer\nreorder_needed: boolean | readonly\nsupplier_name: string | optional\nlast_restocked_at: datetime | optional\nstatus: string | enum(active, discontinued, backordered)"
+        },
+        {
+          "step": "data",
+          "correct_marker": false,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#?",
+          "raw_output": "#? Items\nid: INV-2000\nid: INV-2001\nid: INV-2002\n?: ?"
+        },
+        {
+          "step": "query",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#?",
+          "raw_output": "#? Inventory\nquantity: <min_quantity\nid: ?\nname: ?\nquantity: ?\nmin_quantity: ?"
+        },
+        {
+          "step": "delete",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#-",
+          "raw_output": "#- Inventory\nid: INV-2003"
+        },
+        {
+          "step": "error",
+          "correct_marker": false,
+          "parses": true,
+          "content_correct": false,
+          "marker_found": "#?",
+          "raw_output": "#? Item\nid: INV-9999\n?: ?"
+        }
+      ]
+    },
+    {
+      "model": "gpt-5.4",
+      "prompt_style": "implicit",
+      "seed": 706,
+      "switch_reliability": 0.6,
+      "input_tokens": 1646,
+      "output_tokens": 188,
+      "server_ms": 4998.0,
+      "cost_usd": 0.006935,
+      "steps": [
+        {
+          "step": "schema",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#!",
+          "raw_output": "#! InventoryItem\nid: string | readonly\nname: string\ndepartment: string\nlocation: string\nsku: string\ndescription: string | optional\nquantity_on_hand: integer\nunit_cost: float\ntotal_value: float | readonly\nreorder_point: integer\nreorder_needed: boolean | readonly\nsupplier_name: string | optional\nsupplier_contact: string | optional\nlast_restocked_at: datetime | optional\nstatus: string | enum(active, discontinued, backordered)"
+        },
+        {
+          "step": "data",
+          "correct_marker": false,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#?",
+          "raw_output": "#? Items\nid: INV-2000\nid: INV-2001\nid: INV-2002\n?: ?"
+        },
+        {
+          "step": "query",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#?",
+          "raw_output": "#? Inventory\nquantity: <min_quantity\nid: ?\nname: ?\nquantity: ?\nmin_quantity: ?"
+        },
+        {
+          "step": "delete",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#-",
+          "raw_output": "#- Inventory\nid: INV-2001"
+        },
+        {
+          "step": "error",
+          "correct_marker": false,
+          "parses": true,
+          "content_correct": false,
+          "marker_found": "#?",
+          "raw_output": "#? Item\nid: INV-9999\n?: ?"
+        }
+      ]
+    },
+    {
+      "model": "gpt-5.4",
+      "prompt_style": "implicit",
+      "seed": 707,
+      "switch_reliability": 0.6,
+      "input_tokens": 1645,
+      "output_tokens": 194,
+      "server_ms": 5507.0,
+      "cost_usd": 0.007022499999999999,
+      "steps": [
+        {
+          "step": "schema",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#!",
+          "raw_output": "#! InventoryItem\nid: string | readonly\nname: string\ndepartment: string\nlocation: string\nsku: string\ndescription: string | optional\nquantity_on_hand: integer\nunit_cost: float\ntotal_value: float | readonly\nreorder_point: integer\nreorder_needed: boolean | readonly\nsupplier_name: string | optional\nsupplier_contact: string | optional\nlast_restocked_at: datetime | optional\nstatus: string | enum(active, discontinued, backordered)"
+        },
+        {
+          "step": "data",
+          "correct_marker": false,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#?",
+          "raw_output": "#? Items\nid: INV-2000\nid: INV-2001\nid: INV-2002\n?: ?"
+        },
+        {
+          "step": "query",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#?",
+          "raw_output": "#? Inventory\nquantity: <min_quantity\nid: ?\nname: ?\nquantity: ?\nmin_quantity: ?"
+        },
+        {
+          "step": "delete",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#-",
+          "raw_output": "#- Inventory\nid: INV-2006\nitem_number: 7"
+        },
+        {
+          "step": "error",
+          "correct_marker": false,
+          "parses": true,
+          "content_correct": false,
+          "marker_found": "#?",
+          "raw_output": "#? Item\nid: INV-9999\n?: ?"
+        }
+      ]
+    },
+    {
+      "model": "gpt-5.4",
+      "prompt_style": "implicit",
+      "seed": 708,
+      "switch_reliability": 0.6,
+      "input_tokens": 1645,
+      "output_tokens": 189,
+      "server_ms": 4840.0,
+      "cost_usd": 0.0069475,
+      "steps": [
+        {
+          "step": "schema",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#!",
+          "raw_output": "#! InventoryItem\nid: string | readonly\nname: string\ndepartment: string\nlocation: string\nsku: string\ndescription: string | optional\nquantity_on_hand: integer\nunit_cost: float\ntotal_value: float | readonly\nreorder_point: integer\nreorder_needed: boolean | readonly\nsupplier_name: string | optional\nsupplier_sku: string | optional\nlast_restocked_at: datetime | optional\nstatus: string | enum(active, discontinued, backordered)"
+        },
+        {
+          "step": "data",
+          "correct_marker": false,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#?",
+          "raw_output": "#? Items\nid: INV-2000\nid: INV-2001\nid: INV-2002\n?: ?"
+        },
+        {
+          "step": "query",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#?",
+          "raw_output": "#? Inventory\nquantity: <min_quantity\nid: ?\nname: ?\nquantity: ?\nmin_quantity: ?"
+        },
+        {
+          "step": "delete",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#-",
+          "raw_output": "#- Inventory\nid: INV-2002"
+        },
+        {
+          "step": "error",
+          "correct_marker": false,
+          "parses": true,
+          "content_correct": false,
+          "marker_found": "#?",
+          "raw_output": "#? Item\nid: INV-9999\n?: ?"
+        }
+      ]
+    },
+    {
+      "model": "gpt-5.4",
+      "prompt_style": "implicit",
+      "seed": 709,
+      "switch_reliability": 0.8,
+      "input_tokens": 1667,
+      "output_tokens": 217,
+      "server_ms": 5032.0,
+      "cost_usd": 0.0074225,
+      "steps": [
+        {
+          "step": "schema",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#!",
+          "raw_output": "#! InventoryItem\nid: string | readonly\nname: string\ndepartment: string\nlocation: string\nsku: string\ndescription: string | optional\nquantity_on_hand: integer\nunit_cost: float\ntotal_value: float | readonly\nreorder_level: integer\nreorder_needed: boolean | readonly\nsupplier_name: string | optional\nsupplier_contact: string | optional\nstatus: string | enum(active, discontinued, backordered)\nlast_restocked_at: datetime | optional\ncreated_at: datetime | readonly\nupdated_at: datetime | readonly"
+        },
+        {
+          "step": "data",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#",
+          "raw_output": "# InventoryItems\n## items[]\n- id: INV-2002\n  name: Cafeteria Item #3\n  quantity: 4\n  minimum_quantity: 29\n  needs_attention: true"
+        },
+        {
+          "step": "query",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#?",
+          "raw_output": "#? Inventory\nquantity: <min_quantity\nid: ?\nname: ?\nquantity: ?\nmin_quantity: ?"
+        },
+        {
+          "step": "delete",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#-",
+          "raw_output": "#- Inventory\nid: INV-2003"
+        },
+        {
+          "step": "error",
+          "correct_marker": false,
+          "parses": true,
+          "content_correct": false,
+          "marker_found": "#?",
+          "raw_output": "#? Item\nid: INV-9999\n?: ?"
+        }
+      ]
+    },
+    {
+      "model": "claude-sonnet-4-6",
+      "prompt_style": "explicit",
+      "seed": 700,
+      "switch_reliability": 1.0,
+      "input_tokens": 1908,
+      "output_tokens": 517,
+      "server_ms": 16615.0,
+      "cost_usd": 0.013479,
+      "steps": [
+        {
+          "step": "schema",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#!",
+          "raw_output": "```jmd\n#! InventoryItem\nid: string | readonly\nname: string\nsku: string\ndescription: string\ndepartment: string | enum(electronics, clothing, grocery, hardware, furniture, pharmacy, sporting_goods, automotive, toys, office_supplies)\ncategory: string\nsubcategory: string\nlocation: string\nbin_code: string\nwarehouse_zone: string | enum(A, B, C, D, E, receiving, shipping, returns)\nunit_price: float\ncost_price: float\nquantity_on_hand: int\nquantity_reserved: int\nquantity_available: int\nreorder_threshold:"
+        },
+        {
+          "step": "data",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#",
+          "raw_output": "```jmd\n# Inventory Items\n## items[]\n- ## item\n  id: INV-2006\n  name: Cafeteria Item #7\n  quantity: 30\n  minimum_threshold: 45\n  status: below_minimum\n  deficit: 15\n```"
+        },
+        {
+          "step": "query",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#?",
+          "raw_output": "```jmd\n#? InventoryItem\nid: ?\nname: ?\nquantity: <min_quantity\nmin_quantity: ?\n```"
+        },
+        {
+          "step": "delete",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#-",
+          "raw_output": "```jmd\n#- Inventory Item\nid: INV-2007\nstatus: discontinued\nreason: Item has been discontinued and must be removed from the inventory system\n```"
+        },
+        {
+          "step": "error",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "# Error",
+          "raw_output": "```jmd\n# Error\ncode: NOT_FOUND\nmessage: Item INV-9999 could not be found in the system.\nsuggestion: Please verify the item ID and try again. You may use a query to search for available items or check the inventory list to confirm the correct ID.\n```"
+        }
+      ]
+    },
+    {
+      "model": "claude-sonnet-4-6",
+      "prompt_style": "explicit",
+      "seed": 701,
+      "switch_reliability": 1.0,
+      "input_tokens": 1889,
+      "output_tokens": 1052,
+      "server_ms": 24501.0,
+      "cost_usd": 0.021447,
+      "steps": [
+        {
+          "step": "schema",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#!",
+          "raw_output": "```jmd\n#! InventoryItem\nid: string | readonly\nname: string\ndescription: string\nsku: string\ndepartment: string | enum(electronics, clothing, grocery, hardware, furniture, pharmacy, sporting_goods, automotive, toys, other)\ncategory: string\nlocation: string\nwarehouse_zone: string\nunit: string | enum(each, box, case, pallet, kg, lb, liter, meter)\nunit_price: float\nquantity_on_hand: int\nquantity_reserved: int\nquantity_available: int\nreorder_threshold: int\nreorder_quantity: int\nreorder_needed: bool | "
+        },
+        {
+          "step": "data",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#",
+          "raw_output": "```jmd\n# Inventory\n## items[]\n- ## item\n  id: INV-2000\n  name: Wireless Keyboard\n  category: Electronics\n  sku: WK-78432\n  quantity: 142\n  unit: pcs\n  unit_price: 49.99\n  currency: USD\n  warehouse: WH-NORTH-01\n  location: Aisle 4, Shelf B\n  status: in_stock\n  reorder_level: 30\n  reorder_quantity: 100\n  last_updated: 2025-03-10T08:22:00Z\n  supplier: TechSupply Co.\n\n- ## item\n  id: INV-2001\n  name: USB-C Hub 7-Port\n  category: Electronics\n  sku: UCH-91120\n  quantity: 17\n  unit: pcs\n  unit_price: 3"
+        },
+        {
+          "step": "query",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#?",
+          "raw_output": "```jmd\n#? InventoryItem\nid: ?\nname: ?\nquantity: <min_quantity\nmin_quantity: ?\n```"
+        },
+        {
+          "step": "delete",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#-",
+          "raw_output": "```jmd\n#- InventoryItem\nid: INV-2006\nstatus: discontinued\nreason: Item has been discontinued and must be removed from the inventory system\n```"
+        },
+        {
+          "step": "error",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "# Error",
+          "raw_output": "```jmd\n# Error\ncode: NOT_FOUND\nmessage: Item INV-9999 could not be found in the system.\nsuggestion: Please verify the item ID and try again. You may use a query to search for available items or check the inventory list to confirm the correct ID.\n```"
+        }
+      ]
+    },
+    {
+      "model": "claude-sonnet-4-6",
+      "prompt_style": "explicit",
+      "seed": 702,
+      "switch_reliability": 1.0,
+      "input_tokens": 1905,
+      "output_tokens": 522,
+      "server_ms": 17083.0,
+      "cost_usd": 0.013545,
+      "steps": [
+        {
+          "step": "schema",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#!",
+          "raw_output": "```jmd\n#! InventoryItem\nid: string | readonly\nname: string\nsku: string\ndescription: string\ndepartment: string | enum(electronics, clothing, grocery, hardware, furniture, pharmacy, sporting_goods, automotive, toys, office_supplies)\ncategory: string\nsubcategory: string\nlocation: string\nbin_code: string\nwarehouse_zone: string | enum(A, B, C, D, E, receiving, shipping, returns)\nunit_price: float\ncost_price: float\nquantity_on_hand: int\nquantity_reserved: int\nquantity_available: int\nreorder_threshold:"
+        },
+        {
+          "step": "data",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#",
+          "raw_output": "```jmd\n# Inventory\n## items[]\n- ## item\n  id: INV-2002\n  name: Electronics Item #3\n  category: Electronics\n  quantity: 0\n  minimum_stock: 50\n  status: out_of_stock\n  reorder_needed: true\n```"
+        },
+        {
+          "step": "query",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#?",
+          "raw_output": "```jmd\n#? InventoryItem\nid: ?\nname: ?\nquantity: <min_quantity\nmin_quantity: ?\n```"
+        },
+        {
+          "step": "delete",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#-",
+          "raw_output": "```jmd\n#- Inventory Item\nid: INV-2007\nstatus: discontinued\nreason: Item has been discontinued and must be removed from the inventory system\n```"
+        },
+        {
+          "step": "error",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "# Error",
+          "raw_output": "```jmd\n# Error\ncode: NOT_FOUND\nmessage: Item INV-9999 could not be found in the system.\nsuggestion: Please verify the item ID and try again. You may use a query to search for available items or check the inventory list to confirm the correct ID.\n```"
+        }
+      ]
+    },
+    {
+      "model": "claude-sonnet-4-6",
+      "prompt_style": "explicit",
+      "seed": 703,
+      "switch_reliability": 1.0,
+      "input_tokens": 1906,
+      "output_tokens": 488,
+      "server_ms": 19152.0,
+      "cost_usd": 0.013038000000000001,
+      "steps": [
+        {
+          "step": "schema",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#!",
+          "raw_output": "```jmd\n#! InventoryItem\nid: string | readonly\nname: string\ndescription: string\nsku: string\ndepartment: string | enum(electronics, clothing, grocery, hardware, furniture, pharmacy, sporting_goods, automotive, toys, office_supplies)\ncategory: string\nlocation: string\nwarehouse_zone: string\nunit_price: float\nquantity_on_hand: int\nquantity_reserved: int\nquantity_available: int | readonly\nreorder_threshold: int\nreorder_quantity: int\nreorder_needed: bool | readonly\ntotal_value: float | readonly\nunit_of"
+        },
+        {
+          "step": "data",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#",
+          "raw_output": "```jmd\n# Inventory Items\n## items[]\n- ## item\n  id: INV-2006\n  name: Furniture Item #7\n  quantity: 20\n  minimum_stock: 48\n  status: understocked\n```"
+        },
+        {
+          "step": "query",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#?",
+          "raw_output": "```jmd\n#? InventoryItem\nid: ?\nname: ?\nquantity: <min_quantity\nmin_quantity: ?\n```"
+        },
+        {
+          "step": "delete",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#-",
+          "raw_output": "```jmd\n#- Inventory Item\nid: INV-2000\nstatus: discontinued\nreason: Item has been discontinued and must be removed from the inventory system\n```"
+        },
+        {
+          "step": "error",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "# Error",
+          "raw_output": "```jmd\n# Error\ncode: NOT_FOUND\nmessage: Item INV-9999 could not be found in the system.\nsuggestion: Verify the item ID is correct and try again. You can query all available items to find a valid ID.\n```"
+        }
+      ]
+    },
+    {
+      "model": "claude-sonnet-4-6",
+      "prompt_style": "explicit",
+      "seed": 704,
+      "switch_reliability": 1.0,
+      "input_tokens": 1889,
+      "output_tokens": 955,
+      "server_ms": 23692.0,
+      "cost_usd": 0.019992,
+      "steps": [
+        {
+          "step": "schema",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#!",
+          "raw_output": "```jmd\n#! InventoryItem\nid: string | readonly\nname: string\ndescription: string\nsku: string\ndepartment: string | enum(electronics, clothing, grocery, hardware, furniture, pharmacy, sporting_goods, automotive, toys, other)\ncategory: string\nlocation: string\nwarehouse_zone: string\nunit: string | enum(each, box, case, pallet, kg, lb, liter, meter)\nunit_price: float\nquantity_on_hand: int\nquantity_reserved: int\nquantity_available: int\nreorder_threshold: int\nreorder_quantity: int\nreorder_needed: bool | "
+        },
+        {
+          "step": "data",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#",
+          "raw_output": "# Inventory\n## items[]\n- ## item\n  id: INV-2000\n  name: Wireless Keyboard\n  category: Electronics\n  sku: WK-78432\n  quantity: 142\n  unit: units\n  unit_price: 49.99\n  currency: USD\n  warehouse: WH-North-01\n  location: Aisle 4, Shelf B\n  status: in_stock\n  last_updated: 2025-01-15T08:30:00Z\n\n- ## item\n  id: INV-2001\n  name: Ergonomic Mouse\n  category: Electronics\n  sku: EM-55210\n  quantity: 87\n  unit: units\n  unit_price: 34.99\n  currency: USD\n  warehouse: WH-North-01\n  location: Aisle 4, Shelf C\n "
+        },
+        {
+          "step": "query",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#?",
+          "raw_output": "```jmd\n#? InventoryItem\nid: ?\nname: ?\nquantity: <min_quantity\nmin_quantity: ?\n```"
+        },
+        {
+          "step": "delete",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#-",
+          "raw_output": "```jmd\n#- Inventory Item\nid: INV-2002\nstatus: discontinued\nreason: Item has been discontinued and must be removed from the inventory system\n```"
+        },
+        {
+          "step": "error",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "# Error",
+          "raw_output": "```jmd\n# Error\ncode: NOT_FOUND\nmessage: Item INV-9999 could not be found in the system.\nsuggestion: Please verify the item ID and try again. You may use a query to search for available items or check the inventory list to confirm the correct ID.\n```"
+        }
+      ]
+    },
+    {
+      "model": "claude-sonnet-4-6",
+      "prompt_style": "explicit",
+      "seed": 705,
+      "switch_reliability": 1.0,
+      "input_tokens": 1889,
+      "output_tokens": 823,
+      "server_ms": 21732.0,
+      "cost_usd": 0.018012,
+      "steps": [
+        {
+          "step": "schema",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#!",
+          "raw_output": "```jmd\n#! InventoryItem\nid: string | readonly\nname: string\ndescription: string\nsku: string\ndepartment: string | enum(electronics, clothing, grocery, hardware, furniture, pharmacy, sporting_goods, automotive, toys, other)\ncategory: string\nlocation: string\nwarehouse_zone: string\nunit: string | enum(each, box, case, pallet, kg, lb, liter, meter)\nunit_price: float\nquantity_on_hand: int\nquantity_reserved: int\nquantity_available: int\nreorder_threshold: int\nreorder_quantity: int\nreorder_needed: bool | "
+        },
+        {
+          "step": "data",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#",
+          "raw_output": "```jmd\n# Inventory\n## items[]\n- ## item\n  id: INV-2000\n  name: Wireless Keyboard\n  category: Electronics\n  sku: WK-78432\n  quantity: 142\n  unit: pcs\n  unit_price: 49.99\n  currency: USD\n  warehouse: WH-North-01\n  location: Aisle 4, Shelf B\n  status: in_stock\n  reorder_level: 30\n  last_updated: 2025-06-10T08:22:00Z\n\n- ## item\n  id: INV-2001\n  name: USB-C Charging Hub\n  category: Electronics\n  sku: UCH-19283\n  quantity: 57\n  unit: pcs\n  unit_price: 34.95\n  currency: USD\n  warehouse: WH-North-01\n  l"
+        },
+        {
+          "step": "query",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#?",
+          "raw_output": "```jmd\n#? InventoryItem\nid: ?\nname: ?\nquantity: <min_quantity\nmin_quantity: ?\n```"
+        },
+        {
+          "step": "delete",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#-",
+          "raw_output": "```jmd\n#- Inventory Item\nid: INV-2003\nstatus: discontinued\nreason: Item has been discontinued and must be removed from the inventory system\n```"
+        },
+        {
+          "step": "error",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "# Error",
+          "raw_output": "```jmd\n# Error\ncode: NOT_FOUND\nmessage: Item INV-9999 could not be found in the system.\nsuggestion: Verify the item ID is correct and try again. You can query all available items to find a valid ID.\n```"
+        }
+      ]
+    },
+    {
+      "model": "claude-sonnet-4-6",
+      "prompt_style": "explicit",
+      "seed": 706,
+      "switch_reliability": 1.0,
+      "input_tokens": 1889,
+      "output_tokens": 894,
+      "server_ms": 22328.0,
+      "cost_usd": 0.019077,
+      "steps": [
+        {
+          "step": "schema",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#!",
+          "raw_output": "```jmd\n#! InventoryItem\nid: string | readonly\nname: string\nsku: string\ndescription: string\ndepartment: string | enum(electronics, clothing, grocery, hardware, furniture, pharmacy, sporting_goods, automotive, toys, office_supplies)\ncategory: string\nsubcategory: string\nlocation: string\nbin_code: string\nwarehouse_zone: string | enum(A, B, C, D, E, receiving, shipping, returns)\nunit_price: float\ncost_price: float\nquantity_on_hand: int\nquantity_reserved: int\nquantity_available: int\nreorder_threshold:"
+        },
+        {
+          "step": "data",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#",
+          "raw_output": "# Inventory\n## items[]\n- ## item\n  id: INV-2000\n  name: Wireless Keyboard\n  category: Electronics\n  sku: WK-78432\n  quantity: 142\n  unit: units\n  unit_price: 49.99\n  currency: USD\n  warehouse: WH-North-01\n  bin_location: A-12-3\n  status: in_stock\n  last_updated: 2025-01-15T08:30:00Z\n  reorder_threshold: 25\n  supplier: TechSupply Co.\n\n- ## item\n  id: INV-2001\n  name: USB-C Hub 7-Port\n  category: Electronics\n  sku: UCH-91120\n  quantity: 57\n  unit: units\n  unit_price: 34.95\n  currency: USD\n  wareho"
+        },
+        {
+          "step": "query",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#?",
+          "raw_output": "```jmd\n#? InventoryItem\nid: ?\nname: ?\nquantity: <min_quantity\nmin_quantity: ?\n```"
+        },
+        {
+          "step": "delete",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#-",
+          "raw_output": "```jmd\n#- InventoryItem\nid: INV-2001\nstatus: discontinued\nreason: Item has been discontinued and must be removed from the inventory system\n```"
+        },
+        {
+          "step": "error",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "# Error",
+          "raw_output": "```jmd\n# Error\ncode: NOT_FOUND\nmessage: Item INV-9999 could not be found in the system.\nsuggestion: Verify the item ID is correct and try again. You can query all available items to find a valid ID.\n```"
+        }
+      ]
+    },
+    {
+      "model": "claude-sonnet-4-6",
+      "prompt_style": "explicit",
+      "seed": 707,
+      "switch_reliability": 1.0,
+      "input_tokens": 1889,
+      "output_tokens": 797,
+      "server_ms": 20353.0,
+      "cost_usd": 0.017622,
+      "steps": [
+        {
+          "step": "schema",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#!",
+          "raw_output": "```jmd\n#! InventoryItem\nid: string | readonly\nname: string\ndescription: string\nsku: string\ncategory: string\ndepartment: string\nlocation: string\nquantity: integer\nunit: string | enum(each, box, pallet, kg, lb, liter, meter)\nunit_price: float\ntotal_value: float | readonly\nreorder_threshold: integer\nreorder_quantity: integer\nreorder_needed: boolean | readonly\nstatus: string | enum(active, inactive, discontinued, backordered)\nsupplier: string\nlead_time_days: integer\nweight: float\ndimensions: string\n"
+        },
+        {
+          "step": "data",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#",
+          "raw_output": "```jmd\n# Inventory\n## items[]\n- ## item\n  id: INV-2000\n  name: Wireless Keyboard\n  category: Electronics\n  sku: WK-78432\n  quantity: 142\n  unit: pcs\n  unit_price: 49.99\n  currency: USD\n  warehouse: WH-NORTH-01\n  location: Aisle 4, Shelf B\n  status: in_stock\n  reorder_level: 30\n  last_updated: 2025-06-10T08:22:00Z\n\n- ## item\n  id: INV-2001\n  name: USB-C Charging Hub\n  category: Electronics\n  sku: UCH-19283\n  quantity: 17\n  unit: pcs\n  unit_price: 34.95\n  currency: USD\n  warehouse: WH-NORTH-01\n  l"
+        },
+        {
+          "step": "query",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#?",
+          "raw_output": "```jmd\n#? InventoryItem\nid: ?\nname: ?\nquantity: <min_quantity\nmin_quantity: ?\n```"
+        },
+        {
+          "step": "delete",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#-",
+          "raw_output": "```jmd\n#- Inventory Item\nid: INV-2006\nstatus: discontinued\nreason: Item has been discontinued and must be removed from the inventory system\n```"
+        },
+        {
+          "step": "error",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "# Error",
+          "raw_output": "```jmd\n# Error\ncode: NOT_FOUND\nmessage: Item INV-9999 could not be found in the system.\nsuggestion: Please verify the item ID and try again. You may use a query to search for available items or check the inventory list to confirm the correct ID.\n```"
+        }
+      ]
+    },
+    {
+      "model": "claude-sonnet-4-6",
+      "prompt_style": "explicit",
+      "seed": 708,
+      "switch_reliability": 1.0,
+      "input_tokens": 1889,
+      "output_tokens": 1047,
+      "server_ms": 30261.0,
+      "cost_usd": 0.021372000000000002,
+      "steps": [
+        {
+          "step": "schema",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#!",
+          "raw_output": "```jmd\n#! InventoryItem\nid: string | readonly\nname: string\ndescription: string\nsku: string\ndepartment: string | enum(electronics, clothing, grocery, hardware, furniture, pharmacy, sporting_goods, automotive, toys, other)\ncategory: string\nlocation: string\nwarehouse_zone: string\nunit: string | enum(each, box, case, pallet, kg, lb, liter, meter)\nunit_price: float\nquantity_on_hand: int\nquantity_reserved: int\nquantity_available: int\nreorder_threshold: int\nreorder_quantity: int\nreorder_needed: bool | "
+        },
+        {
+          "step": "data",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#",
+          "raw_output": "# Inventory\n## items[]\n- ## item\n  id: INV-2000\n  name: Wireless Keyboard\n  category: Electronics\n  sku: WK-78432\n  quantity: 142\n  unit: units\n  unit_price: 49.99\n  currency: USD\n  warehouse: WH-North-01\n  bin_location: A-12-3\n  status: in_stock\n  last_updated: 2025-01-15T08:30:00Z\n  reorder_threshold: 25\n  supplier: TechSupply Co.\n\n- ## item\n  id: INV-2001\n  name: USB-C Hub 7-Port\n  category: Electronics\n  sku: UCH-91120\n  quantity: 57\n  unit: units\n  unit_price: 34.95\n  currency: USD\n  wareho"
+        },
+        {
+          "step": "query",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#?",
+          "raw_output": "```jmd\n#? InventoryItem\nid: ?\nname: ?\nquantity: <min_quantity\nmin_quantity: ?\n```"
+        },
+        {
+          "step": "delete",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#-",
+          "raw_output": "```jmd\n#- Inventory Item\nid: INV-2002\nstatus: discontinued\nreason: Item has been discontinued and must be removed from the inventory system\n```"
+        },
+        {
+          "step": "error",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "# Error",
+          "raw_output": "```jmd\n# Error\ncode: NOT_FOUND\nmessage: Item INV-9999 could not be found in the system.\nsuggestion: Please verify the item ID and try again. You may use a query to search for available items or check the inventory list to confirm the correct ID.\n```"
+        }
+      ]
+    },
+    {
+      "model": "claude-sonnet-4-6",
+      "prompt_style": "explicit",
+      "seed": 709,
+      "switch_reliability": 1.0,
+      "input_tokens": 1908,
+      "output_tokens": 588,
+      "server_ms": 17223.0,
+      "cost_usd": 0.014544,
+      "steps": [
+        {
+          "step": "schema",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#!",
+          "raw_output": "```jmd\n#! InventoryItem\nid: string | readonly\nname: string\nsku: string\ndescription: string\ndepartment: string | enum(electronics, clothing, grocery, hardware, furniture, pharmacy, sporting_goods, automotive, toys, office_supplies)\ncategory: string\nsubcategory: string\nlocation: string\nbin_code: string\nwarehouse_zone: string | enum(A, B, C, D, E, receiving, shipping, returns)\nquantity_on_hand: integer\nquantity_reserved: integer\nquantity_available: integer | readonly\nreorder_point: integer\nreorder_"
+        },
+        {
+          "step": "data",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#",
+          "raw_output": "```jmd\n# Inventory\n## items[]\n- ## Cafeteria Item #3\n  id: INV-2002\n  name: Cafeteria Item #3\n  quantity: 4\n  minimum_threshold: 29\n  stock_status: critically_low\n```"
+        },
+        {
+          "step": "query",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#?",
+          "raw_output": "```jmd\n#? InventoryItem\nid: ?\nname: ?\nquantity: <min_quantity\nmin_quantity: ?\n```"
+        },
+        {
+          "step": "delete",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#-",
+          "raw_output": "```jmd\n#- Inventory Item\nid: INV-2003\nstatus: discontinued\nreason: Item has been discontinued and must be removed from the inventory system\n```"
+        },
+        {
+          "step": "error",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "# Error",
+          "raw_output": "```jmd\n# Error\ncode: NOT_FOUND\nmessage: Item INV-9999 could not be found in the system.\nsuggestion: Verify the item ID is correct and try again. You can query all available items to find a valid ID.\n```"
+        }
+      ]
+    },
+    {
+      "model": "claude-sonnet-4-6",
+      "prompt_style": "implicit",
+      "seed": 700,
+      "switch_reliability": 1.0,
+      "input_tokens": 1857,
+      "output_tokens": 308,
+      "server_ms": 13666.0,
+      "cost_usd": 0.010191,
+      "steps": [
+        {
+          "step": "schema",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#!",
+          "raw_output": "```jmd\n#! InventoryItem\nid: string | readonly\nname: string\ndepartment: string | enum(electronics, clothing, grocery, hardware, pharmacy, other)\nlocation: string\nsku: string\nquantity: integer\nunit_price: float\ntotal_value: float | readonly\nreorder_threshold: integer\nreorder_needed: boolean | readonly\ncondition: string | enum(new, good, fair, damaged)\nlast_updated: datetime\nnotes: string | optional\n```"
+        },
+        {
+          "step": "data",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#",
+          "raw_output": "```jmd\n# Inventory Item\nid: INV-2006\nname: Cafeteria Item #7\nquantity: 30\nminimum_threshold: 45\nstatus: low_stock\nshortage: 15\nrequires_reorder: true\n```"
+        },
+        {
+          "step": "query",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#?",
+          "raw_output": "```jmd\n#? InventoryItem\nquantity: <min_quantity\nid: ?\nname: ?\nquantity: ?\nmin_quantity: ?\n```"
+        },
+        {
+          "step": "delete",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#-",
+          "raw_output": "```jmd\n#- Furniture Item\nid: INV-2007\n```"
+        },
+        {
+          "step": "error",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "# Error",
+          "raw_output": "```jmd\n# Error\ncode: NOT_FOUND\nmessage: Item INV-9999 could not be located in the system\nsuggestion: Please verify the item ID and try again. You can query available items using a wildcard search or check that INV-9999 exists in your inventory records\n```"
+        }
+      ]
+    },
+    {
+      "model": "claude-sonnet-4-6",
+      "prompt_style": "implicit",
+      "seed": 701,
+      "switch_reliability": 0.8,
+      "input_tokens": 1833,
+      "output_tokens": 484,
+      "server_ms": 19086.0,
+      "cost_usd": 0.012759,
+      "steps": [
+        {
+          "step": "schema",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#!",
+          "raw_output": "```jmd\n#! InventoryItem\nid: string | readonly\nname: string\ndepartment: string | enum(electronics, clothing, grocery, hardware, pharmacy, other)\nlocation: string\nsku: string\nquantity: integer\nunit_price: float\ntotal_value: float | readonly\nin_stock: boolean\nreorder_threshold: integer\nreorder_needed: boolean | readonly\nlast_updated: datetime | readonly\n```"
+        },
+        {
+          "step": "data",
+          "correct_marker": false,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#?",
+          "raw_output": "```jmd\n#? Inventory Item\nid: INV-2000 | INV-2001 | INV-2002\n?: ?\n```\n\n---\n\nI've submitted a wildcard projection query for all three inventory items. However, as an API agent, I don't have a live database connection to retrieve actual records.\n\nIf you can provide the data source or paste the inventory records, I'll return the full structured details in a proper `# Data` JMD response like this:\n\n```jmd\n# Inventory Item\n\n## items[]\n\n- ## item\n  id: INV-2000\n  name: ?\n  category: ?\n  quantity: ?\n  u"
+        },
+        {
+          "step": "query",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#?",
+          "raw_output": "```jmd\n#? InventoryItem\nquantity: <min_quantity\nid: ?\nname: ?\nquantity: ?\nmin_quantity: ?\n```"
+        },
+        {
+          "step": "delete",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#-",
+          "raw_output": "#- Electronics\nid: INV-2006"
+        },
+        {
+          "step": "error",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "# Error",
+          "raw_output": "```jmd\n# Error\ncode: NOT_FOUND\nmessage: Item INV-9999 could not be located in the system\nsuggestion: Please verify the item ID and try again. If you believe this is an error, contact support or check the inventory list for valid IDs\n```"
+        }
+      ]
+    },
+    {
+      "model": "claude-sonnet-4-6",
+      "prompt_style": "implicit",
+      "seed": 702,
+      "switch_reliability": 1.0,
+      "input_tokens": 1853,
+      "output_tokens": 323,
+      "server_ms": 19733.0,
+      "cost_usd": 0.010404,
+      "steps": [
+        {
+          "step": "schema",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#!",
+          "raw_output": "```jmd\n#! InventoryItem\nid: string | readonly\nname: string\ndepartment: string | enum(electronics, clothing, grocery, hardware, pharmacy, other)\nlocation: string\nsku: string | unique\nquantity: integer\nunit_price: float\ntotal_value: float | readonly\nin_stock: boolean\nreorder_threshold: integer\nreorder_needed: boolean | readonly\nlast_updated: datetime | readonly\n```"
+        },
+        {
+          "step": "data",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#",
+          "raw_output": "```jmd\n# Inventory Item\nid: INV-2002\nname: Electronics Item #3\ncategory: Electronics\nquantity: 0\nminimum_threshold: 50\nstatus: out_of_stock\nreorder_required: true\n## alert\nlevel: critical\nmessage: Quantity has reached zero, well below minimum threshold of 50\nrecommended_action: Initiate emergency restock immediately\n```"
+        },
+        {
+          "step": "query",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#?",
+          "raw_output": "```jmd\n#? InventoryItem\nquantity: <min_quantity\nid: ?\nname: ?\nquantity: ?\nmin_quantity: ?\n```"
+        },
+        {
+          "step": "delete",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#-",
+          "raw_output": "```jmd\n#- Electronics\nid: INV-2007\n```"
+        },
+        {
+          "step": "error",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "# Error",
+          "raw_output": "```jmd\n# Error\ncode: NOT_FOUND\nmessage: Item INV-9999 could not be located in the system\nsuggestion: Please verify the item ID and try again. If you believe this is an error, contact support or check the inventory list for valid IDs\n```"
+        }
+      ]
+    },
+    {
+      "model": "claude-sonnet-4-6",
+      "prompt_style": "implicit",
+      "seed": 703,
+      "switch_reliability": 1.0,
+      "input_tokens": 1854,
+      "output_tokens": 321,
+      "server_ms": 14322.0,
+      "cost_usd": 0.010377,
+      "steps": [
+        {
+          "step": "schema",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#!",
+          "raw_output": "```jmd\n#! InventoryItem\nid: string | readonly\nname: string\ndepartment: string | enum(electronics, clothing, grocery, hardware, pharmacy, other)\nlocation: string\nsku: string\nquantity: integer\nunit_price: float\ntotal_value: float | readonly\nreorder_threshold: integer\nreorder_needed: boolean | readonly\ncondition: string | enum(new, good, fair, damaged)\nlast_updated: datetime\n```"
+        },
+        {
+          "step": "data",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#",
+          "raw_output": "# Inventory Item\nid: INV-2006\nname: Furniture Item #7\ncategory: Furniture\nquantity: 20\nminimum_threshold: 48\nstatus: understocked\nshortage: 28\n\n## reorder_suggestion\nrecommended_order_qty: 28\npriority: high\nreason: Current quantity (20) is below minimum threshold (48) by 28 units"
+        },
+        {
+          "step": "query",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#?",
+          "raw_output": "```jmd\n#? InventoryItem\nquantity: <min_quantity\nid: ?\nname: ?\nquantity: ?\nmin_quantity: ?\n```"
+        },
+        {
+          "step": "delete",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#-",
+          "raw_output": "```jmd\n#- Inventory\nid: INV-2000\n```"
+        },
+        {
+          "step": "error",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "# Error",
+          "raw_output": "```jmd\n# Error\ncode: NOT_FOUND\nmessage: Item INV-9999 could not be located in the system\nsuggestion: Please verify the item ID and try again. You can query available items using a wildcard search such as INV-.*\n```"
+        }
+      ]
+    },
+    {
+      "model": "claude-sonnet-4-6",
+      "prompt_style": "implicit",
+      "seed": 704,
+      "switch_reliability": 0.8,
+      "input_tokens": 1835,
+      "output_tokens": 473,
+      "server_ms": 19853.0,
+      "cost_usd": 0.0126,
+      "steps": [
+        {
+          "step": "schema",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#!",
+          "raw_output": "```jmd\n#! InventoryItem\nid: string | readonly\nname: string\ndepartment: string | enum(electronics, clothing, grocery, hardware, pharmacy, other)\nlocation: string\nsku: string | unique\nquantity: integer\nunit_price: float\ntotal_value: float | readonly\nin_stock: boolean\nreorder_threshold: integer\nreorder_needed: boolean | readonly\nlast_updated: datetime | readonly\n```"
+        },
+        {
+          "step": "data",
+          "correct_marker": false,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#?",
+          "raw_output": "```jmd\n#? Inventory Item\nid: INV-2000 | INV-2001 | INV-2002\n?: ?\n```\n\n---\n\nI've submitted a wildcard projection query for all three inventory items. However, as an API agent I don't have a live database connection to retrieve the actual records.\n\nIf you can provide the data source or paste the inventory records, I'll return the full details formatted as proper JMD `#` DATA documents like this:\n\n```jmd\n# Inventory Item\nid: INV-2000\nname: ?\ncategory: ?\nquantity: ?\nunit_price: ?\nstatus: ?\n\n# Invent"
+        },
+        {
+          "step": "query",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#?",
+          "raw_output": "```jmd\n#? InventoryItem\nquantity: <min_quantity\nid: ?\nname: ?\nquantity: ?\nmin_quantity: ?\n```"
+        },
+        {
+          "step": "delete",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#-",
+          "raw_output": "```jmd\n#- Office Supplies Item\nid: INV-2002\n```"
+        },
+        {
+          "step": "error",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "# Error",
+          "raw_output": "```jmd\n# Error\ncode: NOT_FOUND\nmessage: Item INV-9999 could not be located in the system\nsuggestion: Please verify the item ID and try again. If you believe this is an error, contact support or check the inventory list for valid IDs\n```"
+        }
+      ]
+    },
+    {
+      "model": "claude-sonnet-4-6",
+      "prompt_style": "implicit",
+      "seed": 705,
+      "switch_reliability": 0.8,
+      "input_tokens": 1833,
+      "output_tokens": 459,
+      "server_ms": 17025.0,
+      "cost_usd": 0.012384,
+      "steps": [
+        {
+          "step": "schema",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#!",
+          "raw_output": "```jmd\n#! InventoryItem\nid: string | readonly\nname: string\ndepartment: string | enum(electronics, clothing, grocery, hardware, pharmacy, other)\nlocation: string\nsku: string | unique\nquantity: integer\nunit_price: float\ntotal_value: float | readonly\nin_stock: boolean\nreorder_threshold: integer\nreorder_needed: boolean | readonly\nlast_updated: datetime | readonly\n```"
+        },
+        {
+          "step": "data",
+          "correct_marker": false,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#?",
+          "raw_output": "```jmd\n#? Inventory Item\nid: INV-2000 | INV-2001 | INV-2002\n?: ?\n```\n\n---\n\nI've submitted a wildcard projection query for all three inventory items. However, I don't have access to a live inventory database to return actual records.\n\nIf you can provide the data source or paste the inventory records, I'll format the full details as a proper JMD `DATA` response like this:\n\n```jmd\n# Inventory Item\nid: INV-2000\nname: Example Widget A\ncategory: Electronics\nquantity: 120\nunit_price: 49.99\nstatus: acti"
+        },
+        {
+          "step": "query",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#?",
+          "raw_output": "```jmd\n#? InventoryItem\nquantity: <min_quantity\nid: ?\nname: ?\nquantity: ?\nmin_quantity: ?\n```"
+        },
+        {
+          "step": "delete",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#-",
+          "raw_output": "#- Electronics\nid: INV-2003"
+        },
+        {
+          "step": "error",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "# Error",
+          "raw_output": "```jmd\n# Error\ncode: NOT_FOUND\nmessage: Item INV-9999 could not be located in the system\nsuggestion: Please verify the item ID and try again, or query available items to find the correct identifier\n```"
+        }
+      ]
+    },
+    {
+      "model": "claude-sonnet-4-6",
+      "prompt_style": "implicit",
+      "seed": 706,
+      "switch_reliability": 0.8,
+      "input_tokens": 1835,
+      "output_tokens": 458,
+      "server_ms": 19154.0,
+      "cost_usd": 0.012375,
+      "steps": [
+        {
+          "step": "schema",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#!",
+          "raw_output": "```jmd\n#! InventoryItem\nid: string | readonly\nname: string\ndepartment: string | enum(electronics, clothing, grocery, hardware, pharmacy, other)\nlocation: string\nsku: string\nquantity: integer\nunit_price: float\ntotal_value: float | readonly\nin_stock: boolean\nreorder_threshold: integer\nreorder_needed: boolean | readonly\nlast_updated: datetime\n```"
+        },
+        {
+          "step": "data",
+          "correct_marker": false,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#?",
+          "raw_output": "```jmd\n#? Inventory Item\nid: INV-2000 | INV-2001 | INV-2002\n?: ?\n```\n\n---\n\nI've submitted a wildcard projection query for all three inventory items. However, as an API agent I don't have a live database connection to retrieve the actual records.\n\nIf you can provide the data source or paste the inventory records, I'll return the full details formatted as proper JMD `# Data` documents like this:\n\n```jmd\n# Inventory Item\nid: INV-2000\nname: ?\ncategory: ?\nquantity: ?\nprice: ?\nstatus: ?\n\n# Inventory I"
+        },
+        {
+          "step": "query",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#?",
+          "raw_output": "```jmd\n#? InventoryItem\nquantity: <min_quantity\nid: ?\nname: ?\nquantity: ?\nmin_quantity: ?\n```"
+        },
+        {
+          "step": "delete",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#-",
+          "raw_output": "```jmd\n#- Office Supplies Item\nid: INV-2001\n```"
+        },
+        {
+          "step": "error",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "# Error",
+          "raw_output": "```jmd\n# Error\ncode: NOT_FOUND\nmessage: Item INV-9999 could not be located in the system\nsuggestion: Please verify the item ID and try again. You can query available items using a wildcard search (e.g., INV-*)\n```"
+        }
+      ]
+    },
+    {
+      "model": "claude-sonnet-4-6",
+      "prompt_style": "implicit",
+      "seed": 707,
+      "switch_reliability": 0.8,
+      "input_tokens": 1834,
+      "output_tokens": 478,
+      "server_ms": 21400.0,
+      "cost_usd": 0.012672,
+      "steps": [
+        {
+          "step": "schema",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#!",
+          "raw_output": "```jmd\n#! InventoryItem\nid: string | readonly\nname: string\ndepartment: string | enum(electronics, clothing, grocery, hardware, pharmacy, other)\nlocation: string\nsku: string\nquantity: integer\nunit_price: float\ntotal_value: float | readonly\nreorder_threshold: integer\nreorder_needed: boolean | readonly\ncondition: string | enum(new, good, fair, damaged)\nlast_updated: datetime\nnotes: string | optional\n```"
+        },
+        {
+          "step": "data",
+          "correct_marker": false,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#?",
+          "raw_output": "```jmd\n#? Inventory Item\nid: INV-2000 | INV-2001 | INV-2002\n?: ?\n```\n\n---\n\nI've submitted a wildcard projection query for all three inventory items. However, I don't have access to a live inventory database to return actual records.\n\nIf you can provide the data source or paste the inventory records, I'll format the full details as a proper JMD `DATA` response like this:\n\n```jmd\n# Inventory Item\nid: INV-2000\nname: Example Widget A\ncategory: Electronics\nquantity: 120\nunit_price: 49.99\nstatus: acti"
+        },
+        {
+          "step": "query",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#?",
+          "raw_output": "```jmd\n#? InventoryItem\nquantity: <min_quantity\nid: ?\nname: ?\nquantity: ?\nmin_quantity: ?\n```"
+        },
+        {
+          "step": "delete",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#-",
+          "raw_output": "```jmd\n#- Warehouse Item\nid: INV-2006\n```"
+        },
+        {
+          "step": "error",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "# Error",
+          "raw_output": "```jmd\n# Error\ncode: NOT_FOUND\nmessage: Item INV-9999 could not be located in the system\nsuggestion: Please verify the item ID and try again, or query available items to find the correct identifier\n```"
+        }
+      ]
+    },
+    {
+      "model": "claude-sonnet-4-6",
+      "prompt_style": "implicit",
+      "seed": 708,
+      "switch_reliability": 0.8,
+      "input_tokens": 1834,
+      "output_tokens": 496,
+      "server_ms": 17165.0,
+      "cost_usd": 0.012942,
+      "steps": [
+        {
+          "step": "schema",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#!",
+          "raw_output": "```jmd\n#! InventoryItem\nid: string | readonly\nname: string\ndepartment: string | enum(electronics, clothing, grocery, hardware, pharmacy, other)\nlocation: string\nsku: string\nquantity: integer\nunit_price: float\ntotal_value: float | readonly\nin_stock: boolean\nreorder_threshold: integer\nreorder_needed: boolean | readonly\nlast_updated: datetime | readonly\n```"
+        },
+        {
+          "step": "data",
+          "correct_marker": false,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#?",
+          "raw_output": "```jmd\n#? Inventory Item\nid: INV-2000 | INV-2001 | INV-2002\n?: ?\n```\n\n---\n\nI've submitted a wildcard projection query for all three inventory items. However, as an API agent, I don't have a live database connection to retrieve actual records.\n\nIf you can provide the data source or paste the inventory records, I'll return the full structured details in a proper `# Data` JMD response like this:\n\n```jmd\n# Inventory Item\n\n## items[]\n\n- ## item\n  id: INV-2000\n  name: ?\n  category: ?\n  quantity: ?\n  u"
+        },
+        {
+          "step": "query",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#?",
+          "raw_output": "```jmd\n#? InventoryItem\nquantity: <min_quantity\nid: ?\nname: ?\nquantity: ?\nmin_quantity: ?\n```"
+        },
+        {
+          "step": "delete",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#-",
+          "raw_output": "```jmd\n#- Warehouse Item\nid: INV-2002\n```"
+        },
+        {
+          "step": "error",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "# Error",
+          "raw_output": "```jmd\n# Error\ncode: NOT_FOUND\nmessage: Item with ID INV-9999 could not be found in the system.\nsuggestion: Please verify the item ID and try again. You can query available items using a wildcard search or check your inventory list for valid IDs.\n```"
+        }
+      ]
+    },
+    {
+      "model": "claude-sonnet-4-6",
+      "prompt_style": "implicit",
+      "seed": 709,
+      "switch_reliability": 1.0,
+      "input_tokens": 1858,
+      "output_tokens": 331,
+      "server_ms": 14422.0,
+      "cost_usd": 0.010539,
+      "steps": [
+        {
+          "step": "schema",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#!",
+          "raw_output": "```jmd\n#! InventoryItem\nid: string | readonly\nname: string\ndepartment: string | enum(electronics, clothing, grocery, hardware, pharmacy, other)\nlocation: string\nsku: string\nquantity: integer\nunit_price: float\ntotal_value: float | readonly\nreorder_threshold: integer\nreorder_needed: boolean | readonly\ncondition: string | enum(new, good, fair, damaged)\nlast_updated: datetime\nnotes: string | optional\n```"
+        },
+        {
+          "step": "data",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#",
+          "raw_output": "# Inventory Item\nid: INV-2002\nname: Cafeteria Item #3\nquantity: 4\nminimum_threshold: 29\n## status\nlevel: critical\nreorder_required: true\nshortage: 25\n## alert\npriority: high\nmessage: Quantity is 25 units below minimum threshold\nrecommendation: Reorder immediately to avoid stockout"
+        },
+        {
+          "step": "query",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#?",
+          "raw_output": "```jmd\n#? InventoryItem\nquantity: <min_quantity\nid: ?\nname: ?\nquantity: ?\nmin_quantity: ?\n```"
+        },
+        {
+          "step": "delete",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#-",
+          "raw_output": "```jmd\n#- Office Supplies Inventory\nid: INV-2003\n```"
+        },
+        {
+          "step": "error",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "# Error",
+          "raw_output": "```jmd\n# Error\ncode: NOT_FOUND\nmessage: Item INV-9999 could not be located in the system\nsuggestion: Please verify the item ID and try again. You can query available items using a wildcard search (e.g., INV-*)\n```"
+        }
+      ]
+    }
+  ]
+}

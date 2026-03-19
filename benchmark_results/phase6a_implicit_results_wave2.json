@@ -1,0 +1,3366 @@
+{
+  "phase": "6a-implicit",
+  "name": "Situational Mode Awareness — Explicit vs Implicit Prompts",
+  "n_runs": 10,
+  "seed_base": 700,
+  "models": [
+    "Mistral",
+    "Haiku",
+    "Flash"
+  ],
+  "prompt_styles": [
+    "explicit",
+    "implicit"
+  ],
+  "summary": {
+    "Haiku": {
+      "explicit": {
+        "n_trials": 10,
+        "avg_switch_reliability_pct": 88.0,
+        "per_step": {
+          "schema": {
+            "correct_marker_pct": 100.0,
+            "markers_seen": {
+              "#!": 10
+            }
+          },
+          "data": {
+            "correct_marker_pct": 40.0,
+            "markers_seen": {
+              "#": 4,
+              "#?": 6
+            }
+          },
+          "query": {
+            "correct_marker_pct": 100.0,
+            "markers_seen": {
+              "#?": 10
+            }
+          },
+          "delete": {
+            "correct_marker_pct": 100.0,
+            "markers_seen": {
+              "#-": 10
+            }
+          },
+          "error": {
+            "correct_marker_pct": 100.0,
+            "markers_seen": {
+              "# Error": 10
+            }
+          }
+        }
+      },
+      "implicit": {
+        "n_trials": 10,
+        "avg_switch_reliability_pct": 64.0,
+        "per_step": {
+          "schema": {
+            "correct_marker_pct": 100.0,
+            "markers_seen": {
+              "#!": 10
+            }
+          },
+          "data": {
+            "correct_marker_pct": 0.0,
+            "markers_seen": {
+              "#?": 10
+            }
+          },
+          "query": {
+            "correct_marker_pct": 100.0,
+            "markers_seen": {
+              "#?": 10
+            }
+          },
+          "delete": {
+            "correct_marker_pct": 100.0,
+            "markers_seen": {
+              "#-": 10
+            }
+          },
+          "error": {
+            "correct_marker_pct": 20.0,
+            "markers_seen": {
+              "# Error": 2,
+              "#?": 8
+            }
+          }
+        }
+      }
+    },
+    "Flash": {
+      "explicit": {
+        "n_trials": 10,
+        "avg_switch_reliability_pct": 88.0,
+        "per_step": {
+          "schema": {
+            "correct_marker_pct": 100.0,
+            "markers_seen": {
+              "#!": 10
+            }
+          },
+          "data": {
+            "correct_marker_pct": 40.0,
+            "markers_seen": {
+              "#": 4,
+              "#?": 6
+            }
+          },
+          "query": {
+            "correct_marker_pct": 100.0,
+            "markers_seen": {
+              "#?": 10
+            }
+          },
+          "delete": {
+            "correct_marker_pct": 100.0,
+            "markers_seen": {
+              "#-": 10
+            }
+          },
+          "error": {
+            "correct_marker_pct": 100.0,
+            "markers_seen": {
+              "# Error": 10
+            }
+          }
+        }
+      },
+      "implicit": {
+        "n_trials": 10,
+        "avg_switch_reliability_pct": 72.0,
+        "per_step": {
+          "schema": {
+            "correct_marker_pct": 100.0,
+            "markers_seen": {
+              "#!": 10
+            }
+          },
+          "data": {
+            "correct_marker_pct": 60.0,
+            "markers_seen": {
+              "#?": 4,
+              "#": 6
+            }
+          },
+          "query": {
+            "correct_marker_pct": 100.0,
+            "markers_seen": {
+              "#?": 10
+            }
+          },
+          "delete": {
+            "correct_marker_pct": 100.0,
+            "markers_seen": {
+              "#-": 10
+            }
+          },
+          "error": {
+            "correct_marker_pct": 0.0,
+            "markers_seen": {
+              "#?": 10
+            }
+          }
+        }
+      }
+    },
+    "Mistral": {
+      "explicit": {
+        "n_trials": 10,
+        "avg_switch_reliability_pct": 100.0,
+        "per_step": {
+          "schema": {
+            "correct_marker_pct": 100.0,
+            "markers_seen": {
+              "#!": 10
+            }
+          },
+          "data": {
+            "correct_marker_pct": 100.0,
+            "markers_seen": {
+              "#": 10
+            }
+          },
+          "query": {
+            "correct_marker_pct": 100.0,
+            "markers_seen": {
+              "#?": 10
+            }
+          },
+          "delete": {
+            "correct_marker_pct": 100.0,
+            "markers_seen": {
+              "#-": 10
+            }
+          },
+          "error": {
+            "correct_marker_pct": 100.0,
+            "markers_seen": {
+              "# Error": 10
+            }
+          }
+        }
+      },
+      "implicit": {
+        "n_trials": 10,
+        "avg_switch_reliability_pct": 72.0,
+        "per_step": {
+          "schema": {
+            "correct_marker_pct": 100.0,
+            "markers_seen": {
+              "#!": 10
+            }
+          },
+          "data": {
+            "correct_marker_pct": 60.0,
+            "markers_seen": {
+              "#?": 4,
+              "#": 6
+            }
+          },
+          "query": {
+            "correct_marker_pct": 100.0,
+            "markers_seen": {
+              "#?": 10
+            }
+          },
+          "delete": {
+            "correct_marker_pct": 100.0,
+            "markers_seen": {
+              "#-": 10
+            }
+          },
+          "error": {
+            "correct_marker_pct": 0.0,
+            "markers_seen": {
+              "#?": 10
+            }
+          }
+        }
+      }
+    }
+  },
+  "trials": [
+    {
+      "model": "claude-haiku-4-5",
+      "prompt_style": "explicit",
+      "seed": 700,
+      "switch_reliability": 1.0,
+      "input_tokens": 1903,
+      "output_tokens": 272,
+      "server_ms": 6122.0,
+      "cost_usd": 0.0026104,
+      "steps": [
+        {
+          "step": "schema",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#!",
+          "raw_output": "#! InventoryItem\nid: string | readonly\nname: string\ndescription: string\ndepartment: string\nlocation: string\nquantity: integer\nunit_price: float\ntotal_value: float | readonly\nsku: string\nreorder_level: integer\nreorder_needed: boolean | readonly\nlast_updated: string\nstatus: string | enum(in_stock, low_stock, out_of_stock, discontinued)\nsupplier_id: string\nbatch_number: string"
+        },
+        {
+          "step": "data",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#",
+          "raw_output": "# Inventory\n## items[]\n- id: INV-2006\n  name: Cafeteria Item #7\n  quantity: 30\n  minimum_threshold: 45\n  status: below_minimum"
+        },
+        {
+          "step": "query",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#?",
+          "raw_output": "#? Inventory Items Needing Reorder\nquantity: <min_quantity\nid: ?\nname: ?\nquantity: ?\nmin_quantity: ?"
+        },
+        {
+          "step": "delete",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#-",
+          "raw_output": "#- Inventory Deletion\nid: INV-2007\nreason: discontinued"
+        },
+        {
+          "step": "error",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "# Error",
+          "raw_output": "# Error\ncode: NOT_FOUND\nmessage: Item INV-9999 does not exist in the system\nsuggestion: Verify the item ID and try again, or use a query operation to search for available items"
+        }
+      ]
+    },
+    {
+      "model": "claude-haiku-4-5",
+      "prompt_style": "explicit",
+      "seed": 701,
+      "switch_reliability": 0.8,
+      "input_tokens": 1884,
+      "output_tokens": 267,
+      "server_ms": 7323.0,
+      "cost_usd": 0.0025751999999999997,
+      "steps": [
+        {
+          "step": "schema",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#!",
+          "raw_output": "#! InventoryItem\nid: string | readonly\nname: string\ndescription: string\ndepartment: string\nlocation: string\nquantity: integer\nunit_price: float\ntotal_value: float | readonly\nsku: string\nreorder_level: integer\nreorder_needed: boolean | readonly\nlast_updated: string\nstatus: string | enum(in_stock, low_stock, out_of_stock, discontinued)\nsupplier_id: string\nbatch_number: string"
+        },
+        {
+          "step": "data",
+          "correct_marker": false,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#?",
+          "raw_output": "#? Inventory\nid: INV-2000\n?: ?\n\n#? Inventory\nid: INV-2001\n?: ?\n\n#? Inventory\nid: INV-2002\n?: ?"
+        },
+        {
+          "step": "query",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#?",
+          "raw_output": "#? Inventory Items Needing Reorder\nquantity: <min_quantity\nid: ?\nname: ?\nquantity: ?\nmin_quantity: ?"
+        },
+        {
+          "step": "delete",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#-",
+          "raw_output": "#- Inventory Item Deletion\nid: INV-2006"
+        },
+        {
+          "step": "error",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "# Error",
+          "raw_output": "# Error\ncode: NOT_FOUND\nmessage: Item INV-9999 does not exist in the system\nsuggestion: Verify the item ID and try again, or use a query to search for similar items"
+        }
+      ]
+    },
+    {
+      "model": "claude-haiku-4-5",
+      "prompt_style": "explicit",
+      "seed": 702,
+      "switch_reliability": 1.0,
+      "input_tokens": 1900,
+      "output_tokens": 280,
+      "server_ms": 7008.0,
+      "cost_usd": 0.00264,
+      "steps": [
+        {
+          "step": "schema",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#!",
+          "raw_output": "#! InventoryItem\nid: string | readonly\nname: string\ndescription: string\ndepartment: string\nlocation: string\nquantity: integer\nunit_price: float\ntotal_value: float | readonly\nsku: string\nreorder_level: integer\nreorder_needed: boolean | readonly\nlast_updated: string | iso8601\nstatus: string | enum(in_stock, low_stock, out_of_stock, discontinued)\nsupplier_id: string\nbatch_number: string\nexpiration_date: string | iso8601"
+        },
+        {
+          "step": "data",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#",
+          "raw_output": "# Inventory\n## items[]\n- id: INV-2002\n  name: Electronics Item #3\n  quantity: 0\n  minimum_threshold: 50\n  status: below_minimum"
+        },
+        {
+          "step": "query",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#?",
+          "raw_output": "#? Inventory Items Needing Reorder\nquantity: <min_quantity\nid: ?\nname: ?\nquantity: ?\nmin_quantity: ?"
+        },
+        {
+          "step": "delete",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#-",
+          "raw_output": "#- Inventory Item Deletion\nid: INV-2007"
+        },
+        {
+          "step": "error",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "# Error",
+          "raw_output": "# Error\ncode: NOT_FOUND\nmessage: Item INV-9999 does not exist in the system\nsuggestion: Verify the item ID and try again, or use a query to search for similar items"
+        }
+      ]
+    },
+    {
+      "model": "claude-haiku-4-5",
+      "prompt_style": "explicit",
+      "seed": 703,
+      "switch_reliability": 1.0,
+      "input_tokens": 1901,
+      "output_tokens": 272,
+      "server_ms": 5634.0,
+      "cost_usd": 0.0026088,
+      "steps": [
+        {
+          "step": "schema",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#!",
+          "raw_output": "#! InventoryItem\nid: string | readonly\nname: string\ndescription: string\ndepartment: string\nlocation: string\nquantity: integer\nunit_price: float\ntotal_value: float | readonly\nsku: string\nreorder_level: integer\nreorder_needed: boolean | readonly\nlast_updated: string\nstatus: string | enum(in_stock, low_stock, out_of_stock, discontinued)\nsupplier_id: string\nbatch_number: string"
+        },
+        {
+          "step": "data",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#",
+          "raw_output": "# Inventory\n## items[]\n- id: INV-2006\n  name: Furniture Item #7\n  quantity: 20\n  minimum_threshold: 48\n  status: below_minimum\n  variance: -28"
+        },
+        {
+          "step": "query",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#?",
+          "raw_output": "#? Inventory Items Needing Reorder\nquantity: <min_quantity\nid: ?\nname: ?\nquantity: ?\nmin_quantity: ?"
+        },
+        {
+          "step": "delete",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#-",
+          "raw_output": "#- Inventory Deletion\nid: INV-2000"
+        },
+        {
+          "step": "error",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "# Error",
+          "raw_output": "# Error\ncode: NOT_FOUND\nmessage: Item INV-9999 does not exist in the system\nsuggestion: Verify the item ID and try again, or use a query operation to search for available items"
+        }
+      ]
+    },
+    {
+      "model": "claude-haiku-4-5",
+      "prompt_style": "explicit",
+      "seed": 704,
+      "switch_reliability": 0.8,
+      "input_tokens": 1884,
+      "output_tokens": 251,
+      "server_ms": 6187.0,
+      "cost_usd": 0.0025112,
+      "steps": [
+        {
+          "step": "schema",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#!",
+          "raw_output": "#! InventoryItem\nid: string | readonly\nname: string\ndescription: string\ndepartment: string\nlocation: string\nquantity: integer\nunit_price: float\ntotal_value: float | readonly\nsku: string\nreorder_level: integer\nreorder_needed: boolean | readonly\nlast_updated: string\nstatus: string | enum(in_stock, low_stock, out_of_stock, discontinued)\nsupplier_id: string\nbatch_number: string"
+        },
+        {
+          "step": "data",
+          "correct_marker": false,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#?",
+          "raw_output": "#? Inventory\nid: INV-2000|INV-2001|INV-2002\n?: ?"
+        },
+        {
+          "step": "query",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#?",
+          "raw_output": "#? Inventory Items Needing Reorder\nquantity: <min_quantity\nid: ?\nname: ?\nquantity: ?\nmin_quantity: ?"
+        },
+        {
+          "step": "delete",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#-",
+          "raw_output": "#- Inventory Deletion\nid: INV-2002\nreason: discontinued"
+        },
+        {
+          "step": "error",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "# Error",
+          "raw_output": "# Error\ncode: NOT_FOUND\nmessage: Item INV-9999 does not exist in the system\nsuggestion: Verify the item ID and try again, or use a query operation to search for available items"
+        }
+      ]
+    },
+    {
+      "model": "claude-haiku-4-5",
+      "prompt_style": "explicit",
+      "seed": 705,
+      "switch_reliability": 0.8,
+      "input_tokens": 1884,
+      "output_tokens": 268,
+      "server_ms": 5523.0,
+      "cost_usd": 0.0025792000000000002,
+      "steps": [
+        {
+          "step": "schema",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#!",
+          "raw_output": "#! InventoryItem\nid: string | readonly\nname: string\ndescription: string\ndepartment: string\nlocation: string\nquantity: integer\nunit_price: float\ntotal_value: float | readonly\nsku: string\nreorder_level: integer\nreorder_needed: boolean | readonly\nlast_updated: string\nstatus: string | enum(in_stock, low_stock, out_of_stock, discontinued)\nsupplier_id: string\nbatch_number: string"
+        },
+        {
+          "step": "data",
+          "correct_marker": false,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#?",
+          "raw_output": "#? Inventory\nid: INV-2000\n?: ?\n\n#? Inventory\nid: INV-2001\n?: ?\n\n#? Inventory\nid: INV-2002\n?: ?"
+        },
+        {
+          "step": "query",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#?",
+          "raw_output": "#? Inventory Reorder Alert\nquantity: <min_quantity\nid: ?\nname: ?\nquantity: ?\nmin_quantity: ?"
+        },
+        {
+          "step": "delete",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#-",
+          "raw_output": "#- Inventory Deletion\nid: INV-2003\nreason: discontinued"
+        },
+        {
+          "step": "error",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "# Error",
+          "raw_output": "# Error\ncode: NOT_FOUND\nmessage: Item INV-9999 does not exist in the system\nsuggestion: Verify the item ID and try again, or use a query operation to search for available items"
+        }
+      ]
+    },
+    {
+      "model": "claude-haiku-4-5",
+      "prompt_style": "explicit",
+      "seed": 706,
+      "switch_reliability": 0.8,
+      "input_tokens": 1884,
+      "output_tokens": 266,
+      "server_ms": 4616.0,
+      "cost_usd": 0.0025712,
+      "steps": [
+        {
+          "step": "schema",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#!",
+          "raw_output": "#! InventoryItem\nid: string | readonly\nname: string\ndescription: string\ndepartment: string\nlocation: string\nquantity: integer\nunit_price: float\ntotal_value: float | readonly\nsku: string\nreorder_level: integer\nreorder_needed: boolean | readonly\nlast_updated: string | iso8601\nstatus: string | enum(in_stock, low_stock, out_of_stock, discontinued)\nsupplier_id: string\nwarehouse_section: string\nexpiration_date: string | iso8601"
+        },
+        {
+          "step": "data",
+          "correct_marker": false,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#?",
+          "raw_output": "#? Inventory\nid: INV-2000|INV-2001|INV-2002\n?: ?"
+        },
+        {
+          "step": "query",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#?",
+          "raw_output": "#? Inventory Items Needing Reorder\nquantity: <min_quantity\nid: ?\nname: ?\nquantity: ?\nmin_quantity: ?"
+        },
+        {
+          "step": "delete",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#-",
+          "raw_output": "#- Inventory Deletion\nid: INV-2001\nreason: discontinued"
+        },
+        {
+          "step": "error",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "# Error",
+          "raw_output": "# Error\ncode: NOT_FOUND\nmessage: Item INV-9999 does not exist in the system\nsuggestion: Verify the item ID and try again, or use a query operation to search for available items"
+        }
+      ]
+    },
+    {
+      "model": "claude-haiku-4-5",
+      "prompt_style": "explicit",
+      "seed": 707,
+      "switch_reliability": 0.8,
+      "input_tokens": 1884,
+      "output_tokens": 252,
+      "server_ms": 7981.0,
+      "cost_usd": 0.0025152,
+      "steps": [
+        {
+          "step": "schema",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#!",
+          "raw_output": "#! InventoryItem\nid: string | readonly\nname: string\ndescription: string\ndepartment: string\nlocation: string\nquantity: integer\nunit_price: float\ntotal_value: float | readonly\nsku: string\nreorder_level: integer\nreorder_needed: boolean | readonly\nlast_updated: string\nstatus: string | enum(in_stock, low_stock, out_of_stock, discontinued)\nsupplier_id: string\nbatch_number: string"
+        },
+        {
+          "step": "data",
+          "correct_marker": false,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#?",
+          "raw_output": "#? Inventory\nid: INV-2000\nid: INV-2001\nid: INV-2002\n?: ?"
+        },
+        {
+          "step": "query",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#?",
+          "raw_output": "#? Inventory Items Needing Reorder\nquantity: <min_quantity\nid: ?\nname: ?\nquantity: ?\nmin_quantity: ?"
+        },
+        {
+          "step": "delete",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#-",
+          "raw_output": "#- Inventory Item Deletion\nid: INV-2006"
+        },
+        {
+          "step": "error",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "# Error",
+          "raw_output": "# Error\ncode: NOT_FOUND\nmessage: Item INV-9999 does not exist in the system\nsuggestion: Verify the item ID and try again, or use a query operation to search for available items"
+        }
+      ]
+    },
+    {
+      "model": "claude-haiku-4-5",
+      "prompt_style": "explicit",
+      "seed": 708,
+      "switch_reliability": 0.8,
+      "input_tokens": 1884,
+      "output_tokens": 255,
+      "server_ms": 9540.0,
+      "cost_usd": 0.0025272000000000003,
+      "steps": [
+        {
+          "step": "schema",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#!",
+          "raw_output": "#! InventoryItem\nid: string | readonly\nname: string\ndescription: string\ndepartment: string\nlocation: string\nquantity: integer\nunit_price: float\ntotal_value: float | readonly\nsku: string\nreorder_level: integer\nreorder_needed: boolean | readonly\nlast_updated: string\nstatus: string | enum(in_stock, low_stock, out_of_stock, discontinued)\nsupplier_id: string\nbatch_number: string"
+        },
+        {
+          "step": "data",
+          "correct_marker": false,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#?",
+          "raw_output": "#? Inventory\nid: INV-2000\nid: INV-2001\nid: INV-2002\n?: ?"
+        },
+        {
+          "step": "query",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#?",
+          "raw_output": "#? Inventory Items Needing Reorder\nquantity: <min_quantity\nid: ?\nname: ?\nquantity: ?\nmin_quantity: ?"
+        },
+        {
+          "step": "delete",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#-",
+          "raw_output": "#- Inventory Deletion\nid: INV-2002\nreason: discontinued"
+        },
+        {
+          "step": "error",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "# Error",
+          "raw_output": "# Error\ncode: NOT_FOUND\nmessage: Item INV-9999 does not exist in the system\nsuggestion: Verify the item ID and try again, or use a query operation to search for available items"
+        }
+      ]
+    },
+    {
+      "model": "claude-haiku-4-5",
+      "prompt_style": "explicit",
+      "seed": 709,
+      "switch_reliability": 1.0,
+      "input_tokens": 1903,
+      "output_tokens": 272,
+      "server_ms": 5373.0,
+      "cost_usd": 0.0026104,
+      "steps": [
+        {
+          "step": "schema",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#!",
+          "raw_output": "#! InventoryItem\nid: string | readonly\nname: string\ndescription: string\ndepartment: string\nlocation: string\nquantity: integer\nunit_price: float\ntotal_value: float | readonly\nsku: string\nreorder_level: integer\nreorder_needed: boolean | readonly\nlast_updated: string\nstatus: string | enum(in_stock, low_stock, out_of_stock, discontinued)\nsupplier_id: string\nbatch_number: string"
+        },
+        {
+          "step": "data",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#",
+          "raw_output": "# Inventory\n## items[]\n- id: INV-2002\n  name: Cafeteria Item #3\n  quantity: 4\n  minimum_threshold: 29\n  status: below_minimum"
+        },
+        {
+          "step": "query",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#?",
+          "raw_output": "#? Inventory Items Needing Reorder\nquantity: <min_quantity\nid: ?\nname: ?\nquantity: ?\nmin_quantity: ?"
+        },
+        {
+          "step": "delete",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#-",
+          "raw_output": "#- Inventory Deletion\nid: INV-2003\nreason: discontinued"
+        },
+        {
+          "step": "error",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "# Error",
+          "raw_output": "# Error\ncode: NOT_FOUND\nmessage: Item INV-9999 does not exist in the system\nsuggestion: Verify the item ID and try again, or use a query operation to search for available items"
+        }
+      ]
+    },
+    {
+      "model": "claude-haiku-4-5",
+      "prompt_style": "implicit",
+      "seed": 700,
+      "switch_reliability": 0.8,
+      "input_tokens": 1852,
+      "output_tokens": 204,
+      "server_ms": 5340.0,
+      "cost_usd": 0.0022976000000000003,
+      "steps": [
+        {
+          "step": "schema",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#!",
+          "raw_output": "#! InventoryItem\nid: string | readonly\nname: string\ndepartment: string\nlocation: string\nquantity: integer\nunit_price: float\ntotal_value: float | readonly\nreorder_level: integer\nreorder_needed: boolean | readonly\nlast_updated: string\nstatus: string | enum(in_stock, low_stock, out_of_stock)"
+        },
+        {
+          "step": "data",
+          "correct_marker": false,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#?",
+          "raw_output": "#? Inventory\nid: INV-2006\n?: ?"
+        },
+        {
+          "step": "query",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#?",
+          "raw_output": "#? Inventory Items Running Low\nquantity: <min_quantity\nid: ?\nname: ?\nquantity: ?\nmin_quantity: ?"
+        },
+        {
+          "step": "delete",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#-",
+          "raw_output": "#- Furniture Item\nid: INV-2007\nreason: discontinued"
+        },
+        {
+          "step": "error",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "# Error",
+          "raw_output": "# Error\ncode: not_found\nmessage: Item INV-9999 does not exist in the system\nsuggestion: Verify the item ID and try again with a valid inventory number"
+        }
+      ]
+    },
+    {
+      "model": "claude-haiku-4-5",
+      "prompt_style": "implicit",
+      "seed": 701,
+      "switch_reliability": 0.6,
+      "input_tokens": 1828,
+      "output_tokens": 195,
+      "server_ms": 4488.0,
+      "cost_usd": 0.0022424,
+      "steps": [
+        {
+          "step": "schema",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#!",
+          "raw_output": "#! InventoryItem\nid: string | readonly\nname: string\ndepartment: string\nlocation: string\nquantity: integer\nunit_price: float\ntotal_value: float | readonly\nreorder_level: integer\nreorder_needed: boolean | readonly\nlast_updated: string\nstatus: string | enum(in_stock, low_stock, out_of_stock)"
+        },
+        {
+          "step": "data",
+          "correct_marker": false,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#?",
+          "raw_output": "#? Inventory Items\nid: INV-2000\nid: INV-2001\nid: INV-2002\n?: ?"
+        },
+        {
+          "step": "query",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#?",
+          "raw_output": "#? Inventory Items Running Low\nquantity: <min_quantity\nid: ?\nname: ?\nquantity: ?\nmin_quantity: ?"
+        },
+        {
+          "step": "delete",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#-",
+          "raw_output": "#- Inventory Item\nid: INV-2006\nreason: discontinued"
+        },
+        {
+          "step": "error",
+          "correct_marker": false,
+          "parses": true,
+          "content_correct": false,
+          "marker_found": "#?",
+          "raw_output": "#? Item\nid: INV-9999\n?: ?"
+        }
+      ]
+    },
+    {
+      "model": "claude-haiku-4-5",
+      "prompt_style": "implicit",
+      "seed": 702,
+      "switch_reliability": 0.6,
+      "input_tokens": 1848,
+      "output_tokens": 174,
+      "server_ms": 4946.0,
+      "cost_usd": 0.0021744,
+      "steps": [
+        {
+          "step": "schema",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#!",
+          "raw_output": "#! InventoryItem\nid: string | readonly\nname: string\ndepartment: string\nlocation: string\nquantity: integer\nunit_price: float\ntotal_value: float | readonly\nreorder_level: integer\nreorder_needed: boolean | readonly\nlast_updated: string\nstatus: string | enum(in_stock, low_stock, out_of_stock)"
+        },
+        {
+          "step": "data",
+          "correct_marker": false,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#?",
+          "raw_output": "#? Inventory\nid: INV-2002\n?: ?"
+        },
+        {
+          "step": "query",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#?",
+          "raw_output": "#? Inventory Items Running Low\nquantity: <min_quantity\nid: ?\nname: ?\nquantity: ?\nmin_quantity: ?"
+        },
+        {
+          "step": "delete",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#-",
+          "raw_output": "#- Inventory Item\nid: INV-2007"
+        },
+        {
+          "step": "error",
+          "correct_marker": false,
+          "parses": true,
+          "content_correct": false,
+          "marker_found": "#?",
+          "raw_output": "#? Item\nid: INV-9999\n?: ?"
+        }
+      ]
+    },
+    {
+      "model": "claude-haiku-4-5",
+      "prompt_style": "implicit",
+      "seed": 703,
+      "switch_reliability": 0.6,
+      "input_tokens": 1849,
+      "output_tokens": 174,
+      "server_ms": 4622.0,
+      "cost_usd": 0.0021752,
+      "steps": [
+        {
+          "step": "schema",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#!",
+          "raw_output": "#! InventoryItem\nid: string | readonly\nname: string\ndepartment: string\nlocation: string\nquantity: integer\nunit_price: float\ntotal_value: float | readonly\nreorder_level: integer\nreorder_needed: boolean | readonly\nlast_updated: string\nstatus: string | enum(in_stock, low_stock, out_of_stock)"
+        },
+        {
+          "step": "data",
+          "correct_marker": false,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#?",
+          "raw_output": "#? Inventory\nid: INV-2006\n?: ?"
+        },
+        {
+          "step": "query",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#?",
+          "raw_output": "#? Inventory Items Running Low\nquantity: <min_quantity\nid: ?\nname: ?\nquantity: ?\nmin_quantity: ?"
+        },
+        {
+          "step": "delete",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#-",
+          "raw_output": "#- Inventory Item\nid: INV-2000"
+        },
+        {
+          "step": "error",
+          "correct_marker": false,
+          "parses": true,
+          "content_correct": false,
+          "marker_found": "#?",
+          "raw_output": "#? Item\nid: INV-9999\n?: ?"
+        }
+      ]
+    },
+    {
+      "model": "claude-haiku-4-5",
+      "prompt_style": "implicit",
+      "seed": 704,
+      "switch_reliability": 0.6,
+      "input_tokens": 1830,
+      "output_tokens": 195,
+      "server_ms": 9342.0,
+      "cost_usd": 0.002244,
+      "steps": [
+        {
+          "step": "schema",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#!",
+          "raw_output": "#! InventoryItem\nid: string | readonly\nname: string\ndepartment: string\nlocation: string\nquantity: integer\nunit_price: float\ntotal_value: float | readonly\nreorder_level: integer\nreorder_needed: boolean | readonly\nlast_updated: string\nstatus: string | enum(in_stock, low_stock, out_of_stock)"
+        },
+        {
+          "step": "data",
+          "correct_marker": false,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#?",
+          "raw_output": "#? Inventory Items\nid: INV-2000\nid: INV-2001\nid: INV-2002\n?: ?"
+        },
+        {
+          "step": "query",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#?",
+          "raw_output": "#? Inventory Items Running Low\nquantity: <min_quantity\nid: ?\nname: ?\nquantity: ?\nmin_quantity: ?"
+        },
+        {
+          "step": "delete",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#-",
+          "raw_output": "#- Inventory Item\nid: INV-2002\nreason: discontinued"
+        },
+        {
+          "step": "error",
+          "correct_marker": false,
+          "parses": true,
+          "content_correct": false,
+          "marker_found": "#?",
+          "raw_output": "#? Item\nid: INV-9999\n?: ?"
+        }
+      ]
+    },
+    {
+      "model": "claude-haiku-4-5",
+      "prompt_style": "implicit",
+      "seed": 705,
+      "switch_reliability": 0.8,
+      "input_tokens": 1828,
+      "output_tokens": 217,
+      "server_ms": 5567.0,
+      "cost_usd": 0.0023304,
+      "steps": [
+        {
+          "step": "schema",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#!",
+          "raw_output": "#! InventoryItem\nid: string | readonly\nname: string\ndepartment: string\nlocation: string\nquantity: integer\nunit_price: float\ntotal_value: float | readonly\nreorder_level: integer\nreorder_needed: boolean | readonly\nlast_updated: string\nstatus: string | enum(in_stock, low_stock, out_of_stock)"
+        },
+        {
+          "step": "data",
+          "correct_marker": false,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#?",
+          "raw_output": "#? Inventory Items\nid: INV-2000\nid: INV-2001\nid: INV-2002\n?: ?"
+        },
+        {
+          "step": "query",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#?",
+          "raw_output": "#? Inventory Items Running Low\nquantity: <min_quantity\nid: ?\nname: ?\nquantity: ?\nmin_quantity: ?"
+        },
+        {
+          "step": "delete",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#-",
+          "raw_output": "#- Inventory Item\nid: INV-2003"
+        },
+        {
+          "step": "error",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "# Error",
+          "raw_output": "# Error\ncode: not_found\nmessage: Item INV-9999 does not exist in the system\nsuggestion: Verify the item ID and try again with a valid inventory number"
+        }
+      ]
+    },
+    {
+      "model": "claude-haiku-4-5",
+      "prompt_style": "implicit",
+      "seed": 706,
+      "switch_reliability": 0.6,
+      "input_tokens": 1830,
+      "output_tokens": 191,
+      "server_ms": 6962.0,
+      "cost_usd": 0.002228,
+      "steps": [
+        {
+          "step": "schema",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#!",
+          "raw_output": "#! InventoryItem\nid: string | readonly\nname: string\ndepartment: string\nlocation: string\nquantity: integer\nunit_price: float\ntotal_value: float | readonly\nreorder_level: integer\nreorder_needed: boolean | readonly\nlast_updated: string\nstatus: string | enum(in_stock, low_stock, out_of_stock)"
+        },
+        {
+          "step": "data",
+          "correct_marker": false,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#?",
+          "raw_output": "#? Inventory Items\nid: INV-2000\nid: INV-2001\nid: INV-2002\n?: ?"
+        },
+        {
+          "step": "query",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#?",
+          "raw_output": "#? Inventory Items Running Low\nquantity: <min_quantity\nid: ?\nname: ?\nquantity: ?\nmin_quantity: ?"
+        },
+        {
+          "step": "delete",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#-",
+          "raw_output": "#- Inventory Item\nid: INV-2001"
+        },
+        {
+          "step": "error",
+          "correct_marker": false,
+          "parses": true,
+          "content_correct": false,
+          "marker_found": "#?",
+          "raw_output": "#? Item\nid: INV-9999\n?: ?"
+        }
+      ]
+    },
+    {
+      "model": "claude-haiku-4-5",
+      "prompt_style": "implicit",
+      "seed": 707,
+      "switch_reliability": 0.6,
+      "input_tokens": 1829,
+      "output_tokens": 195,
+      "server_ms": 4324.0,
+      "cost_usd": 0.0022432,
+      "steps": [
+        {
+          "step": "schema",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#!",
+          "raw_output": "#! InventoryItem\nid: string | readonly\nname: string\ndepartment: string\nlocation: string\nquantity: integer\nunit_price: float\ntotal_value: float | readonly\nreorder_level: integer\nreorder_needed: boolean | readonly\nlast_updated: string\nstatus: string | enum(in_stock, low_stock, out_of_stock)"
+        },
+        {
+          "step": "data",
+          "correct_marker": false,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#?",
+          "raw_output": "#? Inventory Items\nid: INV-2000\nid: INV-2001\nid: INV-2002\n?: ?"
+        },
+        {
+          "step": "query",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#?",
+          "raw_output": "#? Inventory Items Running Low\nquantity: <min_quantity\nid: ?\nname: ?\nquantity: ?\nmin_quantity: ?"
+        },
+        {
+          "step": "delete",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#-",
+          "raw_output": "#- Inventory Item\nid: INV-2006\nreason: discontinued"
+        },
+        {
+          "step": "error",
+          "correct_marker": false,
+          "parses": true,
+          "content_correct": false,
+          "marker_found": "#?",
+          "raw_output": "#? Item\nid: INV-9999\n?: ?"
+        }
+      ]
+    },
+    {
+      "model": "claude-haiku-4-5",
+      "prompt_style": "implicit",
+      "seed": 708,
+      "switch_reliability": 0.6,
+      "input_tokens": 1829,
+      "output_tokens": 191,
+      "server_ms": 8166.0,
+      "cost_usd": 0.0022272,
+      "steps": [
+        {
+          "step": "schema",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#!",
+          "raw_output": "#! InventoryItem\nid: string | readonly\nname: string\ndepartment: string\nlocation: string\nquantity: integer\nunit_price: float\ntotal_value: float | readonly\nreorder_level: integer\nreorder_needed: boolean | readonly\nlast_updated: string\nstatus: string | enum(in_stock, low_stock, out_of_stock)"
+        },
+        {
+          "step": "data",
+          "correct_marker": false,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#?",
+          "raw_output": "#? Inventory Items\nid: INV-2000\nid: INV-2001\nid: INV-2002\n?: ?"
+        },
+        {
+          "step": "query",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#?",
+          "raw_output": "#? Inventory Items Running Low\nquantity: <min_quantity\nid: ?\nname: ?\nquantity: ?\nmin_quantity: ?"
+        },
+        {
+          "step": "delete",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#-",
+          "raw_output": "#- Inventory Item\nid: INV-2002"
+        },
+        {
+          "step": "error",
+          "correct_marker": false,
+          "parses": true,
+          "content_correct": false,
+          "marker_found": "#?",
+          "raw_output": "#? Item\nid: INV-9999\n?: ?"
+        }
+      ]
+    },
+    {
+      "model": "claude-haiku-4-5",
+      "prompt_style": "implicit",
+      "seed": 709,
+      "switch_reliability": 0.6,
+      "input_tokens": 1853,
+      "output_tokens": 174,
+      "server_ms": 7680.0,
+      "cost_usd": 0.0021784,
+      "steps": [
+        {
+          "step": "schema",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#!",
+          "raw_output": "#! InventoryItem\nid: string | readonly\nname: string\ndepartment: string\nlocation: string\nquantity: integer\nunit_price: float\ntotal_value: float | readonly\nreorder_level: integer\nreorder_needed: boolean | readonly\nlast_updated: string\nstatus: string | enum(in_stock, low_stock, out_of_stock)"
+        },
+        {
+          "step": "data",
+          "correct_marker": false,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#?",
+          "raw_output": "#? Inventory\nid: INV-2002\n?: ?"
+        },
+        {
+          "step": "query",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#?",
+          "raw_output": "#? Inventory Items Running Low\nquantity: <min_quantity\nid: ?\nname: ?\nquantity: ?\nmin_quantity: ?"
+        },
+        {
+          "step": "delete",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#-",
+          "raw_output": "#- Inventory Item\nid: INV-2003"
+        },
+        {
+          "step": "error",
+          "correct_marker": false,
+          "parses": true,
+          "content_correct": false,
+          "marker_found": "#?",
+          "raw_output": "#? Item\nid: INV-9999\n?: ?"
+        }
+      ]
+    },
+    {
+      "model": "gemini-2.5-flash",
+      "prompt_style": "explicit",
+      "seed": 700,
+      "switch_reliability": 1.0,
+      "input_tokens": 1795,
+      "output_tokens": 248,
+      "server_ms": 7490.0,
+      "cost_usd": 0.00113725,
+      "steps": [
+        {
+          "step": "schema",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#!",
+          "raw_output": "#! InventoryItem\nid: string | readonly\nname: string\ndescription: string | optional\nsku: string | optional\ndepartment: string\ncategory: string | optional\nlocation: string\nquantity_on_hand: integer | min(0)\nunit_price: float | min(0)\ntotal_value: float | readonly\nreorder_point: integer | min(0)\nreorder_quantity: integer | min(1)\nsupplier_id: string | optional\nlast_updated: datetime | readonly\nreorder_needed: boolean | readonly"
+        },
+        {
+          "step": "data",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#",
+          "raw_output": "# Inventory\n-\n  id: INV-2006\n  name: Cafeteria Item #7\n  quantity: 30\n  minimum_stock: 45"
+        },
+        {
+          "step": "query",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#?",
+          "raw_output": "#? InventoryItem\nquantity: <min_quantity\nid: ?\nname: ?\nquantity: ?\nmin_quantity: ?"
+        },
+        {
+          "step": "delete",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#-",
+          "raw_output": "#- InventoryItem\nid: INV-2007"
+        },
+        {
+          "step": "error",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "# Error",
+          "raw_output": "# Error\ncode: NOT_FOUND\nmessage: Item with ID 'INV-9999' could not be found.\nsuggestion: Please verify the item ID or consider creating a new item if it does not exist."
+        }
+      ]
+    },
+    {
+      "model": "gemini-2.5-flash",
+      "prompt_style": "explicit",
+      "seed": 701,
+      "switch_reliability": 0.8,
+      "input_tokens": 1778,
+      "output_tokens": 237,
+      "server_ms": 6342.0,
+      "cost_usd": 0.0010962,
+      "steps": [
+        {
+          "step": "schema",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#!",
+          "raw_output": "#! InventoryItem\nid: string | readonly\nname: string\ndescription: string | optional\nsku: string | optional\ndepartment: string\ncategory: string | optional\nlocation: string\nquantity_on_hand: integer | min(0)\nunit_price: float | min(0)\ntotal_value: float | readonly\nreorder_point: integer | min(0)\nreorder_quantity: integer | min(1)\nsupplier_id: string | optional\nlast_updated: datetime | readonly\nreorder_needed: boolean | readonly"
+        },
+        {
+          "step": "data",
+          "correct_marker": false,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#?",
+          "raw_output": "#? Inventory\nid: INV-2000 | INV-2001 | INV-2002\n?: ?"
+        },
+        {
+          "step": "query",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#?",
+          "raw_output": "#? InventoryItem\nquantity: <min_quantity\nid: ?\nname: ?\nquantity: ?\nmin_quantity: ?"
+        },
+        {
+          "step": "delete",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#-",
+          "raw_output": "#- InventoryItem\nid: INV-2006"
+        },
+        {
+          "step": "error",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "# Error",
+          "raw_output": "# Error\ncode: NOT_FOUND\nmessage: Item with ID 'INV-9999' could not be found.\nsuggestion: Please verify the item ID or consider creating a new item if it does not exist."
+        }
+      ]
+    },
+    {
+      "model": "gemini-2.5-flash",
+      "prompt_style": "explicit",
+      "seed": 702,
+      "switch_reliability": 1.0,
+      "input_tokens": 1792,
+      "output_tokens": 246,
+      "server_ms": 6636.0,
+      "cost_usd": 0.0011298,
+      "steps": [
+        {
+          "step": "schema",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#!",
+          "raw_output": "#! InventoryItem\nid: string | readonly\nname: string\ndescription: string | optional\nsku: string | optional\ndepartment: string\ncategory: string | optional\nlocation: string\nquantity_on_hand: integer | min(0)\nunit_price: float | min(0)\ntotal_value: float | readonly\nreorder_point: integer | min(0)\nreorder_quantity: integer | min(1)\nsupplier_id: string | optional\nlast_updated: datetime | readonly\nreorder_needed: boolean | readonly"
+        },
+        {
+          "step": "data",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#",
+          "raw_output": "# Inventory[]\n-\n  name: Electronics Item #3\n  id: INV-2002\n  quantity: 0\n  min_quantity: 50"
+        },
+        {
+          "step": "query",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#?",
+          "raw_output": "#? InventoryItem\nquantity: <min_quantity\nid: ?\nname: ?\nquantity: ?\nmin_quantity: ?"
+        },
+        {
+          "step": "delete",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#-",
+          "raw_output": "#- InventoryItem\nid: INV-2007"
+        },
+        {
+          "step": "error",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "# Error",
+          "raw_output": "# Error\ncode: NOT_FOUND\nmessage: Item with ID 'INV-9999' could not be found.\nsuggestion: Please verify the item ID or consider creating a new item if it does not exist."
+        }
+      ]
+    },
+    {
+      "model": "gemini-2.5-flash",
+      "prompt_style": "explicit",
+      "seed": 703,
+      "switch_reliability": 1.0,
+      "input_tokens": 1793,
+      "output_tokens": 247,
+      "server_ms": 6237.0,
+      "cost_usd": 0.00113345,
+      "steps": [
+        {
+          "step": "schema",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#!",
+          "raw_output": "#! InventoryItem\nid: string | readonly\nname: string\ndescription: string | optional\nsku: string | optional\ndepartment: string\ncategory: string | optional\nlocation: string\nquantity_on_hand: integer | min(0)\nunit_price: float | min(0)\ntotal_value: float | readonly\nreorder_point: integer | min(0)\nreorder_quantity: integer | min(1)\nsupplier_id: string | optional\nlast_updated: datetime | readonly\nreorder_needed: boolean | readonly"
+        },
+        {
+          "step": "data",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#",
+          "raw_output": "# Inventory[]\n-\n  name: Furniture Item #7\n  id: INV-2006\n  quantity: 20\n  minimum_quantity: 48"
+        },
+        {
+          "step": "query",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#?",
+          "raw_output": "#? InventoryItem\nquantity: <min_quantity\nid: ?\nname: ?\nquantity: ?\nmin_quantity: ?"
+        },
+        {
+          "step": "delete",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#-",
+          "raw_output": "#- InventoryItem\nid: INV-2000"
+        },
+        {
+          "step": "error",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "# Error",
+          "raw_output": "# Error\ncode: NOT_FOUND\nmessage: Item with ID 'INV-9999' could not be found.\nsuggestion: Please verify the item ID or consider creating a new item if it does not exist."
+        }
+      ]
+    },
+    {
+      "model": "gemini-2.5-flash",
+      "prompt_style": "explicit",
+      "seed": 704,
+      "switch_reliability": 0.8,
+      "input_tokens": 1778,
+      "output_tokens": 237,
+      "server_ms": 6216.0,
+      "cost_usd": 0.0010962,
+      "steps": [
+        {
+          "step": "schema",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#!",
+          "raw_output": "#! InventoryItem\nid: string | readonly\nname: string\ndescription: string | optional\nsku: string | optional\ndepartment: string\ncategory: string | optional\nlocation: string\nquantity_on_hand: integer | min(0)\nunit_price: float | min(0)\ntotal_value: float | readonly\nreorder_point: integer | min(0)\nreorder_quantity: integer | min(1)\nsupplier_id: string | optional\nlast_updated: datetime | readonly\nreorder_needed: boolean | readonly"
+        },
+        {
+          "step": "data",
+          "correct_marker": false,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#?",
+          "raw_output": "#? Inventory\nid: INV-2000 | INV-2001 | INV-2002\n?: ?"
+        },
+        {
+          "step": "query",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#?",
+          "raw_output": "#? InventoryItem\nquantity: <min_quantity\nid: ?\nname: ?\nquantity: ?\nmin_quantity: ?"
+        },
+        {
+          "step": "delete",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#-",
+          "raw_output": "#- InventoryItem\nid: INV-2002"
+        },
+        {
+          "step": "error",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "# Error",
+          "raw_output": "# Error\ncode: NOT_FOUND\nmessage: Item with ID 'INV-9999' could not be found.\nsuggestion: Please verify the item ID or consider creating a new item if it does not exist."
+        }
+      ]
+    },
+    {
+      "model": "gemini-2.5-flash",
+      "prompt_style": "explicit",
+      "seed": 705,
+      "switch_reliability": 0.8,
+      "input_tokens": 1778,
+      "output_tokens": 254,
+      "server_ms": 6865.0,
+      "cost_usd": 0.0011557,
+      "steps": [
+        {
+          "step": "schema",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#!",
+          "raw_output": "#! InventoryItem\nid: string | readonly\nname: string\ndescription: string | optional\nsku: string\ndepartment: string\nlocation: string\nquantity: integer | min(0)\nprice_per_unit: float | min(0)\ntotal_value: float | readonly\nsupplier: string | optional\nlast_updated: datetime\nreorder_point: integer | min(0)\nreorder_quantity: integer | min(1)\nreorder_needed: boolean | readonly\nstatus: string | enum(in_stock, low_stock, out_of_stock, discontinued)"
+        },
+        {
+          "step": "data",
+          "correct_marker": false,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#?",
+          "raw_output": "#? Inventory\nid[]:\n  - INV-2000\n  - INV-2001\n  - INV-2002\n?: ?"
+        },
+        {
+          "step": "query",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#?",
+          "raw_output": "#? InventoryItem\nquantity: <min_quantity\nid: ?\nname: ?\nquantity: ?\nmin_quantity: ?"
+        },
+        {
+          "step": "delete",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#-",
+          "raw_output": "#- InventoryItem\nid: INV-2003"
+        },
+        {
+          "step": "error",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "# Error",
+          "raw_output": "# Error\ncode: NOT_FOUND\nmessage: Item with ID 'INV-9999' could not be found.\nsuggestion: Please verify the item ID or consider creating a new item if it does not exist."
+        }
+      ]
+    },
+    {
+      "model": "gemini-2.5-flash",
+      "prompt_style": "explicit",
+      "seed": 706,
+      "switch_reliability": 0.8,
+      "input_tokens": 1778,
+      "output_tokens": 246,
+      "server_ms": 6907.0,
+      "cost_usd": 0.0011277,
+      "steps": [
+        {
+          "step": "schema",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#!",
+          "raw_output": "#! InventoryItem\nid: string | readonly\nname: string\ndescription: string | optional\nsku: string\ndepartment: string\nlocation: string\nquantity: integer | min(0)\nprice_per_unit: float | min(0)\ntotal_value: float | readonly\nsupplier: string | optional\nlast_updated: datetime\nreorder_point: integer | min(0)\nreorder_quantity: integer | min(1)\nreorder_needed: boolean | readonly\nstatus: string | enum(in_stock, low_stock, out_of_stock, discontinued)"
+        },
+        {
+          "step": "data",
+          "correct_marker": false,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#?",
+          "raw_output": "#? Inventory\nid: INV-2000 | INV-2001 | INV-2002\n?: ?"
+        },
+        {
+          "step": "query",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#?",
+          "raw_output": "#? InventoryItem\nquantity: <min_quantity\nid: ?\nname: ?\nquantity: ?\nmin_quantity: ?"
+        },
+        {
+          "step": "delete",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#-",
+          "raw_output": "#- InventoryItem\nid: INV-2001"
+        },
+        {
+          "step": "error",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "# Error",
+          "raw_output": "# Error\ncode: NOT_FOUND\nmessage: Item with ID 'INV-9999' could not be found.\nsuggestion: Please verify the item ID or consider creating a new item if it does not exist."
+        }
+      ]
+    },
+    {
+      "model": "gemini-2.5-flash",
+      "prompt_style": "explicit",
+      "seed": 707,
+      "switch_reliability": 0.8,
+      "input_tokens": 1778,
+      "output_tokens": 254,
+      "server_ms": 7289.0,
+      "cost_usd": 0.0011557,
+      "steps": [
+        {
+          "step": "schema",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#!",
+          "raw_output": "#! InventoryItem\nid: string | readonly\nname: string\ndescription: string | optional\nsku: string\ndepartment: string\nlocation: string\nquantity: integer | min(0)\nprice_per_unit: float | min(0)\ntotal_value: float | readonly\nsupplier: string | optional\nlast_updated: datetime\nreorder_point: integer | min(0)\nreorder_quantity: integer | min(1)\nreorder_needed: boolean | readonly\nstatus: string | enum(in_stock, low_stock, out_of_stock, discontinued)"
+        },
+        {
+          "step": "data",
+          "correct_marker": false,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#?",
+          "raw_output": "#? Inventory\nid[]:\n  - INV-2000\n  - INV-2001\n  - INV-2002\n?: ?"
+        },
+        {
+          "step": "query",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#?",
+          "raw_output": "#? InventoryItem\nquantity: <min_quantity\nid: ?\nname: ?\nquantity: ?\nmin_quantity: ?"
+        },
+        {
+          "step": "delete",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#-",
+          "raw_output": "#- InventoryItem\nid: INV-2006"
+        },
+        {
+          "step": "error",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "# Error",
+          "raw_output": "# Error\ncode: NOT_FOUND\nmessage: Item with ID 'INV-9999' could not be found.\nsuggestion: Please verify the item ID or consider creating a new item if it does not exist."
+        }
+      ]
+    },
+    {
+      "model": "gemini-2.5-flash",
+      "prompt_style": "explicit",
+      "seed": 708,
+      "switch_reliability": 0.8,
+      "input_tokens": 1778,
+      "output_tokens": 246,
+      "server_ms": 6225.0,
+      "cost_usd": 0.0011277,
+      "steps": [
+        {
+          "step": "schema",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#!",
+          "raw_output": "#! InventoryItem\nid: string | readonly\nname: string\ndescription: string | optional\nsku: string\ndepartment: string\nlocation: string\nquantity: integer | min(0)\nprice_per_unit: float | min(0)\ntotal_value: float | readonly\nsupplier: string | optional\nlast_updated: datetime\nreorder_point: integer | min(0)\nreorder_quantity: integer | min(1)\nreorder_needed: boolean | readonly\nstatus: string | enum(in_stock, low_stock, out_of_stock, discontinued)"
+        },
+        {
+          "step": "data",
+          "correct_marker": false,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#?",
+          "raw_output": "#? Inventory\nid: INV-2000 | INV-2001 | INV-2002\n?: ?"
+        },
+        {
+          "step": "query",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#?",
+          "raw_output": "#? InventoryItem\nquantity: <min_quantity\nid: ?\nname: ?\nquantity: ?\nmin_quantity: ?"
+        },
+        {
+          "step": "delete",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#-",
+          "raw_output": "#- InventoryItem\nid: INV-2002"
+        },
+        {
+          "step": "error",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "# Error",
+          "raw_output": "# Error\ncode: NOT_FOUND\nmessage: Item with ID 'INV-9999' could not be found.\nsuggestion: Please verify the item ID or consider creating a new item if it does not exist."
+        }
+      ]
+    },
+    {
+      "model": "gemini-2.5-flash",
+      "prompt_style": "explicit",
+      "seed": 709,
+      "switch_reliability": 1.0,
+      "input_tokens": 1794,
+      "output_tokens": 248,
+      "server_ms": 7321.0,
+      "cost_usd": 0.0011370999999999998,
+      "steps": [
+        {
+          "step": "schema",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#!",
+          "raw_output": "#! InventoryItem\nid: string | readonly\nname: string\ndescription: string | optional\nsku: string | optional\ndepartment: string\ncategory: string | optional\nlocation: string\nquantity_on_hand: integer | min(0)\nunit_price: float | min(0)\ntotal_value: float | readonly\nreorder_point: integer | min(0)\nreorder_quantity: integer | min(1)\nsupplier_id: string | optional\nlast_updated: datetime | readonly\nreorder_needed: boolean | readonly"
+        },
+        {
+          "step": "data",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#",
+          "raw_output": "# Inventory\nitems[]\n- id: INV-2002\n  name: Cafeteria Item #3\n  quantity: 4\n  min_quantity: 29"
+        },
+        {
+          "step": "query",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#?",
+          "raw_output": "#? InventoryItem\nquantity: <min_quantity\nid: ?\nname: ?\nquantity: ?\nmin_quantity: ?"
+        },
+        {
+          "step": "delete",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#-",
+          "raw_output": "#- InventoryItem\nid: INV-2003"
+        },
+        {
+          "step": "error",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "# Error",
+          "raw_output": "# Error\ncode: NOT_FOUND\nmessage: Item with ID 'INV-9999' could not be found.\nsuggestion: Please verify the item ID or consider creating a new item if it does not exist."
+        }
+      ]
+    },
+    {
+      "model": "gemini-2.5-flash",
+      "prompt_style": "implicit",
+      "seed": 700,
+      "switch_reliability": 0.6,
+      "input_tokens": 1745,
+      "output_tokens": 148,
+      "server_ms": 7106.0,
+      "cost_usd": 0.0007797500000000001,
+      "steps": [
+        {
+          "step": "schema",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#!",
+          "raw_output": "#! InventoryItem\nid: string | readonly\nname: string\ndescription: string | optional\ndepartment: string\nlocation: string\nquantity: integer\nunit_price: float\ntotal_value: float | readonly\nreorder_threshold: integer\nreorder_needed: boolean | readonly\nsupplier_id: string | optional\nlast_updated: datetime"
+        },
+        {
+          "step": "data",
+          "correct_marker": false,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#?",
+          "raw_output": "#? InventoryItem\nid: INV-2006\n?: ?"
+        },
+        {
+          "step": "query",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#?",
+          "raw_output": "#? InventoryItem\nquantity: <min_quantity\nid: ?\nname: ?\nquantity: ?\nmin_quantity: ?"
+        },
+        {
+          "step": "delete",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#-",
+          "raw_output": "#- InventoryItem\nid: INV-2007"
+        },
+        {
+          "step": "error",
+          "correct_marker": false,
+          "parses": true,
+          "content_correct": false,
+          "marker_found": "#?",
+          "raw_output": "#? InventoryItem\nid: INV-9999\n?: ?"
+        }
+      ]
+    },
+    {
+      "model": "gemini-2.5-flash",
+      "prompt_style": "implicit",
+      "seed": 701,
+      "switch_reliability": 0.8,
+      "input_tokens": 1724,
+      "output_tokens": 442,
+      "server_ms": 8223.0,
+      "cost_usd": 0.0018055999999999999,
+      "steps": [
+        {
+          "step": "schema",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#!",
+          "raw_output": "#! InventoryItem\nid: string | readonly\nname: string\ndescription: string | optional\ndepartment: string\nlocation: string\nquantity: integer\nunit_price: float\ntotal_value: float | readonly\nreorder_threshold: integer\nreorder_needed: boolean | readonly\nsupplier_id: string | optional\nlast_updated: datetime"
+        },
+        {
+          "step": "data",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#",
+          "raw_output": "# InventoryItems[]\n- ## InventoryItem\n  id: INV-2000\n  name: Wireless Mouse\n  description: Ergonomic wireless mouse with adjustable DPI.\n  price: 25.99\n  quantity: 150\n  location: Warehouse A, Shelf 3\n  supplier: TechGadgets Inc.\n  last_updated: 2023-10-26T10:00:00Z\n- ## InventoryItem\n  id: INV-2001\n  name: Mechanical Keyboard\n  description: RGB backlit mechanical keyboard with blue switches.\n  price: 79.99\n  quantity: 75\n  location: Warehouse A, Shelf 4\n  supplier: KeyMaster Co.\n  last_updated:"
+        },
+        {
+          "step": "query",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#?",
+          "raw_output": "#? InventoryItem\nquantity: <min_quantity\nid: ?\nname: ?\nquantity: ?\nmin_quantity: ?"
+        },
+        {
+          "step": "delete",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#-",
+          "raw_output": "#- InventoryItem\nitem_code: INV-2006"
+        },
+        {
+          "step": "error",
+          "correct_marker": false,
+          "parses": true,
+          "content_correct": false,
+          "marker_found": "#?",
+          "raw_output": "#? Item\nid: INV-9999\n?: ?"
+        }
+      ]
+    },
+    {
+      "model": "gemini-2.5-flash",
+      "prompt_style": "implicit",
+      "seed": 702,
+      "switch_reliability": 0.6,
+      "input_tokens": 1742,
+      "output_tokens": 149,
+      "server_ms": 7116.0,
+      "cost_usd": 0.0007828,
+      "steps": [
+        {
+          "step": "schema",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#!",
+          "raw_output": "#! InventoryItem\nid: string | readonly\nname: string\ndescription: string | optional\ndepartment: string\nlocation: string\nquantity: integer\nunit_price: float\ntotal_value: float | readonly\nreorder_threshold: integer\nreorder_needed: boolean | readonly\nsupplier_id: string | optional\nlast_updated: datetime"
+        },
+        {
+          "step": "data",
+          "correct_marker": false,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#?",
+          "raw_output": "#? InventoryItem\nid: INV-2002\n?: ?"
+        },
+        {
+          "step": "query",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#?",
+          "raw_output": "#? InventoryItem\nquantity: <min_quantity\nid: ?\nname: ?\nquantity: ?\nmin_quantity: ?"
+        },
+        {
+          "step": "delete",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#-",
+          "raw_output": "#- Inventory Item\nitem_number: INV-2007"
+        },
+        {
+          "step": "error",
+          "correct_marker": false,
+          "parses": true,
+          "content_correct": false,
+          "marker_found": "#?",
+          "raw_output": "#? Item\nid: INV-9999\n?: ?"
+        }
+      ]
+    },
+    {
+      "model": "gemini-2.5-flash",
+      "prompt_style": "implicit",
+      "seed": 703,
+      "switch_reliability": 0.6,
+      "input_tokens": 1743,
+      "output_tokens": 148,
+      "server_ms": 6260.0,
+      "cost_usd": 0.00077945,
+      "steps": [
+        {
+          "step": "schema",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#!",
+          "raw_output": "#! InventoryItem\nid: string | readonly\nname: string\ndescription: string | optional\ndepartment: string\nlocation: string\nquantity: integer\nunit_price: float\ntotal_value: float | readonly\nreorder_threshold: integer\nreorder_needed: boolean | readonly\nsupplier_id: string | optional\nlast_updated: datetime"
+        },
+        {
+          "step": "data",
+          "correct_marker": false,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#?",
+          "raw_output": "#? InventoryItem\nid: INV-2006\n?: ?"
+        },
+        {
+          "step": "query",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#?",
+          "raw_output": "#? InventoryItem\nquantity: <min_quantity\nid: ?\nname: ?\nquantity: ?\nmin_quantity: ?"
+        },
+        {
+          "step": "delete",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#-",
+          "raw_output": "#- Electronics Item\nid: INV-2000"
+        },
+        {
+          "step": "error",
+          "correct_marker": false,
+          "parses": true,
+          "content_correct": false,
+          "marker_found": "#?",
+          "raw_output": "#? InventoryItem\nid: INV-9999\n?: ?"
+        }
+      ]
+    },
+    {
+      "model": "gemini-2.5-flash",
+      "prompt_style": "implicit",
+      "seed": 704,
+      "switch_reliability": 0.8,
+      "input_tokens": 1725,
+      "output_tokens": 440,
+      "server_ms": 8133.0,
+      "cost_usd": 0.00179875,
+      "steps": [
+        {
+          "step": "schema",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#!",
+          "raw_output": "#! InventoryItem\nid: string | readonly\nname: string\ndescription: string | optional\ndepartment: string\nlocation: string\nquantity: integer\nunit_price: float\ntotal_value: float | readonly\nreorder_threshold: integer\nreorder_needed: boolean | readonly\nsupplier_id: string | optional\nlast_updated: datetime"
+        },
+        {
+          "step": "data",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#",
+          "raw_output": "# InventoryItems[]\n- ## InventoryItem\n  id: INV-2000\n  name: Wireless Mouse\n  description: Ergonomic wireless mouse with adjustable DPI.\n  price: 25.99\n  quantity: 150\n  location: Warehouse A, Shelf 3\n  supplier: TechGadgets Inc.\n  last_updated: 2023-10-26T10:00:00Z\n- ## InventoryItem\n  id: INV-2001\n  name: Mechanical Keyboard\n  description: RGB backlit mechanical keyboard with blue switches.\n  price: 79.99\n  quantity: 75\n  location: Warehouse A, Shelf 4\n  supplier: KeyMaster Co.\n  last_updated:"
+        },
+        {
+          "step": "query",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#?",
+          "raw_output": "#? InventoryItem\nquantity: <min_quantity\nid: ?\nname: ?\nquantity: ?\nmin_quantity: ?"
+        },
+        {
+          "step": "delete",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#-",
+          "raw_output": "#- Inventory\nid: INV-2002"
+        },
+        {
+          "step": "error",
+          "correct_marker": false,
+          "parses": true,
+          "content_correct": false,
+          "marker_found": "#?",
+          "raw_output": "#? InventoryItem\nid: INV-9999\n?: ?"
+        }
+      ]
+    },
+    {
+      "model": "gemini-2.5-flash",
+      "prompt_style": "implicit",
+      "seed": 705,
+      "switch_reliability": 0.8,
+      "input_tokens": 1724,
+      "output_tokens": 439,
+      "server_ms": 7622.0,
+      "cost_usd": 0.0017951,
+      "steps": [
+        {
+          "step": "schema",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#!",
+          "raw_output": "#! InventoryItem\nid: string | readonly\nname: string\ndescription: string | optional\ndepartment: string\nlocation: string\nquantity: integer\nunit_price: float\ntotal_value: float | readonly\nreorder_threshold: integer\nreorder_needed: boolean | readonly\nsupplier_id: string | optional\nlast_updated: datetime"
+        },
+        {
+          "step": "data",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#",
+          "raw_output": "# InventoryItems[]\n- ## InventoryItem\n  id: INV-2000\n  name: Wireless Mouse\n  description: Ergonomic wireless mouse with adjustable DPI.\n  price: 25.99\n  quantity: 150\n  location: Warehouse A, Shelf 3\n  supplier: TechGadgets Inc.\n  last_updated: 2023-10-26T10:00:00Z\n- ## InventoryItem\n  id: INV-2001\n  name: Mechanical Keyboard\n  description: RGB backlit mechanical keyboard with blue switches.\n  price: 79.99\n  quantity: 75\n  location: Warehouse A, Shelf 4\n  supplier: KeyMaster Co.\n  last_updated:"
+        },
+        {
+          "step": "query",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#?",
+          "raw_output": "#? InventoryItem\nquantity: <min_quantity\nid: ?\nname: ?\nquantity: ?\nmin_quantity: ?"
+        },
+        {
+          "step": "delete",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#-",
+          "raw_output": "#- Inventory\nid: INV-2003"
+        },
+        {
+          "step": "error",
+          "correct_marker": false,
+          "parses": true,
+          "content_correct": false,
+          "marker_found": "#?",
+          "raw_output": "#? Item\nid: INV-9999\n?: ?"
+        }
+      ]
+    },
+    {
+      "model": "gemini-2.5-flash",
+      "prompt_style": "implicit",
+      "seed": 706,
+      "switch_reliability": 0.8,
+      "input_tokens": 1725,
+      "output_tokens": 439,
+      "server_ms": 6893.0,
+      "cost_usd": 0.00179525,
+      "steps": [
+        {
+          "step": "schema",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#!",
+          "raw_output": "#! InventoryItem\nid: string | readonly\nname: string\ndescription: string | optional\ndepartment: string\nlocation: string\nquantity: integer\nunit_price: float\ntotal_value: float | readonly\nreorder_threshold: integer\nreorder_needed: boolean | readonly\nsupplier_id: string | optional\nlast_updated: datetime"
+        },
+        {
+          "step": "data",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#",
+          "raw_output": "# InventoryItems[]\n- ## InventoryItem\n  id: INV-2000\n  name: Wireless Mouse\n  description: Ergonomic wireless mouse with adjustable DPI.\n  price: 25.99\n  quantity: 150\n  location: Warehouse A, Shelf 3\n  supplier: TechGadgets Inc.\n  last_updated: 2023-10-26T10:00:00Z\n- ## InventoryItem\n  id: INV-2001\n  name: Mechanical Keyboard\n  description: RGB backlit mechanical keyboard with blue switches.\n  price: 79.99\n  quantity: 75\n  location: Warehouse A, Shelf 4\n  supplier: KeyMaster Co.\n  last_updated:"
+        },
+        {
+          "step": "query",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#?",
+          "raw_output": "#? InventoryItem\nquantity: <min_quantity\nid: ?\nname: ?\nquantity: ?\nmin_quantity: ?"
+        },
+        {
+          "step": "delete",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#-",
+          "raw_output": "#- Inventory\nid: INV-2001"
+        },
+        {
+          "step": "error",
+          "correct_marker": false,
+          "parses": true,
+          "content_correct": false,
+          "marker_found": "#?",
+          "raw_output": "#? Item\nid: INV-9999\n?: ?"
+        }
+      ]
+    },
+    {
+      "model": "gemini-2.5-flash",
+      "prompt_style": "implicit",
+      "seed": 707,
+      "switch_reliability": 0.8,
+      "input_tokens": 1724,
+      "output_tokens": 457,
+      "server_ms": 7845.0,
+      "cost_usd": 0.0018581,
+      "steps": [
+        {
+          "step": "schema",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#!",
+          "raw_output": "#! InventoryItem\nid: string | readonly\nname: string\ndescription: string | optional\ndepartment: string\nlocation: string\nquantity: integer\nunit_price: float\ntotal_value: float | readonly\nreorder_threshold: integer\nreorder_needed: boolean | readonly\nsupplier_id: string | optional\nlast_updated: datetime"
+        },
+        {
+          "step": "data",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#",
+          "raw_output": "# InventoryItem[]\n- ## InventoryItem\n  id: INV-2000\n  name: Wireless Mouse\n  description: Ergonomic wireless mouse with adjustable DPI.\n  price: 25.99\n  quantity: 150\n  category: Electronics\n  supplier: TechGadgets Inc.\n  location: Aisle 3, Shelf B\n  last_updated: 2023-10-26T10:00:00Z\n- ## InventoryItem\n  id: INV-2001\n  name: Mechanical Keyboard\n  description: RGB backlit mechanical keyboard with blue switches.\n  price: 79.99\n  quantity: 75\n  category: Electronics\n  supplier: KeyMaster Co.\n  loc"
+        },
+        {
+          "step": "query",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#?",
+          "raw_output": "#? InventoryItem\nquantity: <min_quantity\nid: ?\nname: ?\nquantity: ?\nmin_quantity: ?"
+        },
+        {
+          "step": "delete",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#-",
+          "raw_output": "#- Inventory\nid: INV-2006"
+        },
+        {
+          "step": "error",
+          "correct_marker": false,
+          "parses": true,
+          "content_correct": false,
+          "marker_found": "#?",
+          "raw_output": "#? Item\nid: INV-9999\n?: ?"
+        }
+      ]
+    },
+    {
+      "model": "gemini-2.5-flash",
+      "prompt_style": "implicit",
+      "seed": 708,
+      "switch_reliability": 0.8,
+      "input_tokens": 1724,
+      "output_tokens": 458,
+      "server_ms": 8158.0,
+      "cost_usd": 0.0018616,
+      "steps": [
+        {
+          "step": "schema",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#!",
+          "raw_output": "#! InventoryItem\nid: string | readonly\nname: string\ndescription: string | optional\ndepartment: string\nlocation: string\nquantity: integer\nunit_price: float\ntotal_value: float | readonly\nreorder_threshold: integer\nreorder_needed: boolean | readonly\nsupplier_id: string | optional\nlast_updated: datetime"
+        },
+        {
+          "step": "data",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#",
+          "raw_output": "# InventoryItem[]\n- ## InventoryItem\n  id: INV-2000\n  name: Wireless Mouse\n  description: Ergonomic wireless mouse with adjustable DPI.\n  price: 25.99\n  quantity: 150\n  category: Electronics\n  supplier: TechGadgets Inc.\n  location: Aisle 3, Shelf B\n  last_updated: 2023-10-26T10:00:00Z\n- ## InventoryItem\n  id: INV-2001\n  name: Mechanical Keyboard\n  description: RGB backlit mechanical keyboard with blue switches.\n  price: 79.99\n  quantity: 75\n  category: Electronics\n  supplier: KeyMaster Co.\n  loc"
+        },
+        {
+          "step": "query",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#?",
+          "raw_output": "#? InventoryItem\nquantity: <min_quantity\nid: ?\nname: ?\nquantity: ?\nmin_quantity: ?"
+        },
+        {
+          "step": "delete",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#-",
+          "raw_output": "#- Warehouse Item\nid: INV-2002"
+        },
+        {
+          "step": "error",
+          "correct_marker": false,
+          "parses": true,
+          "content_correct": false,
+          "marker_found": "#?",
+          "raw_output": "#? Item\nid: INV-9999\n?: ?"
+        }
+      ]
+    },
+    {
+      "model": "gemini-2.5-flash",
+      "prompt_style": "implicit",
+      "seed": 709,
+      "switch_reliability": 0.6,
+      "input_tokens": 1745,
+      "output_tokens": 150,
+      "server_ms": 7258.0,
+      "cost_usd": 0.0007867499999999999,
+      "steps": [
+        {
+          "step": "schema",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#!",
+          "raw_output": "#! InventoryItem\nid: string | readonly\nname: string\ndescription: string | optional\ndepartment: string\nlocation: string\nquantity: integer\nunit_price: float\ntotal_value: float | readonly\nreorder_threshold: integer\nreorder_needed: boolean | readonly\nsupplier_id: string | optional\nlast_updated: datetime"
+        },
+        {
+          "step": "data",
+          "correct_marker": false,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#?",
+          "raw_output": "#? InventoryItem\nid: INV-2002\n?: ?"
+        },
+        {
+          "step": "query",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#?",
+          "raw_output": "#? InventoryItem\nquantity: <min_quantity\nid: ?\nname: ?\nquantity: ?\nmin_quantity: ?"
+        },
+        {
+          "step": "delete",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#-",
+          "raw_output": "#- InventoryItem\nitem_code: INV-2003"
+        },
+        {
+          "step": "error",
+          "correct_marker": false,
+          "parses": true,
+          "content_correct": false,
+          "marker_found": "#?",
+          "raw_output": "#? InventoryItem\nid: INV-9999\n?: ?"
+        }
+      ]
+    },
+    {
+      "model": "mistral-large-latest",
+      "prompt_style": "explicit",
+      "seed": 700,
+      "switch_reliability": 1.0,
+      "input_tokens": 1763,
+      "output_tokens": 231,
+      "server_ms": 5456.0,
+      "cost_usd": 0.001228,
+      "steps": [
+        {
+          "step": "schema",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#!",
+          "raw_output": "```jmd\n#! InventoryItem\nid: string | readonly\nname: string\ndepartment: string\nlocation: string\nquantity: integer\nunit_cost: float\ntotal_value: float | readonly\nreorder_threshold: integer\nreorder_needed: boolean | readonly\nsupplier: string\nlast_updated: datetime\n## tags[]\ntag: string\n```"
+        },
+        {
+          "step": "data",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#",
+          "raw_output": "```jmd\n# Inventory\n## item[]\n- id: INV-2006\n  name: Cafeteria Item #7\n  quantity: 30\n  minimum_required: 45\n```"
+        },
+        {
+          "step": "query",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#?",
+          "raw_output": "```jmd\n#? InventoryItem\nquantity: <min_quantity\n?: ?\nid: ?\nname: ?\nquantity: ?\nmin_quantity: ?\n```"
+        },
+        {
+          "step": "delete",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#-",
+          "raw_output": "```jmd\n#- InventoryItem\nid: INV-2007\n```"
+        },
+        {
+          "step": "error",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "# Error",
+          "raw_output": "```jmd\n# Error\ncode: 404\nmessage: Item with ID INV-9999 not found in the system\nsuggestion: Verify the item ID and try again, or check the inventory list for available items\n```"
+        }
+      ]
+    },
+    {
+      "model": "mistral-large-latest",
+      "prompt_style": "explicit",
+      "seed": 701,
+      "switch_reliability": 1.0,
+      "input_tokens": 1750,
+      "output_tokens": 496,
+      "server_ms": 9324.0,
+      "cost_usd": 0.001619,
+      "steps": [
+        {
+          "step": "schema",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#!",
+          "raw_output": "```jmd\n#! InventoryItem\nid: string | readonly\nname: string\ndepartment: string\nlocation: string\nquantity: integer\nunit_cost: float\ntotal_value: float | readonly\nreorder_threshold: integer\nreorder_needed: boolean | readonly\nsupplier: string\nlast_updated: datetime\n## tags[]\ntag: string\n```"
+        },
+        {
+          "step": "data",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#",
+          "raw_output": "```\n# Inventory\n- id: INV-2000\n  name: Wireless Headphones\n  category: Electronics\n  quantity: 42\n  location: Warehouse A\n  last_updated: 2024-05-15T08:30:00Z\n  status: in_stock\n  ## supplier\n    id: SUP-100\n    name: AudioGear Inc.\n    contact: sales@audiogear.com\n\n- id: INV-2001\n  name: Mechanical Keyboard\n  category: Peripherals\n  quantity: 15\n  location: Warehouse B\n  last_updated: 2024-05-14T16:45:00Z\n  status: low_stock\n  ## supplier\n    id: SUP-101\n    name: KeyTech Solutions\n    contact:"
+        },
+        {
+          "step": "query",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#?",
+          "raw_output": "```jmd\n#? InventoryItem\nquantity: <min_quantity\n?: ?\nid: ?\nname: ?\nquantity: ?\nmin_quantity: ?\n```"
+        },
+        {
+          "step": "delete",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#-",
+          "raw_output": "```jmd\n#- InventoryItem\nid: INV-2006\n```"
+        },
+        {
+          "step": "error",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "# Error",
+          "raw_output": "```jmd\n# Error\ncode: 404\nmessage: Item with ID INV-9999 not found in the system\nsuggestion: Verify the item ID and try again, or check the inventory list for available items\n```"
+        }
+      ]
+    },
+    {
+      "model": "mistral-large-latest",
+      "prompt_style": "explicit",
+      "seed": 702,
+      "switch_reliability": 1.0,
+      "input_tokens": 1760,
+      "output_tokens": 235,
+      "server_ms": 5128.0,
+      "cost_usd": 0.0012325,
+      "steps": [
+        {
+          "step": "schema",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#!",
+          "raw_output": "```jmd\n#! InventoryItem\nid: string | readonly\nname: string\ndepartment: string\nlocation: string\nquantity: integer\nunit_cost: float\ntotal_value: float | readonly\nreorder_threshold: integer\nreorder_needed: boolean | readonly\nsupplier: string\nlast_updated: datetime\n## tags[]\ntag: string\n```"
+        },
+        {
+          "step": "data",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#",
+          "raw_output": "```jmd\n# Inventory\n## items[]\n- id: INV-2002\n  name: Electronics Item #3\n  quantity: 0\n  minimum_required: 50\n  status: out_of_stock\n```"
+        },
+        {
+          "step": "query",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#?",
+          "raw_output": "```jmd\n#? InventoryItem\nquantity: <min_quantity\n?: ?\nid: ?\nname: ?\nquantity: ?\nmin_quantity: ?\n```"
+        },
+        {
+          "step": "delete",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#-",
+          "raw_output": "```jmd\n#- InventoryItem\nid: INV-2007\n```"
+        },
+        {
+          "step": "error",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "# Error",
+          "raw_output": "```jmd\n# Error\ncode: 404\nmessage: Item with ID INV-9999 not found in the system\nsuggestion: Verify the item ID and try again, or check the inventory list for available items\n```"
+        }
+      ]
+    },
+    {
+      "model": "mistral-large-latest",
+      "prompt_style": "explicit",
+      "seed": 703,
+      "switch_reliability": 1.0,
+      "input_tokens": 1762,
+      "output_tokens": 230,
+      "server_ms": 10388.0,
+      "cost_usd": 0.0012259999999999999,
+      "steps": [
+        {
+          "step": "schema",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#!",
+          "raw_output": "```jmd\n#! InventoryItem\nid: string | readonly\nname: string\ndepartment: string\nlocation: string\nquantity: integer\nunit_cost: float\ntotal_value: float | readonly\nreorder_threshold: integer\nreorder_needed: boolean | readonly\nsupplier: string\nlast_updated: datetime\n## tags[]\ntag: string\n```"
+        },
+        {
+          "step": "data",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#",
+          "raw_output": "```jmd\n# Inventory\n## items[]\n- id: INV-2006\n  name: Furniture Item #7\n  quantity: 20\n  minimum_required: 48\n```"
+        },
+        {
+          "step": "query",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#?",
+          "raw_output": "```jmd\n#? InventoryItem\nquantity: <min_quantity\n?: ?\nid: ?\nname: ?\nquantity: ?\nmin_quantity: ?\n```"
+        },
+        {
+          "step": "delete",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#-",
+          "raw_output": "```jmd\n#- InventoryItem\nid: INV-2000\n```"
+        },
+        {
+          "step": "error",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "# Error",
+          "raw_output": "```jmd\n# Error\ncode: 404\nmessage: Item with ID INV-9999 not found in the system\nsuggestion: Verify the item ID and try again, or check the inventory list for available items\n```"
+        }
+      ]
+    },
+    {
+      "model": "mistral-large-latest",
+      "prompt_style": "explicit",
+      "seed": 704,
+      "switch_reliability": 1.0,
+      "input_tokens": 1750,
+      "output_tokens": 401,
+      "server_ms": 7119.0,
+      "cost_usd": 0.0014765,
+      "steps": [
+        {
+          "step": "schema",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#!",
+          "raw_output": "```jmd\n#! InventoryItem\nid: string | readonly\nname: string\ndepartment: string\nlocation: string\nquantity: integer\nunit_cost: float\ntotal_value: float | readonly\nreorder_threshold: integer\nreorder_needed: boolean | readonly\nsupplier: string\nlast_updated: datetime\n## tags[]\ntag: string\n```"
+        },
+        {
+          "step": "data",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#",
+          "raw_output": "```\n# Data\n## inventory[]\n- id: INV-2000\n  name: Wireless Headphones\n  category: Electronics\n  quantity: 42\n  location: Warehouse A\n  last_updated: 2024-05-15T08:30:00Z\n  status: in_stock\n\n- id: INV-2001\n  name: Mechanical Keyboard\n  category: Peripherals\n  quantity: 15\n  location: Warehouse B\n  last_updated: 2024-05-14T16:45:00Z\n  status: low_stock\n\n- id: INV-2002\n  name: 4K Monitor\n  category: Displays\n  quantity: 8\n  location: Warehouse A\n  last_updated: 2024-05-13T11:20:00Z\n  status: in_stoc"
+        },
+        {
+          "step": "query",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#?",
+          "raw_output": "```jmd\n#? InventoryItem\nquantity: <min_quantity\n?: ?\nid: ?\nname: ?\nquantity: ?\nmin_quantity: ?\n```"
+        },
+        {
+          "step": "delete",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#-",
+          "raw_output": "```jmd\n#- InventoryItem\nid: INV-2002\n```"
+        },
+        {
+          "step": "error",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "# Error",
+          "raw_output": "```jmd\n# Error\ncode: 404\nmessage: Item with ID INV-9999 not found in the system\nsuggestion: Verify the item ID and try again, or check the inventory list for available items\n```"
+        }
+      ]
+    },
+    {
+      "model": "mistral-large-latest",
+      "prompt_style": "explicit",
+      "seed": 705,
+      "switch_reliability": 1.0,
+      "input_tokens": 1750,
+      "output_tokens": 365,
+      "server_ms": 6511.0,
+      "cost_usd": 0.0014225000000000002,
+      "steps": [
+        {
+          "step": "schema",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#!",
+          "raw_output": "```jmd\n#! InventoryItem\nid: string | readonly\nname: string\ndepartment: string\nlocation: string\nquantity: integer\nunit_cost: float\ntotal_value: float | readonly\nreorder_threshold: integer\nreorder_needed: boolean | readonly\nsupplier: string\nlast_updated: datetime\n## tags[]\ntag: string\n```"
+        },
+        {
+          "step": "data",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#",
+          "raw_output": "```\n# Inventory\n- ##\n  id: INV-2000\n  name: Wireless Headphones\n  quantity: 42\n  location: Warehouse A\n  last_restocked: 2023-10-15\n  status: in_stock\n- ##\n  id: INV-2001\n  name: Mechanical Keyboard\n  quantity: 15\n  location: Warehouse B\n  last_restocked: 2023-10-10\n  status: in_stock\n- ##\n  id: INV-2002\n  name: 4K Monitor\n  quantity: 8\n  location: Warehouse A\n  last_restocked: 2023-09-28\n  status: low_stock\n```"
+        },
+        {
+          "step": "query",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#?",
+          "raw_output": "```jmd\n#? InventoryItem\nquantity: <min_quantity\n?: ?\nid: ?\nname: ?\nquantity: ?\nmin_quantity: ?\n```"
+        },
+        {
+          "step": "delete",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#-",
+          "raw_output": "```jmd\n#- InventoryItem\nid: INV-2003\n```"
+        },
+        {
+          "step": "error",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "# Error",
+          "raw_output": "```jmd\n# Error\ncode: 404\nmessage: Item with ID INV-9999 not found in the system\nsuggestion: Verify the item ID and try again, or check the inventory list for available items\n```"
+        }
+      ]
+    },
+    {
+      "model": "mistral-large-latest",
+      "prompt_style": "explicit",
+      "seed": 706,
+      "switch_reliability": 1.0,
+      "input_tokens": 1750,
+      "output_tokens": 427,
+      "server_ms": 8951.0,
+      "cost_usd": 0.0015155,
+      "steps": [
+        {
+          "step": "schema",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#!",
+          "raw_output": "```jmd\n#! InventoryItem\nid: string | readonly\nname: string\ndepartment: string\nlocation: string\nquantity: integer\nunit_cost: float\ntotal_value: float | readonly\nreorder_threshold: integer\nreorder_needed: boolean | readonly\nsupplier: string\nlast_updated: datetime\n## tags[]\ntag: string\n```"
+        },
+        {
+          "step": "data",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#",
+          "raw_output": "```\n# Inventory\n- ##\n  id: INV-2000\n  sku: SKU-ALPHA-001\n  name: Wireless Headphones\n  quantity: 42\n  location: Warehouse A\n  last_updated: 2024-05-15T08:30:00Z\n  status: in_stock\n- ##\n  id: INV-2001\n  sku: SKU-BETA-002\n  name: Mechanical Keyboard\n  quantity: 15\n  location: Warehouse B\n  last_updated: 2024-05-14T16:45:00Z\n  status: low_stock\n- ##\n  id: INV-2002\n  sku: SKU-GAMMA-003\n  name: 4K Monitor\n  quantity: 8\n  location: Warehouse A\n  last_updated: 2024-05-13T12:15:00Z\n  status: in_stock\n``"
+        },
+        {
+          "step": "query",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#?",
+          "raw_output": "```jmd\n#? InventoryItem\nquantity: <min_quantity\n?: ?\nid: ?\nname: ?\nquantity: ?\nmin_quantity: ?\n```"
+        },
+        {
+          "step": "delete",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#-",
+          "raw_output": "```jmd\n#- InventoryItem\nid: INV-2001\n```"
+        },
+        {
+          "step": "error",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "# Error",
+          "raw_output": "```jmd\n# Error\ncode: 404\nmessage: Item with ID INV-9999 not found in the system\nsuggestion: Verify the item ID and try again, or check the inventory list for available items\n```"
+        }
+      ]
+    },
+    {
+      "model": "mistral-large-latest",
+      "prompt_style": "explicit",
+      "seed": 707,
+      "switch_reliability": 1.0,
+      "input_tokens": 1750,
+      "output_tokens": 402,
+      "server_ms": 7127.0,
+      "cost_usd": 0.0014780000000000001,
+      "steps": [
+        {
+          "step": "schema",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#!",
+          "raw_output": "```jmd\n#! InventoryItem\nid: string | readonly\nname: string\ndepartment: string\nlocation: string\nquantity: integer\nunit_cost: float\ntotal_value: float | readonly\nreorder_threshold: integer\nreorder_needed: boolean | readonly\nsupplier: string\nlast_updated: datetime\n## tags[]\ntag: string\nstatus: string | enum(active, discontinued, backordered)\n```"
+        },
+        {
+          "step": "data",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#",
+          "raw_output": "```\n# Inventory\n- ##\n  id: INV-2000\n  name: Wireless Headphones\n  quantity: 42\n  location: Warehouse A\n  last_updated: 2024-05-15T08:30:00Z\n  status: in_stock\n- ##\n  id: INV-2001\n  name: Mechanical Keyboard\n  quantity: 15\n  location: Warehouse B\n  last_updated: 2024-05-14T16:45:00Z\n  status: low_stock\n- ##\n  id: INV-2002\n  name: 4K Monitor\n  quantity: 8\n  location: Warehouse A\n  last_updated: 2024-05-13T11:20:00Z\n  status: in_stock\n```"
+        },
+        {
+          "step": "query",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#?",
+          "raw_output": "```jmd\n#? InventoryItem\nquantity: <min_quantity\n?: ?\nid: ?\nname: ?\nquantity: ?\nmin_quantity: ?\n```"
+        },
+        {
+          "step": "delete",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#-",
+          "raw_output": "```jmd\n#- InventoryItem\nid: INV-2006\n```"
+        },
+        {
+          "step": "error",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "# Error",
+          "raw_output": "```jmd\n# Error\ncode: 404\nmessage: Item with ID INV-9999 not found in the system\nsuggestion: Verify the item ID and try again, or check the inventory list for available items\n```"
+        }
+      ]
+    },
+    {
+      "model": "mistral-large-latest",
+      "prompt_style": "explicit",
+      "seed": 708,
+      "switch_reliability": 1.0,
+      "input_tokens": 1750,
+      "output_tokens": 371,
+      "server_ms": 6859.0,
+      "cost_usd": 0.0014315,
+      "steps": [
+        {
+          "step": "schema",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#!",
+          "raw_output": "```jmd\n#! InventoryItem\nid: string | readonly\nname: string\ndepartment: string\nlocation: string\nquantity: integer\nunit_cost: float\ntotal_value: float | readonly\nreorder_threshold: integer\nreorder_needed: boolean | readonly\nsupplier: string\nlast_updated: datetime\n## tags[]\ntag: string\n```"
+        },
+        {
+          "step": "data",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#",
+          "raw_output": "```jmd\n# Inventory\n- ##\n  id: INV-2000\n  product_name: Wireless Headphones\n  quantity: 42\n  location: Warehouse A\n  last_restocked: 2024-05-15\n  status: in_stock\n- ##\n  id: INV-2001\n  product_name: Mechanical Keyboard\n  quantity: 15\n  location: Warehouse B\n  last_restocked: 2024-05-10\n  status: low_stock\n- ##\n  id: INV-2002\n  product_name: 4K Monitor\n  quantity: 8\n  location: Warehouse A\n  last_restocked: 2024-04-28\n  status: in_stock\n```"
+        },
+        {
+          "step": "query",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#?",
+          "raw_output": "```jmd\n#? InventoryItem\nquantity: <min_quantity\n?: ?\nid: ?\nname: ?\nquantity: ?\nmin_quantity: ?\n```"
+        },
+        {
+          "step": "delete",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#-",
+          "raw_output": "```jmd\n#- InventoryItem\nid: INV-2002\n```"
+        },
+        {
+          "step": "error",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "# Error",
+          "raw_output": "```jmd\n# Error\ncode: 404\nmessage: Item with ID INV-9999 not found in the system\nsuggestion: Verify the item ID and try again, or check the inventory list for available items\n```"
+        }
+      ]
+    },
+    {
+      "model": "mistral-large-latest",
+      "prompt_style": "explicit",
+      "seed": 709,
+      "switch_reliability": 1.0,
+      "input_tokens": 1762,
+      "output_tokens": 230,
+      "server_ms": 4948.0,
+      "cost_usd": 0.0012259999999999999,
+      "steps": [
+        {
+          "step": "schema",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#!",
+          "raw_output": "```jmd\n#! InventoryItem\nid: string | readonly\nname: string\ndepartment: string\nlocation: string\nquantity: integer\nunit_cost: float\ntotal_value: float | readonly\nreorder_threshold: integer\nreorder_needed: boolean | readonly\nsupplier: string\nlast_updated: datetime\n## tags[]\ntag: string\n```"
+        },
+        {
+          "step": "data",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#",
+          "raw_output": "```jmd\n# Inventory\n## items[]\n- id: INV-2002\n  name: Cafeteria Item #3\n  quantity: 4\n  minimum_required: 29\n```"
+        },
+        {
+          "step": "query",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#?",
+          "raw_output": "```jmd\n#? InventoryItem\nquantity: <min_quantity\n?: ?\nid: ?\nname: ?\nquantity: ?\nmin_quantity: ?\n```"
+        },
+        {
+          "step": "delete",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#-",
+          "raw_output": "```jmd\n#- InventoryItem\nid: INV-2003\n```"
+        },
+        {
+          "step": "error",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "# Error",
+          "raw_output": "```jmd\n# Error\ncode: 404\nmessage: Item with ID INV-9999 not found in the system\nsuggestion: Verify the item ID and try again, or check the inventory list for available items\n```"
+        }
+      ]
+    },
+    {
+      "model": "mistral-large-latest",
+      "prompt_style": "implicit",
+      "seed": 700,
+      "switch_reliability": 0.6,
+      "input_tokens": 1716,
+      "output_tokens": 170,
+      "server_ms": 5664.0,
+      "cost_usd": 0.001113,
+      "steps": [
+        {
+          "step": "schema",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#!",
+          "raw_output": "```jmd\n#! InventoryItem\nid: string | readonly\nname: string\ndepartment: string\nlocation: string\nquantity: integer\nunit_cost: float\ntotal_value: float | readonly\nreorder_threshold: integer\nreorder_needed: boolean | readonly\nsupplier: string\nlast_updated: datetime\n## tags[]\ntag: string\n```"
+        },
+        {
+          "step": "data",
+          "correct_marker": false,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#?",
+          "raw_output": "```jmd\n#? InventoryItem\nid: INV-2006\n?: ?\n```"
+        },
+        {
+          "step": "query",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#?",
+          "raw_output": "#? InventoryItem\nquantity: <min_quantity\n?: ?\nid: ?\nname: ?\nquantity: ?\nmin_quantity: ?"
+        },
+        {
+          "step": "delete",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#-",
+          "raw_output": "```jmd\n#- InventoryItem\nid: INV-2007\n```"
+        },
+        {
+          "step": "error",
+          "correct_marker": false,
+          "parses": true,
+          "content_correct": false,
+          "marker_found": "#?",
+          "raw_output": "```jmd\n#? InventoryItem\nid: INV-9999\n?: ?\n```"
+        }
+      ]
+    },
+    {
+      "model": "mistral-large-latest",
+      "prompt_style": "implicit",
+      "seed": 701,
+      "switch_reliability": 0.8,
+      "input_tokens": 1699,
+      "output_tokens": 530,
+      "server_ms": 9379.0,
+      "cost_usd": 0.0016445000000000001,
+      "steps": [
+        {
+          "step": "schema",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#!",
+          "raw_output": "```jmd\n#! InventoryItem\nid: string | readonly\nname: string\ndepartment: string\nlocation: string\nquantity: integer\nunit_cost: float\ntotal_value: float | readonly\nreorder_threshold: integer\nreorder_needed: boolean | readonly\nsupplier: string\nlast_updated: datetime\n## tags[]\ntag: string\n```"
+        },
+        {
+          "step": "data",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#",
+          "raw_output": "```jmd\n# InventoryItems\n- ##\n  id: INV-2000\n  name: Wireless Bluetooth Headphones\n  category: Electronics\n  quantity: 42\n  price: 59.99\n  location: Warehouse A-12\n  status: in_stock\n  last_restocked: 2023-11-15\n  supplier: AudioTech Inc.\n  ## specifications\n  color: Black\n  battery_life: 30\n  weight_grams: 250\n  bluetooth_version: 5.2\n\n- ##\n  id: INV-2001\n  name: Stainless Steel Water Bottle\n  category: Kitchenware\n  quantity: 118\n  price: 24.95\n  location: Warehouse B-7\n  status: in_stock\n  las"
+        },
+        {
+          "step": "query",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#?",
+          "raw_output": "```jmd\n#? InventoryItem\nquantity: <min_quantity\n?: ?\nid: ?\nname: ?\nquantity: ?\nmin_quantity: ?\n```"
+        },
+        {
+          "step": "delete",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#-",
+          "raw_output": "#- InventoryItem\nid: INV-2006"
+        },
+        {
+          "step": "error",
+          "correct_marker": false,
+          "parses": true,
+          "content_correct": false,
+          "marker_found": "#?",
+          "raw_output": "```jmd\n#? InventoryItem\nid: INV-9999\n?: ?\n```"
+        }
+      ]
+    },
+    {
+      "model": "mistral-large-latest",
+      "prompt_style": "implicit",
+      "seed": 702,
+      "switch_reliability": 0.6,
+      "input_tokens": 1713,
+      "output_tokens": 175,
+      "server_ms": 4148.0,
+      "cost_usd": 0.001119,
+      "steps": [
+        {
+          "step": "schema",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#!",
+          "raw_output": "```jmd\n#! InventoryItem\nid: string | readonly\nname: string\ndepartment: string\nlocation: string\nquantity: integer\nunit_cost: float\ntotal_value: float | readonly\nreorder_threshold: integer\nreorder_needed: boolean | readonly\nsupplier: string\nlast_updated: datetime\n## tags[]\ntag: string\n```"
+        },
+        {
+          "step": "data",
+          "correct_marker": false,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#?",
+          "raw_output": "```jmd\n#? InventoryItem\nid: INV-2002\n?: ?\n```"
+        },
+        {
+          "step": "query",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#?",
+          "raw_output": "```jmd\n#? InventoryItem\nquantity: <min_quantity\n?: ?\nid: ?\nname: ?\nquantity: ?\nmin_quantity: ?\n```"
+        },
+        {
+          "step": "delete",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#-",
+          "raw_output": "```jmd\n#- InventoryItem\nid: INV-2007\n```"
+        },
+        {
+          "step": "error",
+          "correct_marker": false,
+          "parses": true,
+          "content_correct": false,
+          "marker_found": "#?",
+          "raw_output": "```jmd\n#? InventoryItem\nid: INV-9999\n?: ?\n```"
+        }
+      ]
+    },
+    {
+      "model": "mistral-large-latest",
+      "prompt_style": "implicit",
+      "seed": 703,
+      "switch_reliability": 0.6,
+      "input_tokens": 1715,
+      "output_tokens": 170,
+      "server_ms": 4077.0,
+      "cost_usd": 0.0011125,
+      "steps": [
+        {
+          "step": "schema",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#!",
+          "raw_output": "```jmd\n#! InventoryItem\nid: string | readonly\nname: string\ndepartment: string\nlocation: string\nquantity: integer\nunit_cost: float\ntotal_value: float | readonly\nreorder_threshold: integer\nreorder_needed: boolean | readonly\nsupplier: string\nlast_updated: datetime\nnotes: string | optional\n## tags[]\ntag: string\n```"
+        },
+        {
+          "step": "data",
+          "correct_marker": false,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#?",
+          "raw_output": "```jmd\n#? InventoryItem\nid: INV-2006\n?: ?\n```"
+        },
+        {
+          "step": "query",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#?",
+          "raw_output": "#? InventoryItem\nquantity: <min_quantity\n?: ?\nid: ?\nname: ?\nquantity: ?\nmin_quantity: ?"
+        },
+        {
+          "step": "delete",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#-",
+          "raw_output": "```jmd\n#- InventoryItem\nid: INV-2000\n```"
+        },
+        {
+          "step": "error",
+          "correct_marker": false,
+          "parses": true,
+          "content_correct": false,
+          "marker_found": "#?",
+          "raw_output": "#? Item\nid: INV-9999\n?: ?"
+        }
+      ]
+    },
+    {
+      "model": "mistral-large-latest",
+      "prompt_style": "implicit",
+      "seed": 704,
+      "switch_reliability": 0.8,
+      "input_tokens": 1699,
+      "output_tokens": 502,
+      "server_ms": 9172.0,
+      "cost_usd": 0.0016025,
+      "steps": [
+        {
+          "step": "schema",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#!",
+          "raw_output": "```jmd\n#! InventoryItem\nid: string | readonly\nname: string\ndepartment: string\nlocation: string\nquantity: integer\nunit_cost: float\ntotal_value: float | readonly\nreorder_threshold: integer\nreorder_needed: boolean | readonly\nsupplier: string\nlast_updated: datetime\nnotes: string | optional\n## tags[]\ntag: string\n```"
+        },
+        {
+          "step": "data",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#",
+          "raw_output": "```jmd\n# InventoryItems\nid: INV-2000\nname: Wireless Bluetooth Headphones\ncategory: Electronics\nprice: 89.99\nstock: 42\nstatus: active\n## supplier\n  id: SUP-100\n  name: AudioTech Solutions\n  contact: sales@audiotechsolutions.com\n## specifications\n  - bluetooth_version: 5.2\n  - battery_life: 30\n  - color: Black\n  - weight: 250\n\nid: INV-2001\nname: Stainless Steel Water Bottle\ncategory: Kitchen\nprice: 24.95\nstock: 112\nstatus: active\n## supplier\n  id: SUP-101\n  name: EcoGear Supplies\n  contact: orders"
+        },
+        {
+          "step": "query",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#?",
+          "raw_output": "```jmd\n#? InventoryItem\nquantity: <min_quantity\n?: ?\nid: ?\nname: ?\nquantity: ?\nmin_quantity: ?\n```"
+        },
+        {
+          "step": "delete",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#-",
+          "raw_output": "#- InventoryItem\nid: INV-2002"
+        },
+        {
+          "step": "error",
+          "correct_marker": false,
+          "parses": true,
+          "content_correct": false,
+          "marker_found": "#?",
+          "raw_output": "```jmd\n#? InventoryItem\nid: INV-9999\n?: ?\n```"
+        }
+      ]
+    },
+    {
+      "model": "mistral-large-latest",
+      "prompt_style": "implicit",
+      "seed": 705,
+      "switch_reliability": 0.8,
+      "input_tokens": 1699,
+      "output_tokens": 511,
+      "server_ms": 11634.0,
+      "cost_usd": 0.001616,
+      "steps": [
+        {
+          "step": "schema",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#!",
+          "raw_output": "```jmd\n#! InventoryItem\nid: string | readonly\nname: string\ndepartment: string\nlocation: string\nquantity: integer\nunit_cost: float\ntotal_value: float | readonly\nreorder_threshold: integer\nreorder_needed: boolean | readonly\nsupplier: string\nlast_updated: datetime\nnotes: string | optional\n## tags[]\ntag: string\n```"
+        },
+        {
+          "step": "data",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#",
+          "raw_output": "```jmd\n# InventoryItems\nid: INV-2000\nname: Wireless Bluetooth Headphones\ncategory: Electronics\nprice: 89.99\nstock: 42\nstatus: active\n## specifications\nbrand: SoundMaster\nmodel: WH-1000XM5\ncolor: Black\nbattery_life: 30\nwarranty: 2\n## last_updated\ndate: 2023-11-15\ntime: 09:30:45\n\n## InventoryItems[]\n-\n  id: INV-2001\n  name: Stainless Steel Water Bottle\n  category: Kitchen\n  price: 24.95\n  stock: 112\n  status: active\n  ## specifications\n  brand: HydroFlask\n  capacity: 32\n  color: Silver\n  material:"
+        },
+        {
+          "step": "query",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#?",
+          "raw_output": "#? InventoryItem\nquantity: <min_quantity\n?: ?\nid: ?\nname: ?\nquantity: ?\nmin_quantity: ?"
+        },
+        {
+          "step": "delete",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#-",
+          "raw_output": "#- InventoryItem\nid: INV-2003"
+        },
+        {
+          "step": "error",
+          "correct_marker": false,
+          "parses": true,
+          "content_correct": false,
+          "marker_found": "#?",
+          "raw_output": "```jmd\n#? InventoryItem\nid: INV-9999\n?: ?\n```"
+        }
+      ]
+    },
+    {
+      "model": "mistral-large-latest",
+      "prompt_style": "implicit",
+      "seed": 706,
+      "switch_reliability": 0.8,
+      "input_tokens": 1699,
+      "output_tokens": 502,
+      "server_ms": 9039.0,
+      "cost_usd": 0.0016025,
+      "steps": [
+        {
+          "step": "schema",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#!",
+          "raw_output": "```jmd\n#! InventoryItem\nid: string | readonly\nname: string\ndepartment: string\nlocation: string\nquantity: integer\nunit_cost: float\ntotal_value: float | readonly\nreorder_threshold: integer\nreorder_needed: boolean | readonly\nsupplier: string\nlast_updated: datetime\nnotes: string | optional\n## tags[]\ntag: string\n```"
+        },
+        {
+          "step": "data",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#",
+          "raw_output": "```jmd\n# InventoryItems\nid: INV-2000\nname: Wireless Bluetooth Headphones\ncategory: Electronics\nprice: 89.99\nstock: 42\nstatus: active\n## supplier\n  id: SUP-100\n  name: AudioTech Solutions\n  contact: sales@audiotechsolutions.com\n## specifications\n  - bluetooth_version: 5.2\n  - battery_life: 30\n  - color: Black\n  - weight: 250\n\nid: INV-2001\nname: Stainless Steel Water Bottle\ncategory: Kitchen\nprice: 24.95\nstock: 112\nstatus: active\n## supplier\n  id: SUP-101\n  name: EcoGear Supplies\n  contact: orders"
+        },
+        {
+          "step": "query",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#?",
+          "raw_output": "```jmd\n#? InventoryItem\nquantity: <min_quantity\n?: ?\nid: ?\nname: ?\nquantity: ?\nmin_quantity: ?\n```"
+        },
+        {
+          "step": "delete",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#-",
+          "raw_output": "#- InventoryItem\nid: INV-2001"
+        },
+        {
+          "step": "error",
+          "correct_marker": false,
+          "parses": true,
+          "content_correct": false,
+          "marker_found": "#?",
+          "raw_output": "```jmd\n#? InventoryItem\nid: INV-9999\n?: ?\n```"
+        }
+      ]
+    },
+    {
+      "model": "mistral-large-latest",
+      "prompt_style": "implicit",
+      "seed": 707,
+      "switch_reliability": 0.8,
+      "input_tokens": 1698,
+      "output_tokens": 528,
+      "server_ms": 9349.0,
+      "cost_usd": 0.001641,
+      "steps": [
+        {
+          "step": "schema",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#!",
+          "raw_output": "```jmd\n#! InventoryItem\nid: string | readonly\nname: string\ndepartment: string\nlocation: string\nquantity: integer\nunit_cost: float\ntotal_value: float | readonly\nreorder_threshold: integer\nreorder_needed: boolean | readonly\nsupplier: string\nlast_updated: datetime\nnotes: string | optional\n## tags[]\ntag: string\n```"
+        },
+        {
+          "step": "data",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#",
+          "raw_output": "```jmd\n# InventoryItems\nitems:\n  ## item[]\n  -\n    id: INV-2000\n    name: Wireless Bluetooth Headphones\n    category: Electronics\n    price: 89.99\n    stock: 42\n    status: active\n    ## specifications\n    brand: SoundMaster\n    model: WH-1000XM4\n    color: Black\n    weight_grams: 254\n    battery_life_hours: 30\n    ## last_updated\n    date: 2023-11-15\n    by_user: admin_john\n  -\n    id: INV-2001\n    name: Stainless Steel Water Bottle\n    category: Kitchen\n    price: 24.95\n    stock: 112\n    stat"
+        },
+        {
+          "step": "query",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#?",
+          "raw_output": "#? InventoryItem\nquantity: <min_quantity\n?: ?\nid: ?\nname: ?\nquantity: ?\nmin_quantity: ?"
+        },
+        {
+          "step": "delete",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#-",
+          "raw_output": "#- InventoryItem\nid: INV-2006"
+        },
+        {
+          "step": "error",
+          "correct_marker": false,
+          "parses": true,
+          "content_correct": false,
+          "marker_found": "#?",
+          "raw_output": "```jmd\n#? InventoryItem\nid: INV-9999\n?: ?\n```"
+        }
+      ]
+    },
+    {
+      "model": "mistral-large-latest",
+      "prompt_style": "implicit",
+      "seed": 708,
+      "switch_reliability": 0.8,
+      "input_tokens": 1698,
+      "output_tokens": 497,
+      "server_ms": 8758.0,
+      "cost_usd": 0.0015945,
+      "steps": [
+        {
+          "step": "schema",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#!",
+          "raw_output": "```jmd\n#! InventoryItem\nid: string | readonly\nname: string\ndepartment: string\nlocation: string\nquantity: integer\nunit_cost: float\ntotal_value: float | readonly\nreorder_threshold: integer\nreorder_needed: boolean | readonly\nsupplier: string\nlast_updated: datetime\nnotes: string | optional\n## tags[]\ntag: string\n```"
+        },
+        {
+          "step": "data",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#",
+          "raw_output": "```jmd\n# InventoryItems\nid: INV-2000\nname: Wireless Bluetooth Headphones\ncategory: Electronics\nprice: 89.99\nstock: 42\nstatus: active\n## supplier\n  id: SUP-100\n  name: AudioTech Solutions\n  contact: sales@audiotechsolutions.com\n## specifications\n  - bluetooth_version: 5.2\n  - battery_life: 30\n  - color: Black\n  - weight: 250\n\nid: INV-2001\nname: Stainless Steel Water Bottle\ncategory: Kitchen\nprice: 24.95\nstock: 112\nstatus: active\n## supplier\n  id: SUP-101\n  name: EcoGear Supplies\n  contact: orders"
+        },
+        {
+          "step": "query",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#?",
+          "raw_output": "#? InventoryItem\nquantity: <min_quantity\n?: ?\nid: ?\nname: ?\nquantity: ?\nmin_quantity: ?"
+        },
+        {
+          "step": "delete",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#-",
+          "raw_output": "#- InventoryItem\nid: INV-2002"
+        },
+        {
+          "step": "error",
+          "correct_marker": false,
+          "parses": true,
+          "content_correct": false,
+          "marker_found": "#?",
+          "raw_output": "```jmd\n#? InventoryItem\nid: INV-9999\n?: ?\n```"
+        }
+      ]
+    },
+    {
+      "model": "mistral-large-latest",
+      "prompt_style": "implicit",
+      "seed": 709,
+      "switch_reliability": 0.6,
+      "input_tokens": 1715,
+      "output_tokens": 175,
+      "server_ms": 4102.0,
+      "cost_usd": 0.00112,
+      "steps": [
+        {
+          "step": "schema",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#!",
+          "raw_output": "```jmd\n#! InventoryItem\nid: string | readonly\nname: string\ndepartment: string\nlocation: string\nquantity: integer\nunit_cost: float\ntotal_value: float | readonly\nreorder_threshold: integer\nreorder_needed: boolean | readonly\nsupplier: string\nlast_updated: datetime\nnotes: string | optional\n## tags[]\ntag: string\n```"
+        },
+        {
+          "step": "data",
+          "correct_marker": false,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#?",
+          "raw_output": "```jmd\n#? InventoryItem\nid: INV-2002\n?: ?\n```"
+        },
+        {
+          "step": "query",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#?",
+          "raw_output": "```jmd\n#? InventoryItem\nquantity: <min_quantity\n?: ?\nid: ?\nname: ?\nquantity: ?\nmin_quantity: ?\n```"
+        },
+        {
+          "step": "delete",
+          "correct_marker": true,
+          "parses": true,
+          "content_correct": true,
+          "marker_found": "#-",
+          "raw_output": "#- InventoryItem\nid: INV-2003"
+        },
+        {
+          "step": "error",
+          "correct_marker": false,
+          "parses": true,
+          "content_correct": false,
+          "marker_found": "#?",
+          "raw_output": "```jmd\n#? InventoryItem\nid: INV-9999\n?: ?\n```"
+        }
+      ]
+    }
+  ]
+}
