@@ -81,7 +81,7 @@ Five rules. No examples required.
 
 ## Status
 
-The specification is stable at v0.3. A Python reference implementation is available at [jmd](https://github.com/ostermeyer/jmd), including a C-accelerated parser and serializer.
+The specification is stable at v0.3. A Python reference implementation is available at [jmd-impl](https://github.com/ostermeyer/jmd-impl), including a C-accelerated parser and serializer.
 
 ---
 
