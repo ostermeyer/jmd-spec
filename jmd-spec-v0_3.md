@@ -1326,7 +1326,17 @@ status: !cancelled
 sku: !^LEGACY.*
 ```
 
-The `!` prefix composes with all other condition types: `!true` (not equal), `!cancelled` (not equal), `!^LEGACY.*` (regex negation).
+The `!` prefix composes with all other condition types: `!true` (not equal), `!cancelled` (not equal), `!^LEGACY.*` (regex negation), `!~Corp` (not contains).
+
+**Contains** matches documents where the field value contains the given substring (case-insensitive). A value starting with `~` is a contains condition:
+
+```markdown
+name: ~Corp
+city: ~berlin
+notes: ~urgent
+```
+
+`~Corp` matches any value containing "corp" (case-insensitive). This is more concise than the equivalent regex `.*Corp.*` and avoids regex overhead for simple substring checks.
 
 ### 13.4 Filter Summary
 
@@ -1334,12 +1344,14 @@ The `!` prefix composes with all other condition types: `!true` (not equal), `!c
 |---|---|---|
 | Equality | bare value | `status: pending` |
 | Regex pattern | regex metacharacters | `status: pending\|active` |
+| Contains (case-insensitive) | `~` prefix | `name: ~Corp` |
 | Greater than | `>` prefix | `total: > 50` |
 | Greater or equal | `>=` prefix | `score: >= 90` |
 | Less than | `<` prefix | `price: < 100` |
 | Less or equal | `<=` prefix | `qty: <= 5` |
 | Negation | `!` prefix | `deleted: !true` |
 | Negated regex | `!` + regex | `sku: !^LEGACY.*` |
+| Negated contains | `!~` prefix | `name: !~Corp` |
 | Projection | `?` | `email: ?` |
 | Wildcard projection | `?: ?` | All remaining fields |
 
@@ -1415,10 +1427,11 @@ query_indent_field ::= INDENT key ": " condition NEWLINE
 
 condition       ::= projection | filter_expr
 projection      ::= "?"
-filter_expr     ::= negation? (comparison | regex_or_literal)
+filter_expr     ::= negation? (comparison | contains | regex_or_literal)
 negation        ::= "!"
 comparison      ::= comp_op " "? scalar
 comp_op         ::= ">" | ">=" | "<" | "<="
+contains        ::= "~" scalar
 regex_or_literal ::= (* A value containing regex metacharacters
                         (|.*+?^$[]()\) is treated as a regex pattern.
                         A value without metacharacters is an equality match. *)
