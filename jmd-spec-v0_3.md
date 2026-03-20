@@ -1483,6 +1483,9 @@ A schema field specifies its JSON type as the value:
 | `key: integer` | `{"type": "integer"}` |
 | `key: boolean` | `{"type": "boolean"}` |
 | `key: null` | `{"type": "null"}` |
+| `key: binary` | `{"type": "string", "contentEncoding": "sha256"}` |
+
+The `binary` type represents opaque binary content. In JMD data documents, a `binary` field is serialized as `sha256:<hex>` — the SHA-256 hash of the raw bytes. This allows an LLM to detect content changes without processing or transmitting the raw binary data.
 
 ### 14.3 Schema Modifiers
 
@@ -1660,7 +1663,7 @@ schema_bare_field ::= key ": " type_expr NEWLINE
 type_expr        ::= (base_type format_hint? | enum_expr | ref_type | "[]" ref_type)
                      default_value? modifier*
 
-base_type        ::= "string" | "number" | "integer" | "boolean" | "null" | "object"
+base_type        ::= "string" | "number" | "integer" | "boolean" | "null" | "object" | "binary"
 format_hint      ::= " " ("email" | "date" | "datetime" | "uri")
 enum_expr        ::= scalar ("|" scalar)+
 ref_type         ::= "-> " label
