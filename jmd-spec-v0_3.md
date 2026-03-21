@@ -210,53 +210,23 @@ Serializes to `[]`.
 
 Fields that appear *before* the first heading in a JMD document are **frontmatter** — document-level metadata that applies to the entire document, not to any specific data scope.
 
+Frontmatter fields are syntactically identical to bare fields — no new syntax is required. The parser treats any `key: value` lines before the first `#` heading as document metadata. A blank line between frontmatter and the root heading is optional but recommended for readability.
+
+Frontmatter fields are **not serialized** into the JSON output. They are transport-level metadata passed through to the implementation, analogous to HTTP headers.
+
+**JMD does not define a fixed set of frontmatter keys.** The parser collects all frontmatter fields into a key-value map and makes them available to the implementation; the implementation decides which keys it recognizes and how it interprets their values. This makes frontmatter a fully open extension point — different implementations may use entirely different frontmatter vocabularies for their specific needs.
+
+**Example: pagination.** A query server might use `page` and `size` to control result delivery:
+
 ```markdown
 page: 2
 size: 50
 
-# Orders
-total: 4832
-page: 2
-pages: 97
-page_size: 50
-
-## data[]
-- id: 1
-  status: pending
-  total: 84.99
+#? Orders
+status: active
 ```
 
-Frontmatter fields are syntactically identical to bare fields — no new syntax is required. The parser treats any `key: value` lines before the first `#` heading as document metadata. A blank line between frontmatter and the root heading is optional but recommended for readability.
-
-Frontmatter fields are **not serialized** into the JSON output. They are transport-level metadata consumed by the parser or middleware, analogous to HTTP headers.
-
-**Defined frontmatter fields:**
-
-| Field | Applicable mode | Meaning |
-| --- | --- | --- |
-| `format` | all | JMD version identifier (e.g., `jmd/1.0`) |
-| `schema` | all | URI reference to an external schema definition |
-| `page` | `#?` | Requested page number (1-based) |
-| `size` | `#?` | Requested number of results per page |
-| `count` | `#?` | Request only the count of matching documents (value omitted or `true`) |
-| `confidence` | `#` | Epistemic confidence level: `high`, `medium`, `low`, or `speculative` |
-| `source` | `#` | Data provenance — free-form bare string describing where the data originates (e.g., `database`, `vector search`, `clinical guidelines 2024`, `user input`) |
-| `uncertain` | `#` | Comma-separated list of field names the generator considers uncertain |
-
-**Epistemic frontmatter** allows a generator to communicate its self-assessment of the data it produces. This is particularly valuable in LLM-generated responses, where the model operates with a persona and has a contextual understanding of how it arrived at each value.
-
-The `confidence` field uses defined levels to enable consistent machine processing:
-
-| Level | Condition |
-| --- | --- |
-| `high` | Data from verified or authoritative source |
-| `medium` | Strong inference or single reliable source |
-| `low` | Weak, incomplete, or potentially outdated basis |
-| `speculative` | No reliable basis — included as best effort |
-
-The `source` field is deliberately **not** an enum. The generator expresses data provenance in its own terms — a RAG agent might write `source: vector search, 3 documents matched`, a database adapter writes `source: postgresql`, a medical assistant writes `source: clinical guidelines 2024`. The receiver interprets this contextually. This reflects the fact that LLMs operate with personas and have a subjective perspective on the data they produce — formalizing this perspective rather than suppressing it makes the metadata more honest and more useful.
-
-The `uncertain` field names specific fields whose values the generator considers less reliable than the overall `confidence` level suggests. This allows a generator to say "I am generally confident, but these particular values are weak."
+**Example: epistemic metadata.** An LLM generator can communicate its self-assessment of the data it produces — its confidence, the provenance of the data, and which specific fields it considers uncertain:
 
 ```markdown
 confidence: high
@@ -271,9 +241,21 @@ phone: 030-12345
 email: mueller@example.de
 ```
 
-A conforming parser MUST accept and pass through defined frontmatter fields. Unknown frontmatter fields MUST be ignored, not rejected — this ensures forward compatibility as new fields are defined in future versions.
+Common epistemic conventions (not mandated by JMD):
 
-A conforming generator SHOULD omit frontmatter entirely when no document-level metadata is needed. The absence of frontmatter is the common case for data documents. Epistemic frontmatter is always optional — a document without `confidence` or `source` fields simply carries no explicit self-assessment.
+| Field | Meaning |
+| --- | --- |
+| `confidence` | Self-assessed reliability: `high`, `medium`, `low`, or `speculative` |
+| `source` | Data provenance — free-form string (e.g., `database`, `vector search`, `clinical guidelines 2024`) |
+| `uncertain` | Comma-separated list of field names the generator considers less reliable than the overall confidence level |
+
+These conventions reflect the fact that LLMs operate with personas and have a subjective perspective on the data they produce — formalizing this perspective rather than suppressing it makes the metadata more honest and more useful. But they are examples of how the frontmatter channel can be used, not part of the JMD format itself.
+
+**Frontmatter in responses.** The frontmatter channel is not exclusive to requests. A server returning a paginated result set SHOULD place pagination metadata (`total`, `page`, `pages`, `page_size`) in the response frontmatter rather than the document body. This keeps metadata structurally distinct from data — body fields like `total: 84.99` on an order line item are not confused with `total: 4832` describing the result set size. More importantly, a response document travels through a pipeline: its frontmatter is immediately available to the next agent in the chain as document-level metadata, without requiring that agent to understand the document's data schema.
+
+A conforming parser MUST collect all frontmatter fields into a key-value map and make them available to the implementation. A conforming parser MUST NOT reject unknown frontmatter keys.
+
+A conforming generator SHOULD omit frontmatter entirely when no metadata is needed. The absence of frontmatter is the common case for data documents.
 
 ---
 
@@ -1238,14 +1220,15 @@ status: pending
 total: > 50
 ```
 
-Returns the first 50 matching orders. The response includes pagination metadata in the envelope (see Section 16):
+Returns the first 50 matching orders. The response carries pagination metadata as frontmatter (see Section 16):
 
 ```markdown
-# Orders
 total: 4832
 page: 1
 pages: 97
 page_size: 50
+
+# Orders
 
 ## data[]
 - id: 1
@@ -1256,7 +1239,7 @@ page_size: 50
   total: 120.00
 ```
 
-The LLM sees `total: 4832` before the first data record arrives — because JMD is streaming and envelope fields precede the data array. It can close the connection, narrow the query, or request the next page.
+The LLM sees `total: 4832` before the root heading — because JMD is streaming and frontmatter precedes the document body. It can close the connection, narrow the query, or request the next page.
 
 ### 13.2 Projection
 
@@ -1782,26 +1765,26 @@ Conditional deletion (delete by filter, analogous to SQL `DELETE WHERE`) is inte
 
 ## 16. Collection Responses and Pagination
 
-Collection responses commonly wrap array data in an envelope object that carries pagination metadata alongside the items. In JMD, this pattern is expressed naturally using the heading-scope model: pagination fields are scalar fields at root level, and the array is a named field within the same document:
+Collection responses return array data with pagination metadata. In JMD, pagination metadata belongs in the response frontmatter — structurally separate from the document body, and immediately available to the next agent in the pipeline without inspecting the data schema:
 
 ```markdown
-# Orders
 total: 142
 page: 2
+pages: 8
 page_size: 20
 
+# Orders
+
 ## data[]
--
-id: 1
-status: pending
-total: 84.99
--
-id: 2
-status: shipped
-total: 120.00
+- id: 1
+  status: pending
+  total: 84.99
+- id: 2
+  status: shipped
+  total: 120.00
 ```
 
-The root marker `# Orders` (not `# []`) signals that this is an enveloped collection, not a bare array. A bare array response (`# []`) carries items only, with no envelope metadata.
+The root marker `# Orders` (not `# []`) signals that this is a named collection response. A bare array response (`# []`) carries items only, with no metadata.
 
 Pagination is requested via frontmatter in the query document (see Section 3.5):
 
@@ -1813,20 +1796,16 @@ size: 20
 status: active
 ```
 
-Pagination metadata in the response envelope (`total`, `page`, `pages`, `page_size`) MUST appear as root-level fields *before* the data array. This ensures the consumer receives result set metadata before the first data record arrives — a streaming guarantee that allows early decisions (close connection, narrow query, request next page).
+Pagination metadata in the response (`total`, `page`, `pages`, `page_size`) MUST appear as frontmatter — before the root heading. This is a streaming guarantee: the consumer receives result set metadata before the first data record, allowing early decisions (close connection, narrow query, request next page). It also prevents ambiguity with body fields that share names (e.g., `total` as a field on an order line item vs. `total` as result set size).
 
-The schema for an enveloped collection:
+The schema for a collection response body:
 
 ```markdown
 #! Orders
-total: integer
-page: integer
-page_size: integer
 ## data[]: object
--
-id: integer
-status: string
-total: number
+- id: integer
+  status: string
+  total: number
 ```
 
 ---
@@ -2276,7 +2255,7 @@ If an application needs annotations that travel with the data, the correct JMD a
 
 **Why no comments?** JMD deliberately omits comments. Every other JMD construct maps bijectively to JSON; comments would be the sole exception — silently discarded during serialization, invisible in the JSON roundtrip, yet adding parser complexity at every grammar level. JMD's primary audience is LLMs, which read all tokens and gain nothing from out-of-band annotations. Where metadata about data is valuable, it belongs in a data field (`_note: ...`) that survives serialization. See Section 18 for the full rationale.
 
-**Why epistemic frontmatter with free-form `source`?** LLMs operate with personas and have a contextual self-understanding of how they arrived at each piece of data. A medical assistant knows it drew on clinical guidelines; a RAG agent knows it matched three documents; a database adapter knows it queried PostgreSQL. Forcing these diverse perspectives into a fixed enum (`training`, `search`, `logic`) would lose the very information that makes the metadata valuable. Instead, `confidence` uses defined levels (for consistent machine processing), while `source` is a free-form bare string that carries the generator's own description of data provenance. The receiver — whether human, system, or another LLM — interprets this contextually. This is not non-deterministic in a problematic sense; it is *personal* in the sense that it reflects the generator's perspective honestly. The `uncertain` field bridges document-level and field-level granularity without per-field annotation syntax: the generator lists which fields it considers weak, and the receiver can act accordingly.
+**Why is frontmatter an open extension point?** JMD's frontmatter channel carries transport-level metadata that the implementation — not the format — interprets. Different backends have fundamentally different metadata needs: a query server uses `page` and `size` for pagination; a database adapter uses `group` and `sum` for aggregation; an LLM generator uses `confidence` and `source` for epistemic self-assessment. Prescribing a fixed vocabulary would force every implementation to work within a common denominator that fits none of them well. An open channel lets each implementation define exactly the keys it needs, without format changes. The epistemic conventions (`confidence`, `source`, `uncertain`) are a particularly valuable example: LLMs operate with personas and have a contextual self-understanding of how they arrived at each piece of data. Providing a channel for this self-assessment — rather than suppressing it into prose — makes the metadata honest and machine-processable. But these are conventions, not format definitions. `source` is deliberately free-form: a RAG agent writes `source: vector search, 3 documents matched`; a database adapter writes `source: postgresql`; a medical assistant writes `source: clinical guidelines 2024`. The receiver interprets this contextually. Forcing diverse generator perspectives into a fixed enum would lose the very information that makes the field valuable.
 
 **Why `->` for entity references?** An earlier design considered `ref(Customer)` with function-call syntax. This was rejected for the same reason as `in()` and `not()` in QBE: matched delimiters (parentheses) contradict JMD's core anti-delimiter principle. The arrow `->` is delimiter-free, visually self-explanatory ("points to"), and deeply familiar to LLMs from ER diagrams, UML associations, type annotations, and pointer notation across programming languages. It is typically a single token in BPE tokenizers. The `->` marker is a semantic hint, not a validation constraint — the schema declares the relationship, the generator decides the representation (bare ID, URI, or inline-resolved object). This mirrors OData NavigationProperties and keeps the schema layer lightweight: no resolution rules, no join semantics, no circular-dependency handling. The LLM resolves references through sequential `read` calls, which is the natural agentic pattern.
 
@@ -2381,7 +2360,8 @@ Recommended test cases:
 - **Indented continuation fields:** `- sku: A1` followed by `  qty: 2` and `  price: 29.99` on indented lines
 - **Indentation depth insignificant:** 2 spaces, 4 spaces, and mixed indentation all parsed as continuation fields
 - **Depth+1 array items:** `## - name: Widget` for items in a `# products[]` array, even without nesting ambiguity (Section 8.6b)
-- **Frontmatter:** `page: 1` and `size: 50` before `#? Order` heading are parsed as metadata, not serialized into JSON
+- **Frontmatter (request):** `page: 1` and `size: 50` before `#? Order` heading are parsed as metadata, not serialized into JSON
+- **Frontmatter (response):** `total: 4832`, `page: 1`, `pages: 97`, `page_size: 50` before `# Orders` heading are parsed as response metadata, not as body fields of the Orders document
 - **Frontmatter with bare key:** `count` before `#? Order` heading is a valid bare frontmatter field
 - **No frontmatter:** document starting directly with `# Order` has no frontmatter (common case)
 - **Thematic break separator:** `---` between items of an array with nested sub-structures (Section 8.6)
@@ -2412,9 +2392,9 @@ Recommended test cases:
 - **Schema readonly:** `id: integer readonly` parsed as integer type with readonly modifier
 - **Schema optional:** `notes: string optional` parsed as optional string field
 - **Schema combined modifiers:** `created_at: string datetime readonly` parsed with format hint and readonly
-- **Epistemic frontmatter:** `confidence: high` and `source: database` before `# Customer` are parsed as metadata, not serialized into JSON
-- **Uncertain fields:** `uncertain: zip, phone` in frontmatter is a valid bare string frontmatter field
-- **Epistemic frontmatter absent:** document without `confidence`/`source` fields has no epistemic metadata (common case)
+- **Frontmatter key-value:** `confidence: high` and `source: database` before `# Customer` are parsed as frontmatter metadata, not serialized into JSON
+- **Frontmatter bare string:** `uncertain: zip, phone` in frontmatter is a valid bare string frontmatter field
+- **Frontmatter absent:** document without frontmatter fields carries no metadata (common case)
 - **Error document minimal:** `# Error` with `status: 404` and `code: not_found` is a valid error document
 - **Error document with free-form fields:** `suggestion` and `context` are parsed as regular bare string fields
 - **Error document with errors array:** `## errors[]` with `- field: x` + indented `reason: y`, `value: z` parsed correctly
