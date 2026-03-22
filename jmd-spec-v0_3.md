@@ -1550,6 +1550,41 @@ Array fields use the `[]` sigil. The item type follows as a bare field or headin
   price: number
 ```
 
+### 14.5a Inline Object Types
+
+For edge cases where a nested object or array-of-objects must be expressed inside
+an existing object item body — where heading syntax would close the enclosing scope
+— JMD provides an **inline object type** notation:
+
+```markdown
+address: object(street: string, city: string, zip: string optional) optional
+```
+
+The inline object lists its fields as comma-separated `key: type_expr` pairs inside
+parentheses.  The closing `)` ends the inline object; modifiers on the containing
+field follow outside the parentheses.
+
+**Array of inline objects** uses the `[]:` bare-field sigil (see below):
+
+```markdown
+items[]: object(sku: string, qty: integer, price: number) optional
+```
+
+**Array of enum or scalar** — when a multi-select or array-of-scalar field must
+appear as a bare field (e.g. inside an object item body), the `[]:` sigil extends
+`schema_bare_field`:
+
+```markdown
+## Order[]: object optional
+- id: integer
+  tags[]: express|standard|fragile optional
+  address: object(street: string, city: string) optional
+```
+
+Both forms are intended for **inline / embedded contexts only** — where a `##`
+heading would incorrectly close the enclosing scope.  At the top level of a schema
+document, the heading form (`## field[]: type_expr`) is preferred.
+
 ### 14.6 Entity References
 
 The `->` marker declares that a field references another entity:
@@ -1642,9 +1677,14 @@ schema_heading   ::= heading_prefix key NEWLINE
                     | heading_prefix key "[]" NEWLINE
 
 schema_bare_field ::= key ": " type_expr NEWLINE
+                    | key "[]: " type_expr NEWLINE
 
-type_expr        ::= (base_type format_hint? | enum_expr | ref_type | "[]" ref_type)
+type_expr        ::= (base_type format_hint? | enum_expr | ref_type | "[]" ref_type
+                     | inline_object)
                      default_value? modifier*
+
+inline_object    ::= "object(" field_spec ("," field_spec)* ")"
+field_spec       ::= key ": " type_expr
 
 base_type        ::= "string" | "number" | "integer" | "boolean" | "null" | "object" | "binary"
 format_hint      ::= " " ("email" | "date" | "datetime" | "uri")
