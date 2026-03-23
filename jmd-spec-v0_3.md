@@ -216,11 +216,11 @@ Frontmatter fields are **not serialized** into the JSON output. They are transpo
 
 **JMD does not define a fixed set of frontmatter keys.** The parser collects all frontmatter fields into a key-value map and makes them available to the implementation; the implementation decides which keys it recognizes and how it interprets their values. This makes frontmatter a fully open extension point — different implementations may use entirely different frontmatter vocabularies for their specific needs.
 
-**Example: pagination.** A query server might use `page` and `size` to control result delivery:
+**Example: pagination.** A query server might use `page` and `page-size` to control result delivery:
 
 ```markdown
 page: 2
-size: 50
+page-size: 50
 
 #? Orders
 status: active
@@ -251,7 +251,7 @@ Common epistemic conventions (not mandated by JMD):
 
 These conventions reflect the fact that LLMs operate with personas and have a subjective perspective on the data they produce — formalizing this perspective rather than suppressing it makes the metadata more honest and more useful. But they are examples of how the frontmatter channel can be used, not part of the JMD format itself.
 
-**Frontmatter in responses.** The frontmatter channel is not exclusive to requests. A server returning a paginated result set SHOULD place pagination metadata (`total`, `page`, `pages`, `page_size`) in the response frontmatter rather than the document body. This keeps metadata structurally distinct from data — body fields like `total: 84.99` on an order line item are not confused with `total: 4832` describing the result set size. More importantly, a response document travels through a pipeline: its frontmatter is immediately available to the next agent in the chain as document-level metadata, without requiring that agent to understand the document's data schema.
+**Frontmatter in responses.** The frontmatter channel is not exclusive to requests. A server returning a paginated result set SHOULD place pagination metadata (`total`, `page`, `pages`, `page-size`) in the response frontmatter rather than the document body. This keeps metadata structurally distinct from data — body fields like `total: 84.99` on an order line item are not confused with `total: 4832` describing the result set size. More importantly, a response document travels through a pipeline: its frontmatter is immediately available to the next agent in the chain as document-level metadata, without requiring that agent to understand the document's data schema.
 
 A conforming parser MUST collect all frontmatter fields into a key-value map and make them available to the implementation. A conforming parser MUST NOT reject unknown frontmatter keys.
 
@@ -1213,7 +1213,7 @@ Returns only the count of matching orders — no data. The bare field `count` (w
 
 ```markdown
 page: 1
-size: 50
+page-size: 50
 
 #? Order
 status: pending
@@ -1226,7 +1226,7 @@ Returns the first 50 matching orders. The response carries pagination metadata a
 total: 4832
 page: 1
 pages: 97
-page_size: 50
+page-size: 50
 
 # Orders
 
@@ -1366,7 +1366,7 @@ Query:
 
 ```markdown
 page: 1
-size: 25
+page-size: 25
 
 #? Order
 status: pending|processing
@@ -1811,7 +1811,7 @@ Collection responses return array data with pagination metadata. In JMD, paginat
 total: 142
 page: 2
 pages: 8
-page_size: 20
+page-size: 20
 
 # Orders
 
@@ -1830,13 +1830,13 @@ Pagination is requested via frontmatter in the query document (see Section 3.5):
 
 ```markdown
 page: 2
-size: 20
+page-size: 20
 
 #? Order
 status: active
 ```
 
-Pagination metadata in the response (`total`, `page`, `pages`, `page_size`) MUST appear as frontmatter — before the root heading. This is a streaming guarantee: the consumer receives result set metadata before the first data record, allowing early decisions (close connection, narrow query, request next page). It also prevents ambiguity with body fields that share names (e.g., `total` as a field on an order line item vs. `total` as result set size).
+Pagination metadata in the response (`total`, `page`, `pages`, `page-size`) MUST appear as frontmatter — before the root heading. This is a streaming guarantee: the consumer receives result set metadata before the first data record, allowing early decisions (close connection, narrow query, request next page). It also prevents ambiguity with body fields that share names (e.g., `total` as a field on an order line item vs. `total` as result set size).
 
 The schema for a collection response body:
 
@@ -2295,7 +2295,7 @@ If an application needs annotations that travel with the data, the correct JMD a
 
 **Why no comments?** JMD deliberately omits comments. Every other JMD construct maps bijectively to JSON; comments would be the sole exception — silently discarded during serialization, invisible in the JSON roundtrip, yet adding parser complexity at every grammar level. JMD's primary audience is LLMs, which read all tokens and gain nothing from out-of-band annotations. Where metadata about data is valuable, it belongs in a data field (`_note: ...`) that survives serialization. See Section 18 for the full rationale.
 
-**Why is frontmatter an open extension point?** JMD's frontmatter channel carries transport-level metadata that the implementation — not the format — interprets. Different backends have fundamentally different metadata needs: a query server uses `page` and `size` for pagination; a database adapter uses `group` and `sum` for aggregation; an LLM generator uses `confidence` and `source` for epistemic self-assessment. Prescribing a fixed vocabulary would force every implementation to work within a common denominator that fits none of them well. An open channel lets each implementation define exactly the keys it needs, without format changes. The epistemic conventions (`confidence`, `source`, `uncertain`) are a particularly valuable example: LLMs operate with personas and have a contextual self-understanding of how they arrived at each piece of data. Providing a channel for this self-assessment — rather than suppressing it into prose — makes the metadata honest and machine-processable. But these are conventions, not format definitions. `source` is deliberately free-form: a RAG agent writes `source: vector search, 3 documents matched`; a database adapter writes `source: postgresql`; a medical assistant writes `source: clinical guidelines 2024`. The receiver interprets this contextually. Forcing diverse generator perspectives into a fixed enum would lose the very information that makes the field valuable.
+**Why is frontmatter an open extension point?** JMD's frontmatter channel carries transport-level metadata that the implementation — not the format — interprets. Different backends have fundamentally different metadata needs: a query server uses `page` and `page-size` for pagination; a database adapter uses `group` and `sum` for aggregation; an LLM generator uses `confidence` and `source` for epistemic self-assessment. Prescribing a fixed vocabulary would force every implementation to work within a common denominator that fits none of them well. An open channel lets each implementation define exactly the keys it needs, without format changes. The epistemic conventions (`confidence`, `source`, `uncertain`) are a particularly valuable example: LLMs operate with personas and have a contextual self-understanding of how they arrived at each piece of data. Providing a channel for this self-assessment — rather than suppressing it into prose — makes the metadata honest and machine-processable. But these are conventions, not format definitions. `source` is deliberately free-form: a RAG agent writes `source: vector search, 3 documents matched`; a database adapter writes `source: postgresql`; a medical assistant writes `source: clinical guidelines 2024`. The receiver interprets this contextually. Forcing diverse generator perspectives into a fixed enum would lose the very information that makes the field valuable.
 
 **Why `->` for entity references?** An earlier design considered `ref(Customer)` with function-call syntax. This was rejected for the same reason as `in()` and `not()` in QBE: matched delimiters (parentheses) contradict JMD's core anti-delimiter principle. The arrow `->` is delimiter-free, visually self-explanatory ("points to"), and deeply familiar to LLMs from ER diagrams, UML associations, type annotations, and pointer notation across programming languages. It is typically a single token in BPE tokenizers. The `->` marker is a semantic hint, not a validation constraint — the schema declares the relationship, the generator decides the representation (bare ID, URI, or inline-resolved object). This mirrors OData NavigationProperties and keeps the schema layer lightweight: no resolution rules, no join semantics, no circular-dependency handling. The LLM resolves references through sequential `read` calls, which is the natural agentic pattern.
 
@@ -2400,8 +2400,8 @@ Recommended test cases:
 - **Indented continuation fields:** `- sku: A1` followed by `  qty: 2` and `  price: 29.99` on indented lines
 - **Indentation depth insignificant:** 2 spaces, 4 spaces, and mixed indentation all parsed as continuation fields
 - **Depth+1 array items:** `## - name: Widget` for items in a `# products[]` array, even without nesting ambiguity (Section 8.6b)
-- **Frontmatter (request):** `page: 1` and `size: 50` before `#? Order` heading are parsed as metadata, not serialized into JSON
-- **Frontmatter (response):** `total: 4832`, `page: 1`, `pages: 97`, `page_size: 50` before `# Orders` heading are parsed as response metadata, not as body fields of the Orders document
+- **Frontmatter (request):** `page: 1` and `page-size: 50` before `#? Order` heading are parsed as metadata, not serialized into JSON
+- **Frontmatter (response):** `total: 4832`, `page: 1`, `pages: 97`, `page-size: 50` before `# Orders` heading are parsed as response metadata, not as body fields of the Orders document
 - **Frontmatter with bare key:** `count` before `#? Order` heading is a valid bare frontmatter field
 - **No frontmatter:** document starting directly with `# Order` has no frontmatter (common case)
 - **Thematic break separator:** `---` between items of an array with nested sub-structures (Section 8.6)
@@ -2454,6 +2454,191 @@ Recommended test cases:
 - **Delete document composite key:** `#- []` with object items (`- table: orders` + indented `id: 42`) parsed correctly
 - **Delete root marker:** `#-` recognized as depth-1 heading with mode prefix `-`, label extracted correctly
 - **Delete body syntax:** `#- Order` body uses identical syntax rules as `# Order` data document (fields, nested objects, blockquotes)
+
+---
+
+## 23. Frontmatter Conventions
+
+Section 3.5 defines frontmatter as an **open extension point**: any `key: value` lines before the root heading are document-level metadata, and unknown frontmatter keys MUST be ignored. This openness allows implementations to add query parameters, result metadata, and operational hints without modifying the JMD grammar.
+
+The following conventions standardize the most widely useful frontmatter keys. An implementation that supports these features SHOULD use these names to ensure interoperability and familiar behaviour for LLM agents that have learned the conventions from one server and encounter another.
+
+These are **recommendations** (RFC 2119 SHOULD), not requirements (MUST). An implementation MAY use different keys for proprietary extensions, but SHOULD document the deviation and SHOULD NOT reuse the conventional key names with incompatible semantics.
+
+### 23.1 Pagination
+
+Pagination applies to any document type that may return a large result set. The request keys `page-size:` and `page:` MAY be used with `#` (data), `#?` (query), and `#!` (schema) documents whenever the server supports paged responses.
+
+**Request frontmatter:**
+
+| Key | Type | Meaning |
+| --- | --- | --- |
+| `page-size` | integer | Maximum number of records per page. Default is implementation-defined. |
+| `page` | integer | 1-based page number to return. Omitting `page` implies page 1. |
+
+```markdown
+page-size: 50
+page: 3
+
+#? Orders
+status: active
+```
+
+**Response frontmatter:**
+
+The server SHOULD echo pagination metadata before the root heading of the response document, providing the consumer with result-set information before the first data record arrives (streaming guarantee — see Section 16).
+
+| Key | Type | Meaning |
+| --- | --- | --- |
+| `total` | integer | Total number of records matching the query (across all pages). |
+| `page` | integer | The page number returned. |
+| `pages` | integer | Total number of pages at the requested `page-size`. |
+| `page-size` | integer | The effective page size used (may differ from requested `page-size` if the implementation imposes limits). |
+
+```markdown
+total: 830
+page: 3
+pages: 17
+page-size: 50
+
+# Orders
+## data[]
+- OrderID: 10358
+  ...
+```
+
+**Why `page-size` and not `size` or `limit`?** Frontmatter is an open extension point — any implementation may define keys for its own needs. Generic names like `size` or `limit` carry no inherent binding to pagination: `size` could equally mean maximum response size in bytes, maximum expand depth, or maximum error count; `limit` is similarly overloaded across rate limiting, result caps, and resource quotas. A key that could mean anything is ambiguous at best and, at worst, blocks future conventions from using the same name for a legitimately different purpose. The name `page-size` is self-documenting and context-bound: it can only mean the number of records per page. This is consistent with JMD's broader naming philosophy — preferring readable, unambiguous identifiers over terse ones (cf. `optional` instead of `?`, `readonly` instead of a sigil in §10).
+
+### 23.2 Count Mode
+
+Count mode is a variant of a query request that returns only the number of matching records, without transmitting the record data itself. It is expressed as a single frontmatter key.
+
+**Request frontmatter:**
+
+| Key | Type | Meaning |
+| --- | --- | --- |
+| `count` | boolean | If `true`, return only the match count; omit record data. |
+
+```markdown
+count: true
+
+#? Orders
+status: pending
+```
+
+**Response document:**
+
+When `count: true` is requested, the response SHOULD carry `count` as frontmatter — before the root heading — consistent with all other response metadata:
+
+```markdown
+count: 142
+
+# Orders
+```
+
+### 23.3 Field Projection
+
+Field projection restricts which columns or properties are included in the response. This reduces response size and keeps context windows focused on the fields the caller actually needs.
+
+**Request frontmatter:**
+
+| Key | Type | Meaning |
+| --- | --- | --- |
+| `select` | string | Comma-separated list of field names to include in each returned record. |
+
+```markdown
+select: OrderID, CustomerID, OrderDate
+page-size: 50
+
+#? Orders
+```
+
+When `select` is present, each returned record SHOULD contain only the listed fields. Fields absent from the list SHOULD be omitted from the response. The projection applies to the record body; frontmatter and metadata fields are unaffected.
+
+If a listed field does not exist in the underlying data, the implementation SHOULD silently omit it rather than returning an error, unless the implementation has a schema that makes the missing field clearly a caller mistake.
+
+### 23.4 Result Ordering
+
+Result ordering controls the sort sequence of returned records.
+
+**Request frontmatter:**
+
+| Key | Type | Meaning |
+| --- | --- | --- |
+| `sort` | string | Comma-separated list of `<field> [asc\|desc]` clauses. Direction defaults to `asc`. |
+
+```markdown
+sort: OrderDate desc, CustomerID asc
+page-size: 50
+
+#? Orders
+```
+
+Multiple sort columns are listed in priority order (primary sort first). The `asc` direction keyword MAY be omitted; `desc` MUST be explicit.
+
+```markdown
+sort: total desc
+
+#? Orders
+```
+
+### 23.5 Linked Record Expansion
+
+When a document contains fields that reference other records (see Section 20, entity references), the caller MAY request inline resolution of those references using the `expand` frontmatter key.
+
+**Request frontmatter:**
+
+| Key | Type | Meaning |
+| --- | --- | --- |
+| `expand` | string | Comma-separated list of field names whose linked records should be resolved inline. |
+
+```markdown
+expand: Customer, Employee
+
+#? Orders
+status: active
+```
+
+Without `expand`, a linked field contains only the reference identifier (bare ID, URI, or other key). With `expand`, the server SHOULD replace the identifier with the full linked record, embedded as a nested JMD object under the field heading.
+
+Expansion is one level deep by default. Use `depth` (Section 23.6) to control recursion.
+
+### 23.6 Expansion Depth
+
+When `expand` is requested, the server expands one level of links by default. The `depth` key controls how many levels of linked records are resolved recursively.
+
+**Request frontmatter:**
+
+| Key | Type | Meaning |
+| --- | --- | --- |
+| `depth` | integer | Number of link levels to expand. `1` = direct links only (default). `2` = direct links and their links, etc. |
+
+```markdown
+expand: Customer
+depth: 2
+
+#? Orders
+```
+
+Implementations SHOULD enforce a reasonable maximum depth to prevent runaway recursion on circular or deeply connected schemas. A server MAY silently cap `depth` at its maximum supported value rather than returning an error.
+
+### 23.7 Conventions Summary
+
+| Key | Direction | Meaning |
+| --- | --- | --- |
+| `page-size` | request | Records per page |
+| `page` | request | 1-based page number |
+| `count` | request | Return match count only (boolean `true`) |
+| `select` | request | Comma-separated list of fields to include |
+| `sort` | request | Comma-separated sort specification |
+| `expand` | request | Comma-separated list of linked fields to resolve inline |
+| `depth` | request | Expansion depth for linked records (default: 1) |
+| `total` | response | Total matching records across all pages |
+| `page` | response | Page number returned |
+| `pages` | response | Total page count |
+| `page-size` | response | Effective page size |
+
+All request keys appear before the root heading. All response keys appear before the root heading. Unknown keys in either direction MUST be ignored (Section 22.2).
 
 ---
 
