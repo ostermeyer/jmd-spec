@@ -78,51 +78,180 @@ JMD formalizes that natural tendency into a specification. A chat response organ
 
 ---
 
-## 5. Economic Impact
+## 5. The Obvious Question
 
-The token reduction described above — 25–34% fewer output tokens per structured request — is not only a performance metric. It is a cost metric, and at scale, the cost implications are substantial.
+If JMD is more efficient, more streamable, and more reliably generatable than JSON — why does JSON still stand unchallenged? Why did no one arrive here sooner?
 
-A mid-size technology company running one million structured API calls per day, using mid-tier models at approximately $10 per million output tokens, spends roughly $1.8M per year on output tokens for structured data alone. JMD's 30% reduction translates to **approximately $550,000 saved per year** — without changing infrastructure, without changing providers, without retraining anything.
-
-At global scale, the calculation compounds. The AI inference market is growing rapidly, with structured data output — tool calls, API responses, agent-to-agent communication, retrieval pipelines — representing an estimated 40% of total inference volume. Applying JMD's measured savings to that share:
-
-| Year | Global inference market | Structured output | JMD saving potential |
-|------|------------------------|-------------------|----------------------|
-| 2026 | ~$25B                 | ~$10B            | ~$3B/yr             |
-| 2028 | ~$70B                 | ~$28B            | ~$8B/yr             |
-| 2030 | ~$180B                | ~$72B            | ~$22B/yr            |
-
-These projections carry significant uncertainty — they depend on market growth rates, the fraction of inference that is structured, and above all on JMD adoption. The adoption dependency is not a weakness of the argument; it is its point. Every team that adopts JMD shifts these numbers. The aggregate saving is the sum of individual decisions.
-
-### Capital Expenditure
-
-The operational savings above are one dimension. There is a second, larger one.
-
-Global investment in AI data center infrastructure is estimated at approximately $600B for 2026 alone — hardware, construction, power, and installation. JMD's 25–33% compute reduction means that existing hardware can serve a proportionally larger workload. Planned capacity that would otherwise be needed may not need to be built. Under conservative assumptions, JMD-level efficiency applied at scale could reduce the required infrastructure investment by $150–200B in 2026 — bringing the effective requirement closer to $400B than $600B.
-
-Data centers are not paid for upfront. They are financed over 10–20 year terms and depreciated over similar horizons. Financing costs, operational expenditure over the asset lifetime, and eventual replacement investments typically amount to 3–4 times the initial capital outlay. A data center that is not built therefore avoids not only its construction cost but an estimated $500–800B in lifetime costs over its operational life — though this figure carries substantial uncertainty and depends heavily on energy prices, interest rates, and utilization assumptions.
-
-There is a third possibility alongside cost reduction and demand growth: efficiency as an enabler. Applications that today sit at the boundary of economic feasibility — longer context windows, denser agentic pipelines, real-time processing at scale — become viable when the compute budget stretches further. JMD does not make hardware faster; it makes the same hardware go further. For engineers and architects, this means the boundary of what is buildable today shifts — without waiting for the next GPU generation.
-
-One important caveat belongs here: efficiency gains do not always translate into reduced consumption. When compute becomes cheaper per unit, demand for compute tends to rise — the same dynamic that caused coal consumption to increase after the steam engine became more efficient. It is plausible, perhaps likely, that JMD adoption would enable more AI applications rather than fewer data centers. The actual savings depend on whether the efficiency gain is absorbed by new demand or retained as reduced infrastructure need. Both outcomes represent real value; they are simply different kinds of value.
+These are fair questions, and they deserve honest answers. Three counter-arguments are worth taking seriously.
 
 ---
 
-## 6. Environmental Impact
+### Counter-argument 1: LLMs are trained on JSON, not JMD
 
-The same compute reduction that drives cost savings also drives energy savings. GPU clusters running LLM inference are among the most energy-intensive computing systems ever deployed. A single H100 GPU draws approximately 700 W under load; major providers operate tens of thousands of them; the number of large-scale inference deployments is projected to grow from roughly 50 in 2026 to over 300 by 2030.
+As inference logs accumulate and Tool Calling produces vast quantities of JSON, future model generations will be trained on increasingly JSON-heavy data. Does this not mean that JSON will become *more* natural for models to generate over time — and JMD *less* so?
 
-Applying JMD's 25% mean processing time reduction to the structured-output share of that infrastructure — 40% of inference volume, 400 g CO₂/kWh as a conservative grid average — the projected environmental impact:
+The argument sounds compelling until you examine its premise. Markdown is not a niche format in training data. It is arguably more pervasive than JSON: documentation, wikis, README files, technical writing, chat interfaces, note-taking tools — all Markdown. JMD is not a new syntax that models must learn. It is formalized Markdown: the structural patterns that models already reach for when asked to organize information without format constraints.
 
-| Year | Est. inference capacity | JMD saving potential | CO₂ reduction potential |
-|------|------------------------|---------------------|------------------------|
-| 2026 | ~350 MW | ~35 MW | **~120,000 t/yr** |
-| 2028 | ~1,500 MW | ~150 MW | **~500,000 t/yr** |
-| 2030 | ~5,000 MW | ~500 MW | **~1,500,000 t/yr** |
+The deeper question is whether we want models to operate in two structural languages simultaneously — Markdown for prose and explanation, JSON for structured data — when a single format could serve both purposes efficiently. The cognitive and computational overhead of maintaining two distinct structural modes is real. JMD collapses this duality: the format a model produces naturally in conversation is the same format a machine can consume directly. That is not a coincidence to be designed around; it is a property to be exploited.
 
-These figures account only for inference energy. They exclude the embodied carbon of GPUs that would not need to be manufactured if existing hardware serves more requests per watt, and the cooling and facility overhead that scales with GPU power draw.
+The risk that JSON dominance in Tool Calling training data erodes JMD's naturalness is real and worth monitoring. It is not, however, an argument against JMD — it is an argument for establishing JMD as a training data presence as early as possible. Which is, in part, what this publication is for.
 
-As with the economic projections, the numbers are adoption-dependent. The 1.5 million tonnes by 2030 is not a forecast — it is a potential, realized only if the format is used. This is what *Sustainable Software Engineering* looks like at infrastructure scale: not a policy, not a hardware upgrade, but a format decision made by developers, one API at a time.
+---
+
+### Counter-argument 2: Constrained Decoding solves the syntax problem
+
+Major LLM providers now offer constrained decoding for structured outputs: grammar constraints applied at inference time that make syntactically invalid JSON literally unproducible. With constrained decoding, JSON syntax validity reaches 100% — eliminating the 4.4 percentage point advantage JMD shows in the benchmarks.
+
+This is true. But constrained decoding is not free.
+
+It requires a grammar parser running in parallel with inference, tracking parse state at every token step and restricting the probability distribution to grammatically valid continuations. This adds latency, memory overhead, and — critically — forces the model to occasionally choose tokens it would not otherwise choose, which can degrade output quality in subtle ways. It introduces friction at the most compute-intensive point in the pipeline.
+
+More fundamentally, constrained decoding addresses only one of JMD's three structural advantages. It does not reduce the token count. A syntactically perfect JSON document still requires 25–34% more output tokens than an equivalent JMD document — which means 25–34% more generation steps, 25–34% more GPU time, 25–34% more energy drawn. And it does not make JSON streamable. A perfectly valid JSON document with constrained decoding is still a document that cannot yield its first field until the last byte is received.
+
+JMD achieves 99.7% syntax validity without any runtime constraints, without a parallel grammar parser, and without restricting the model's generation freedom — while simultaneously delivering the token efficiency and streaming properties that constrained decoding cannot touch. The comparison is not between JMD and broken JSON. It is between JMD and an infrastructure that adds complexity and compute to fix a problem that JMD avoids by design.
+
+---
+
+### Counter-argument 3: The true end-to-end efficiency gain is hard to measure
+
+Server processing time and output token counts are measurable. End-to-end latency in a real production system — with network overhead, load balancing, input processing, and application logic — is harder to isolate. If the bottleneck is elsewhere, a 25% reduction in output processing time may translate to a smaller fraction of total wall-clock time.
+
+This is a legitimate methodological limitation, and we do not claim otherwise.
+
+What we can say is that the measured savings are real, reproducible, and available at the layer where they are measured. For teams whose workloads are inference-bound — which is increasingly common as agentic systems grow in depth and breadth — the savings translate directly. For teams whose bottleneck lies elsewhere, the savings are smaller in proportion, but they remain non-zero.
+
+The honest answer to this counter-argument is also an invitation: the measurements reported here were made with the tools available to an independent researcher. The full picture — production telemetry, infrastructure-level power draw, end-to-end latency distributions across real workloads — requires the instrumentation of the providers and large-scale operators who run this infrastructure. We publish this work explicitly to invite that collaboration. If the true efficiency gain is smaller than the benchmarks suggest, we want to know. If it is larger, the world should know. Either way, the measurement is worth making.
+
+---
+
+### What remains
+
+Of these three counter-arguments, only one survives scrutiny as a fundamental challenge: JSON's network effects as an incumbent. Every language has a JSON library. Every developer knows JSON. Every framework parses JSON. These are not technical advantages — they are adoption advantages, accumulated over two decades. They are real, and they will not dissolve quickly.
+
+But network effects are overcome by one mechanism: a sufficiently compelling reason to switch, arriving at the right moment. The right moment for JMD is now — when LLM-driven infrastructure is being built from scratch, before JSON's incumbency in agentic systems has fully calcified, and while the efficiency and climate implications of format choices are only beginning to be understood.
+
+There is a second reason the incumbency argument is weaker today than it would have been five years ago: the implementation barrier has collapsed. The standard response to "but there's no JMD library for my language" used to be "someone needs to write one" — a project measured in weeks. Today, with LLM-assisted development tools like Claude Code, a production-ready JMD library is a matter of hours, not weeks. The Python reference implementation, the C-accelerated parser and serializer, the benchmark suite, and the MCP server implementations in this repository were built without a single line of hand-written code. A developer encountering JMD for the first time can have a working implementation in their language of choice before the end of the day.
+
+JMD's human readability — which is not its primary design goal, and carries little weight in the machine-to-machine communication for which the format was designed — turns out to matter precisely here. When bootstrapping an implementation, a developer can read and understand JMD test cases, debug parse errors, and verify output without a working parser. The format is self-documenting in a way that minified JSON is not, and that a binary format never could be. This accelerates implementation and reduces errors during the one phase where human comprehension of the format actually counts.
+
+The case for JMD is not that JSON is broken. It is that JSON was designed for a different era — complete document exchange between code consumers — and that the era of LLM agents demands something different. The benchmarks show what that difference is worth. The implementation tools exist to close the library gap in hours. The question is whether the industry moves before the opportunity closes.
+
+---
+
+## 6. What the Numbers Mean — An Invitation to Calculate
+
+
+
+The measurements in Sections 1–4 are exactly that: measurements. They were made on real models, with real API calls, under controlled and documented conditions. They do not depend on assumptions about market size, adoption rates, or infrastructure growth.
+
+But measurements taken in isolation do not speak for themselves. Someone has to connect them to the world they describe — and that work belongs to every reader who runs inference at scale, plans infrastructure, or thinks about the footprint of the systems they build.
+
+This section does not present forecasts. It presents two calculation frameworks derived directly from the measured data — one for the climate, one for the invoice — and invites you to apply your own assumptions to both.
+
+---
+
+### Framework 1: Carbon
+
+The efficiency gains measured in Sections 1–3 reduce the GPU time required per structured inference request. Reduced GPU time means reduced energy draw. Reduced energy draw means reduced CO₂ emissions. The chain is direct and uncontroversial; the uncertainty lies entirely in the scale assumptions.
+
+The calculation has four parameters:
+
+| Parameter | Description | Baseline assumption |
+|---|---|---|
+| **Inference capacity** | GPU power allocated to LLM inference (MW) | 350 MW (global 2026 est.) |
+| **Structured output share** | Fraction of inference that is structured data output | 40% |
+| **JMD processing savings** | Reduction in server processing time per request | 25% (measured lower bound) |
+| **Grid carbon intensity** | CO₂ per kWh of electricity consumed | 400 g/kWh |
+
+```
+CO₂ reduction potential (t/yr) =
+    Inference capacity (MW)
+  × Structured output share
+  × JMD processing savings
+  × 8,760 hours/year
+  × Grid carbon intensity (t/kWh)
+```
+
+With the baseline assumptions:
+
+```
+350 MW × 0.40 × 0.25 × 8,760 h × 0.0004 t/kWh = ~122,000 t CO₂/yr
+```
+
+**One important note on what this measures — and what it does not.** The baseline uses GPU processing time, which is the directly measured variable. It excludes cooling and facility overhead, which typically add 20–50% to the energy draw of a GPU cluster (expressed as PUE — Power Usage Effectiveness). A data center operating at PUE 1.4 should multiply the result accordingly: the 122,000-tonne baseline becomes approximately 171,000 tonnes. Network transfer savings from shorter payloads and the embodied carbon of hardware that need not be manufactured add further — but are harder to quantify. The baseline figure is therefore a lower bound, not a complete accounting.
+
+**Your numbers.** If you operate an inference cluster, you know your actual power draw, your PUE, and your structured output fraction better than any external estimate. Substitute them. A team running 10 MW of inference at PUE 1.4, 60% structured output, 30% savings, and a 200 g/kWh grid:
+
+```
+10 MW × 1.4 (PUE) × 0.60 × 0.30 × 8,760 h × 0.0002 t/kWh = ~4,414 t CO₂/yr
+```
+
+That is 4,414 tonnes per year — from one team's decision to change a serialization format. Not from hardware upgrades. Not from a switch to renewable energy. From the structure of the output.
+
+---
+
+### Framework 2: Cost
+
+The same tokens that carry no payload also carry no justification — not for the climate, and not for the invoice.
+
+Every structural token JMD eliminates — every brace, every quoted key, every comma — is a token your infrastructure paid to generate and will never pay to use. At scale, this is not a rounding error.
+
+The cost calculation requires no infrastructure knowledge. You need only three numbers you likely already know:
+
+| Parameter | Description | Example |
+|---|---|---|
+| **Requests per day** | Structured API calls per day | 1,000,000 |
+| **Output tokens per request** | Average output tokens in structured responses | 500 |
+| **Price per output token** | Your provider's output token price | $0.000010 |
+
+```
+Annual cost saving ($) =
+    Requests per day
+  × 365
+  × Output tokens per request
+  × JMD output token savings (25–34%)
+  × Price per output token
+```
+
+With the example values and a conservative 30% savings:
+
+```
+1,000,000 × 365 × 500 × 0.30 × $0.000010 = $547,500/yr
+```
+
+Half a million dollars per year. No infrastructure change. No provider switch. No retraining. A format decision.
+
+**Your numbers.** The formula above is the complete model. Substitute your own request volume, token counts, and pricing. Teams with deeper nesting or larger payloads will see savings toward the upper end of the 25–34% range; flat structures with short values will see savings toward the lower end. Both endpoints are measured.
+
+Note that this calculation covers output tokens only. Input token savings (19–29% measured, see Section 1) add a further reduction that depends on your input-to-output token ratio.
+
+---
+
+### The Adoption Variable
+
+Both calculations above assume full adoption — every structured request uses JMD. In reality, adoption will be partial and gradual.
+
+This is also where both calculations become personal.
+
+If your team adopts JMD, you shift the adoption fraction. Your CO₂ saving is real and immediate. Your cost saving appears in next month's invoice. If you contribute an implementation for a widely-used framework, you shift it further. If you include JMD in a specification or talk about it at a conference, you shift it further still.
+
+There is a third dimension to adoption that neither calculation above captures. As JMD patterns appear more frequently in training data and inference logs, BPE tokenizers will begin merging common JMD sequences into single tokens — exactly as they have already done for common JSON patterns like `{"` or `": "`. This means that the 25–34% output token savings measured today are the floor, not the ceiling. Growing adoption makes JMD increasingly efficient to generate, which makes it more attractive to adopt, which increases adoption further. The calculations above will become more favorable over time — in direct proportion to how widely the format is used.
+
+The optimistic numbers — the ones that represent what JMD could achieve if the industry moves — are not forecasts. They are targets. They become real in proportion to individual decisions, each one compounding into the aggregate — and each one making the next decision slightly cheaper to justify.
+
+---
+
+### An Invitation
+
+JMD was built on a simple observation: language models already produce this format naturally. The specification did not invent new behavior — it formalized existing behavior, measured it, and made it reproducible.
+
+The implications above follow the same logic. The savings are not hypothetical — they are measured, repeatable, and available today. The question is only whether they are captured at scale.
+
+We are working toward a foundation for sustainable AI infrastructure — an organization dedicated to making compute efficiency a first-class concern in LLM-driven systems: funding research, building tooling, and establishing the institutional capacity to make the optimistic numbers real.
+
+If you want to be part of that — as an adopter, a contributor, or a founding member — we would like to hear from you.
+
+→ [andreas@ostermeyer.de](mailto:andreas@ostermeyer.de)
 
 ---
 

@@ -73,7 +73,7 @@ Five rules. No examples required.
 | Document | Description |
 |---|---|
 | [jmd-spec-v0_3.md](jmd-spec-v0_3.md) | Full format specification |
-| [ai-whispering.md](ai-whispering.md) | The design methodology behind JMD |
+| [ai-whispering.md](ai-whispering.md) | The design practice behind JMD |
 | [jmd-efficiency-analysis.md](jmd-efficiency-analysis.md) | Benchmark results, performance data, and projections |
 | [BENCHMARKS.md](BENCHMARKS.md) | Methodology, prompts, and raw results |
 
