@@ -12,9 +12,15 @@ When a language model generates structured data, every token costs the same: the
 
 JSON uses matched delimiters: opening and closing braces for objects, brackets for arrays, quotes for every key, commas between every value. A model generating JSON must produce all of these. JMD uses heading depth for hierarchy, bare keys for fields, and line endings for delimiters. The structural overhead is smaller by design.
 
-The measurement confirms this. Across six models from three providers, tested on identical data and validated by parsing and ground-truth comparison, JMD requires **25–34% fewer output tokens** than pretty-printed JSON. Data fidelity is 100%: JMD introduces no data loss compared to JSON.
+The measurement confirms this. Two complementary measurements tell the story.
 
-Shorter output translates directly to shorter generation. The model runs fewer steps because there are fewer tokens to produce. This is the mechanism behind a second measurement: **13–31% less server processing time** per request. The reduction is real compute saved, not a measurement artefact.
+In a dedicated format fidelity test — where models were given explicit structured data to reproduce verbatim, with no reasoning task — JMD requires **28–34% fewer output tokens** than pretty-printed JSON across seven models from four providers. This represents the structural overhead of JMD versus JSON in isolation: the tokens eliminated are pure format syntax, not content.
+
+In production agentic chain benchmarks — where models reason, transform, and generate alongside structured output — the savings are **8–18% per model** (Claude Sonnet 4.6: −18%, GPT-5.4: −14%, Mistral Large: −8%, Gemini 2.5 Flash: −1%). The chain figures are lower because they include reasoning text and explanation, which compresses less uniformly across formats. Payload token savings — the cumulative cost of passing outputs between agents — are consistent at approximately **22%** across all providers except Gemini (−10%), reflecting Gemini's more aggressive JSON tokenization.
+
+Data fidelity is 100% in the fidelity test: JMD introduces no data loss compared to JSON.
+
+Shorter output translates directly to shorter generation for providers where inference cost tracks generation steps. Server processing time results are mixed across providers: GPT-5.4 showed a statistically significant reduction of **−8.6%** (p=0.006); Mistral Large showed −2.9% (not statistically significant); Claude Sonnet 4.6 showed +1.1% (not significant); Gemini 2.5 Flash showed **+18.3%** (p<0.001, JMD was slower). An earlier pilot study on budget-tier models showed 13–31% reductions; those figures were not reproducible at statistical significance in the larger Phase 2b study.
 
 ### Why Minification Doesn't Help
 
@@ -36,9 +42,9 @@ JMD's efficiency has a compounding property. As JMD patterns appear more frequen
 
 JMD is not only cheaper to generate — it is faster to process.
 
-A C-accelerated JMD parser outperforms Python's C-accelerated `json.loads()` by **1.4–2.9×** across payloads from single objects to 500-record collections. The advantage is largest for small objects, where JMD's line-oriented grammar requires no delimiter matching, no escape processing, and no look-ahead for the common case. A plain `key: value` line is parsed with a single pass. JSON requires tracking nested brace depth at every character.
+A C-accelerated JMD parser outperforms Python's C-accelerated `json.loads()` by **1.7–2.1×** across payload sizes (simple objects to large documents). The advantage is largest for small objects, where JMD's line-oriented grammar requires no delimiter matching, no escape processing, and no look-ahead for the common case. A plain `key: value` line is parsed with a single pass. JSON requires tracking nested brace depth at every character.
 
-A C-accelerated JMD serializer outperforms `json.dumps()` by **1.6–6.0×**, and remains **1.6–4.4× faster** even against programmatically minified JSON. Serialization is fast because JMD writes bare keys without quoting, emits no delimiters or commas, and requires no indentation computation — the heading prefix replaces the recursive whitespace tracking that JSON pretty-printing demands.
+A C-accelerated JMD serializer outperforms `json.dumps()` by comparable margins. Serialization is fast because JMD writes bare keys without quoting, emits no delimiters or commas, and requires no indentation computation — the heading prefix replaces the recursive whitespace tracking that JSON pretty-printing demands.
 
 For most REST and agentic scenarios, network latency and inference time dominate. Parser throughput does not affect end-to-end latency in these cases. It matters where volume is high and latency budgets are tight: high-throughput processing pipelines, edge deployments, and real-time analytics over streamed JMD.
 
@@ -106,7 +112,7 @@ This is true. But constrained decoding is not free.
 
 It requires a grammar parser running in parallel with inference, tracking parse state at every token step and restricting the probability distribution to grammatically valid continuations. This adds latency, memory overhead, and — critically — forces the model to occasionally choose tokens it would not otherwise choose, which can degrade output quality in subtle ways. It introduces friction at the most compute-intensive point in the pipeline.
 
-More fundamentally, constrained decoding addresses only one of JMD's three structural advantages. It does not reduce the token count. A syntactically perfect JSON document still requires 25–34% more output tokens than an equivalent JMD document — which means 25–34% more generation steps, 25–34% more GPU time, 25–34% more energy drawn. And it does not make JSON streamable. A perfectly valid JSON document with constrained decoding is still a document that cannot yield its first field until the last byte is received.
+More fundamentally, constrained decoding addresses only one of JMD's three structural advantages. It does not reduce the token count. A syntactically perfect JSON document still requires more output tokens than an equivalent JMD document — which means more generation steps, more GPU time, more energy drawn. And it does not make JSON streamable. A perfectly valid JSON document with constrained decoding is still a document that cannot yield its first field until the last byte is received.
 
 JMD achieves 99.7% syntax validity without any runtime constraints, without a parallel grammar parser, and without restricting the model's generation freedom — while simultaneously delivering the token efficiency and streaming properties that constrained decoding cannot touch. The comparison is not between JMD and broken JSON. It is between JMD and an infrastructure that adds complexity and compute to fix a problem that JMD avoids by design.
 
@@ -114,7 +120,7 @@ JMD achieves 99.7% syntax validity without any runtime constraints, without a pa
 
 ### Counter-argument 3: The true end-to-end efficiency gain is hard to measure
 
-Server processing time and output token counts are measurable. End-to-end latency in a real production system — with network overhead, load balancing, input processing, and application logic — is harder to isolate. If the bottleneck is elsewhere, a 25% reduction in output processing time may translate to a smaller fraction of total wall-clock time.
+Server processing time and output token counts are measurable. End-to-end latency in a real production system — with network overhead, load balancing, input processing, and application logic — is harder to isolate. If the bottleneck is elsewhere, a reduction in output processing time may translate to a smaller fraction of total wall-clock time.
 
 This is a legitimate methodological limitation, and we do not claim otherwise.
 
@@ -130,7 +136,7 @@ Of these three counter-arguments, only one survives scrutiny as a fundamental ch
 
 But network effects are overcome by one mechanism: a sufficiently compelling reason to switch, arriving at the right moment. The right moment for JMD is now — when LLM-driven infrastructure is being built from scratch, before JSON's incumbency in agentic systems has fully calcified, and while the efficiency and climate implications of format choices are only beginning to be understood.
 
-There is a second reason the incumbency argument is weaker today than it would have been five years ago: the implementation barrier has collapsed. The standard response to "but there's no JMD library for my language" used to be "someone needs to write one" — a project measured in weeks. Today, with LLM-assisted development tools like Claude Code, a production-ready JMD library is a matter of hours, not weeks. The Python reference implementation, the C-accelerated parser and serializer, the benchmark suite, and the MCP server implementations in this repository were built without a single line of hand-written code. A developer encountering JMD for the first time can have a working implementation in their language of choice before the end of the day.
+There is a second reason the incumbency argument is weaker today than it would have been five years ago: the implementation barrier has collapsed. The standard response to "but there's no JMD library for my language" used to be "someone needs to write one" — a project measured in weeks. Today, with LLM-assisted development tools, a production-ready JMD library is a matter of hours, not weeks. A developer encountering JMD for the first time can have a working implementation in their language of choice before the end of the day.
 
 JMD's human readability — which is not its primary design goal, and carries little weight in the machine-to-machine communication for which the format was designed — turns out to matter precisely here. When bootstrapping an implementation, a developer can read and understand JMD test cases, debug parse errors, and verify output without a working parser. The format is self-documenting in a way that minified JSON is not, and that a binary format never could be. This accelerates implementation and reduces errors during the one phase where human comprehension of the format actually counts.
 
@@ -139,8 +145,6 @@ The case for JMD is not that JSON is broken. It is that JSON was designed for a 
 ---
 
 ## 6. What the Numbers Mean — An Invitation to Calculate
-
-
 
 The measurements in Sections 1–4 are exactly that: measurements. They were made on real models, with real API calls, under controlled and documented conditions. They do not depend on assumptions about market size, adoption rates, or infrastructure growth.
 
@@ -209,21 +213,23 @@ Annual cost saving ($) =
     Requests per day
   × 365
   × Output tokens per request
-  × JMD output token savings (25–34%)
+  × JMD output token savings (8–34%, depending on workload)
   × Price per output token
 ```
 
-With the example values and a conservative 30% savings:
+Use the fidelity-test figure (28–34%) for workloads where models reproduce structured data verbatim — data pipeline steps, schema generation, and similar tasks. Use the chain-benchmark figure (8–18%) for workloads where models reason and generate alongside structured output. For mixed workloads, 20% is a reasonable conservative middle estimate.
+
+With the example values and a conservative 20% savings:
 
 ```
-1,000,000 × 365 × 500 × 0.30 × $0.000010 = $547,500/yr
+1,000,000 × 365 × 500 × 0.20 × $0.000010 = $365,000/yr
 ```
 
-Half a million dollars per year. No infrastructure change. No provider switch. No retraining. A format decision.
+Over a third of a million dollars per year. No infrastructure change. No provider switch. No retraining. A format decision.
 
-**Your numbers.** The formula above is the complete model. Substitute your own request volume, token counts, and pricing. Teams with deeper nesting or larger payloads will see savings toward the upper end of the 25–34% range; flat structures with short values will see savings toward the lower end. Both endpoints are measured.
+**Your numbers.** The formula above is the complete model. Substitute your own request volume, token counts, and pricing. Teams with deeper nesting or larger payloads will see savings toward the upper end of the range; flat structures with short values will see savings toward the lower end. Both endpoints are measured.
 
-Note that this calculation covers output tokens only. Input token savings (19–29% measured, see Section 1) add a further reduction that depends on your input-to-output token ratio.
+Note that this calculation covers output tokens only. Input token savings (approximately 22% for payload tokens) add a further reduction that depends on your input-to-output token ratio.
 
 ---
 
@@ -235,7 +241,7 @@ This is also where both calculations become personal.
 
 If your team adopts JMD, you shift the adoption fraction. Your CO₂ saving is real and immediate. Your cost saving appears in next month's invoice. If you contribute an implementation for a widely-used framework, you shift it further. If you include JMD in a specification or talk about it at a conference, you shift it further still.
 
-There is a third dimension to adoption that neither calculation above captures. As JMD patterns appear more frequently in training data and inference logs, BPE tokenizers will begin merging common JMD sequences into single tokens — exactly as they have already done for common JSON patterns like `{"` or `": "`. This means that the 25–34% output token savings measured today are the floor, not the ceiling. Growing adoption makes JMD increasingly efficient to generate, which makes it more attractive to adopt, which increases adoption further. The calculations above will become more favorable over time — in direct proportion to how widely the format is used.
+There is a third dimension to adoption that neither calculation above captures. As JMD patterns appear more frequently in training data and inference logs, BPE tokenizers will begin merging common JMD sequences into single tokens — exactly as they have already done for common JSON patterns like `{"` or `": "`. This means that the output token savings measured today are the floor, not the ceiling. Growing adoption makes JMD increasingly efficient to generate, which makes it more attractive to adopt, which increases adoption further. The calculations above will become more favorable over time — in direct proportion to how widely the format is used.
 
 The optimistic numbers — the ones that represent what JMD could achieve if the industry moves — are not forecasts. They are targets. They become real in proportion to individual decisions, each one compounding into the aggregate — and each one making the next decision slightly cheaper to justify.
 
@@ -259,7 +265,7 @@ If you want to be part of that — as an adopter, a contributor, or a founding m
 
 The benchmark evidence supports three complementary claims:
 
-**Compute efficiency.** 13–31% less server processing time and 25–34% fewer output tokens. Not cosmetic compression — a shorter generation process. Fewer tokens to produce means fewer generation steps; fewer generation steps means less GPU time; less GPU time means lower cost and lower energy draw. Format fidelity testing confirms 100% data fidelity across all models tested: JMD introduces no data loss compared to JSON.
+**Compute efficiency.** 8–18% fewer output tokens in production chain execution; 28–34% in pure format fidelity tests. Payload token savings of approximately 22% when passing outputs between agents. Not cosmetic compression — a shorter generation process. Server processing time reduction is statistically significant for GPT-5.4 (−8.6%); results are mixed for other providers. Format fidelity testing confirms 100% data fidelity: JMD introduces no data loss compared to JSON.
 
 **Streaming.** Every completed JMD line is immediately parseable. A partial JMD document contains all fields received so far. JSON cannot match this without non-standard extensions. The structural advantage scales with payload size and is particularly significant for multi-step agentic pipelines, where one tool's partial output can unblock the next tool without waiting for document completion.
 
