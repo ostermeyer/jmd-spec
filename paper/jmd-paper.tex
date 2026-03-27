@@ -1,0 +1,446 @@
+\documentclass[11pt]{article}
+
+% Use "preprint" for arXiv / non-anonymous version with page numbers
+\usepackage[preprint]{acl}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{times}
+\usepackage{latexsym}
+\usepackage{microtype}
+\usepackage{booktabs}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{amsmath}
+\usepackage{breakcites}
+
+\lstset{
+  basicstyle=\small\ttfamily,
+  breaklines=true,
+  frame=single,
+  rulecolor=\color{gray!40},
+  backgroundcolor=\color{gray!5},
+  xleftmargin=1em,
+  xrightmargin=1em,
+}
+
+\title{Format as Behavior: Empirical Evidence that\\
+Markdown-Aligned Structure Improves LLM Output Reliability,\\
+Efficiency, and Epistemic Communication in Agentic Systems}
+
+\author{Andreas Ostermeyer \\
+  \texttt{andreas@ostermeyer.de}}
+
+\date{}
+
+\begin{document}
+
+\begin{abstract}
+  Large language models exhibit consistent structural preferences when generating data without format constraints: heading-based hierarchy, bare key-value pairs, bullet lists for sequences. These tendencies are not noise --- they are signal. We report empirical findings from a systematic study of whether formalizing these natural tendencies into a specification produces measurable improvements in output reliability, computational efficiency, and epistemic communication quality in multi-step agentic pipelines.
+
+  We introduce JMD (JSON Markdown), a Markdown-native structured data protocol, and evaluate it against pretty-printed JSON across seven models from four providers in more than 6,000 API calls. Key findings: syntax validity of 99.7\% versus 95.6\% for JSON across 720 five-step chain tests; 8--18\% fewer output tokens in chain execution (28--34\% in pure format fidelity tests), with payload token savings typically around 22\% across providers (10--22\% depending on tokenizer architecture); streaming time-to-first-usable-byte improvements of up to 15$\times$; and server processing time reductions of up to 9\% (statistically significant for one of four providers tested). Most significantly, 98.5\% adoption of optional epistemic metadata fields when named in the primer, yielding a 41\% reduction in hallucination rates and a shift from 48\% to 99\% conflict acknowledgment in downstream agents.
+
+  These results support a broader design principle: systems that align with natural model behavior rather than working against it produce more reliable outputs at lower computational cost. JMD is a concrete instantiation of this principle, not a replacement for existing formats, but evidence that behavioral alignment is a measurable engineering variable.
+\end{abstract}
+
+\maketitle
+
+\section{Introduction}
+
+Structured data generation has become a load-bearing capability in modern LLM deployments. Agentic pipelines, tool-calling interfaces, and machine-to-machine communication all depend on models producing outputs that downstream components can parse reliably. The dominant approach to ensuring this reliability is constraint-based: JSON schemas, grammar-constrained decoding, output validators, and retry logic. These mechanisms treat the model as a probabilistic generator that must be corrected into compliance.
+
+This paper starts from a different observation.
+
+When language models are asked to organize structured data without format constraints --- no schema, no instructions beyond the task itself --- they do not produce random structure. They converge. Across providers, architectures, and parameter scales, models reach for the same patterns: headings to express hierarchy, bare key-value pairs for fields, bullet lists for sequences. This convergence is not coincidental. It reflects the accumulated signal of how humans write structured content, and it is stable enough to be designed against.
+
+The question we investigate is whether formalizing these natural tendencies --- rather than overriding them --- produces measurable improvements in the reliability, efficiency, and epistemic quality of structured outputs in agentic systems. To answer it, we introduce JMD (JSON Markdown), a Markdown-native structured data protocol, and evaluate it systematically against pretty-printed JSON across seven models from four providers in more than 6,000 API calls spanning three independent domain scenarios.
+
+Our findings are organized around three research questions:
+
+\textbf{RQ1 --- Reliability:} Does alignment with natural model behavior reduce syntax errors in multi-step agentic chains, and if so, where do the gains concentrate?
+
+\textbf{RQ2 --- Efficiency:} What are the computational consequences --- in output tokens, server processing time, and streaming latency --- of eliminating structural overhead tokens that models generate reluctantly?
+
+\textbf{RQ3 --- Epistemic communication:} Can a structured format serve as a reliable channel for a model's internal uncertainty representation, and what are the measurable downstream effects on hallucination rates and conflict recognition in subsequent agents?
+
+The results are unambiguous on RQ1 and RQ2. On RQ3, they are surprising: epistemic metadata fields were adopted in 98.5\% of generation steps when named as optional in the primer, and their presence produced a 41\% reduction in hallucination rates and a shift from 48\% to 99\% conflict acknowledgment in downstream agents. This was not an intended feature of the protocol. It was a consequence of providing a formalized location for behavior that already existed inside the models.
+
+We make no claim that JMD should replace JSON in general-purpose applications. JSON is mature, universally supported, and appropriate for the vast majority of use cases where a serializer produces the output. The specific context we address is one where a language model is the generator --- where the format is not written by a program but produced token by token by a generative system with structural preferences of its own. In that context, the choice of format is not neutral. It is a design variable with measurable consequences.
+
+The broader implication --- that behavioral alignment is a tractable engineering principle, not merely an aesthetic preference --- extends beyond the specific protocol described here. JMD is a concrete instantiation. The principle is transferable.
+
+\section{Related Work}
+
+Research on structured output generation from language models has grown rapidly alongside the deployment of LLMs in agentic and tool-calling contexts. We organize the relevant literature into three streams, each of which addresses a part of the problem space that JMD occupies --- but none of which addresses the intersection.
+
+\subsection{Structured Output Evaluation}
+
+Several benchmarks have been developed to assess LLMs' ability to produce format-compliant structured outputs. SoEval introduced rule-based validity checking for JSON and XML, establishing a baseline methodology for syntactic correctness measurement. JSONSchemaBench extended this to 10,000 real-world JSON schemas, evaluating constrained decoding frameworks across dimensions of compliance, coverage, and output quality \cite{geng2025jsonschemabench}. StructEval broadened the scope further, covering over eighteen structured formats including visual rendering targets such as HTML and LaTeX \cite{yang2025structeval}. FoFo assessed format-following capability across domain-specific formats such as legal documents and system logs, finding that even advanced models may output malformed structured data under realistic domain conditions \cite{xia2024fofo}.
+
+These benchmarks share a common premise: the format is given, and the question is whether the model complies. The research variable is compliance, not format choice. Our work inverts this framing: we treat the format as the research variable and ask what compliance rates, efficiency profiles, and downstream effects different format choices produce.
+
+\subsection{Token Efficiency, Alternative Formats, and Sustainable Software Engineering}
+
+The computational cost of structured output generation has received growing attention as inference at scale has made token efficiency a first-class economic concern. Recent work has explored whether alternative serialization formats can reduce token overhead compared to JSON. TOON (Token-Oriented Object Notation) is a representative example: a compact format designed for LLM input efficiency, recently evaluated for sustainability trade-offs across multiple model families \cite{masciari2026toon}. Related work on Green AI has established carbon emission estimation during the decoding phase as a viable evaluation metric.
+
+These efforts share a methodology: define a new syntax, measure its token count, compare against JSON. What they do not address is the relationship between format design and model behavior. Token counts are a consequence of syntax choices; they do not reveal whether a model generates a given format willingly or under resistance. Our work measures this directly --- through syntax validity rates, error localization across nesting depth, and the primer overhead required to elicit reliable output --- and treats behavioral alignment as the explanatory variable for efficiency outcomes.
+
+Sustainable Software Engineering (SSE) is an emerging discipline concerned with building software systems that minimize resource consumption across their lifecycle \cite{venters2023sustainable,betz2025sse}. Recent work has characterized inference-phase energy consumption at the model and hardware level, establishing that output token length correlates strongly with total energy per call \cite{husom2024melodi} and that decoding dominates the energy budget of generative tasks \cite{solovyeva2026greenai}. What has not been examined, to our knowledge, is format choice as a sustainability lever at the protocol level --- whether the structure of the model's output, independent of its semantic content, determines how many tokens are generated and at what energy cost. The results in Section~\ref{sec:results} address this gap directly.
+
+\subsection{Epistemic Calibration and Uncertainty in LLMs}
+
+A substantial body of research has examined how language models represent and communicate their own uncertainty. Models trained on human-generated text develop functional representations of confidence, source quality, and evidential strength --- representations that manifest in hedging language, qualification patterns, and explicit sourcing behavior \cite{kadavath2022language}. Work on calibration has shown that these internal representations can be elicited and structured through appropriate prompting, with measurable effects on downstream decision quality \cite{kuhn2023semantic}.
+
+Recent work at Anthropic bears directly on this question. \cite{lindsey2025introspection} provide empirical evidence that models possess functional introspective awareness: under controlled conditions, models can detect and accurately report the presence of concepts injected into their own activations --- suggesting that internal uncertainty representations are not merely latent, but accessible. This finding establishes the internal capability. JMD's epistemic frontmatter addresses the complementary problem: given that such representations exist, what happens when the format provides --- or withholds --- a formalized location for their external expression?
+
+What has not been studied, to our knowledge, is whether a structured data format can serve as a persistent, formalized channel for these representations in multi-agent pipelines --- and what the consequences are when such a channel is present or absent. Our RQ3 findings contribute directly to this line of research, building on work recently recognized at Nature-level significance \cite{farquhar2024hallucinations}.
+
+\section{Design Principles}
+
+JMD was not designed by specifying desired properties and deriving a syntax to satisfy them. It was designed by observation: watching what language models produce when asked to organize structured data without format constraints, understanding why they produce it, and formalizing those tendencies rather than suppressing them.
+
+This section describes the three principles that governed every design decision in JMD --- including decisions about what not to build.
+
+\subsection{Behavioral Alignment}
+
+Large language models are not neutral text transformers. Training on large corpora instills strong structural preferences: models from different providers and architectures converge on the same patterns when organizing data --- headings for hierarchy, bare key-value pairs for fields, bullet lists for sequences. These tendencies are not implementation artifacts. They reflect the accumulated signal of how humans write structured content, and they are deep enough that explicit instructions to deviate from them are frequently ignored. When instructed to produce minified JSON, five of six models tested in our benchmarks produced pretty-printed output regardless.
+
+Behavioral alignment, as a design principle, treats these tendencies as signal rather than noise. A format decision is evaluated not by its syntactic elegance but by whether it asks the model to work with or against its natural generation behavior. Heading depth as scope marker, for instance, was chosen not because it is the most compact encoding of nesting, but because it is what models reach for when they organize hierarchical content --- the current scope is always visible in the most recent heading line, requiring no delimiter stack to maintain across arbitrarily long generation.
+
+The consequence is measurable: syntax validity of 99.7\% across 720 five-step chain tests, compared to 95.6\% for pretty-printed JSON. The largest gains occur at deep nesting levels --- precisely where delimiter-matching errors accumulate.
+
+\subsection{Context over Instruction}
+
+A recurring failure mode in LLM-driven systems is the assumption that reliability is achieved through more explicit instruction. More rules, more examples, more constraints. This treats the symptom. Models fail not primarily because they lack instructions, but because they lack situational context --- a functional understanding of what they are doing and why.
+
+JMD's document mode markers illustrate this principle at the smallest possible scale. A single character at position zero --- \texttt{\#} for data, \texttt{\#!} for schema, \texttt{\#?} for query, \texttt{\#-} for delete --- commits the model to a mode before it generates a single field. The commitment is early, unambiguous, and self-reinforcing: a model that has written \texttt{\#!} at position zero is generating a schema, and its subsequent output reflects that. Validation across three providers showed 100\% mode-switch reliability.
+
+The epistemic frontmatter design illustrates this at a larger scale. Language models have internal representations of their own uncertainty. JMD provides a formalized location for this: \texttt{confidence}, \texttt{source}, and \texttt{uncertain} fields in a preamble above the root heading. When the primer names these fields as available --- without requiring them --- models adopt them in 98.5\% of generation steps. The format does not create this behavior; it provides a channel that activates behavior already present.
+
+\subsection{Rejection as Evidence}
+
+Design decisions that were considered and rejected are methodologically as informative as those adopted. Three rejections in particular reflect the behavioral alignment principle in operation.
+
+\textbf{Conditional delete} was considered and rejected. When given a delete task requiring criteria evaluation, models naturally decompose it: query first, inspect the result, then generate a targeted delete for the resolved identifiers. Building a compact filter syntax would have required models to compress a two-step process they prefer to make explicit. The friction was a design signal, not an implementation problem to be solved.
+
+\textbf{Minified JSON} was measured and rejected as a baseline. As noted above, five of six models consistently produced pretty-printed output when instructed otherwise. More importantly, minification cannot save compute even when it succeeds: each generation step costs the same GPU time regardless of which token is produced. JMD saves compute by eliminating structural tokens entirely --- the model runs fewer steps because there are fewer steps to run.
+
+\textbf{XML-style closing tags} were considered and rejected. Closing tags that must match opening tags reproduce the same error mode as JSON brace-balancing, with the additional complication of repeated tag names. Heading-depth syntax requires nothing to close.
+
+Each rejected option was asking the model to work against its own tendencies. Each rejection made the resulting protocol simpler, more reliable, and more efficient --- not as separate properties, but as consequences of a single coherent principle.
+
+\section{The JMD Protocol}
+
+JMD is a structured data protocol for LLM-driven systems. This section describes its syntax, document modes, and epistemic frontmatter in sufficient detail to interpret the benchmark results in Section~\ref{sec:results}. The complete specification is available in the accompanying repository.\footnote{\url{https://github.com/ostermeyer/jmd-spec}}
+
+\subsection{Core Syntax}
+
+A JMD document is valid Markdown. Every JMD document begins with a level-one heading that names the root object. Nesting is expressed through heading depth --- a level-two heading opens a nested object; a level-three heading opens an object nested within that. The current scope is always visible in the most recent heading line; there is nothing to close.
+
+\begin{lstlisting}
+# Order
+order_id: 4521
+status: confirmed
+
+## customer
+name: Anna Mueller
+email: anna@example.com
+
+## items[]
+- product: Laptop Stand
+  qty: 1
+  price: 49.90
+- product: USB Hub
+  qty: 2
+  price: 19.95
+\end{lstlisting}
+
+Scalar values are expressed as bare \texttt{key: value} pairs. Arrays are declared by appending \texttt{[]} to a heading; items begin with a \texttt{-} marker. Multiline text uses blockquote syntax (\texttt{>}). Sub-headings within array items are not permitted --- this constraint was established empirically as a minimum negative rule required for reliable generation across providers.
+
+\subsection{Document Modes}
+
+JMD is a tetradic protocol. A single character at position zero sets the document mode for the entire structure:
+
+\begin{table}[h]
+  \centering
+  \footnotesize
+  \begin{tabular}{llp{3.2cm}}
+    \toprule
+    \textbf{Marker} & \textbf{Mode} & \textbf{Purpose}                      \\
+    \midrule
+    \texttt{\#}     & Data          & Structured data transport             \\
+    \texttt{\#!}    & Schema        & Field contracts and type declarations \\
+    \texttt{\#?}    & Query         & Query by Example --- filter criteria  \\
+    \texttt{\#-}    & Delete        & Resource deletion by identifier       \\
+    \bottomrule
+  \end{tabular}
+  \caption{JMD document modes.}
+\end{table}
+
+Validation across three providers confirmed 100\% mode-switch reliability with no additional instruction beyond the marker itself.
+
+\subsection{Epistemic Frontmatter}
+
+An optional preamble above the root heading carries document-level epistemic metadata:
+
+\begin{lstlisting}
+confidence: high
+source: live inventory API, order service v2
+uncertain: discount_applied
+
+# Order
+order_id: 4521
+...
+\end{lstlisting}
+
+Three fields are defined: \texttt{confidence} (high / medium / low / speculative), \texttt{source} (free text), and \texttt{uncertain} (comma-separated field names). When the primer names these fields as available --- without requiring them --- models adopt them in 98.5\% of generation steps. The format does not create this behavior; it provides a channel that activates behavior already present in instruction-tuned models.
+
+\subsection{Minimal Instruction Requirements}
+
+Two primer variants were validated and used in this study. The minimal primer --- five rules, approximately 80 tokens, no examples --- was established first and confirmed to produce valid JMD across Claude, GPT, and Gemini at a rate sufficient for preliminary testing. The strict primer --- three additional constraints, one worked example, approximately 130 tokens --- was developed when Gemini 3.1 Pro showed structural errors on flat objects with the minimal primer. The strict primer resolved this without regression on other models. All results reported in Section~\ref{sec:results} use the strict primer. Both primers are reproduced in full in the accompanying repository; both count against JMD in the token efficiency calculations.
+
+It bears noting that the primer represents an artificial condition specific to the benchmark design. In production systems where JMD is the defined protocol, the format specification is part of the system prompt or API contract --- present once, not per request.
+
+\section{Evaluation Methodology}
+
+The benchmark design reflects a single guiding constraint: measure what matters in production, not what is convenient to measure.
+
+\subsection{Scenarios}
+
+Three independent domain scenarios were implemented, each representing a realistic agentic workflow:
+
+\textbf{E-commerce shopping flow.} A five-step chain covering product search, availability check, cart construction, order placement, and order summarization. The scenario exercises flat objects, nested objects, arrays of variable length, and cross-step identifier propagation.
+
+\textbf{DevOps issue triage.} A five-step chain covering issue ingestion, priority ranking, engineer assignment, runbook generation, and incident summary. This scenario stresses deeply nested structures and multi-field arrays, the conditions under which delimiter-matching errors are most likely to accumulate.
+
+\textbf{Sales data pipeline.} A five-step chain covering raw data ingestion, validation, transformation, aggregate computation, and quality report generation. This scenario involves the largest payloads of the three, making it the primary vehicle for streaming latency measurement.
+
+\subsection{Chain Structure and Error Propagation}
+
+Each scenario runs as a genuine five-step chain: the parsed output of step $N$ is serialized and passed as input to step $N+1$. A syntax error at step 2 that causes a parse failure propagates to step 3 as missing or malformed input. This is the failure mode that matters in production, and it is precisely what single-step benchmarks cannot capture.
+
+Thirty independent runs were conducted per model per format per scenario for the four Phase 2b models, yielding 720 complete five-step chains (360 per format). Claude Haiku 4.5 contributed an additional 90 chains per format in Phase 2a (same protocol, without server processing time measurement). Including epistemic frontmatter tests and preliminary validation runs, the total benchmark corpus exceeds 6,000 API calls.
+
+\subsection{Models and Providers}
+
+Six models were evaluated across preliminary and main phases. Two were excluded from the primary Phase 2b analysis:
+
+\begin{itemize}
+  \item \textbf{GPT-5 Nano} --- excluded after preliminary testing: it generated JMD with 125\% more tokens than JSON, indicating the model lacks sufficient capacity to internalize compact JMD generation from a brief primer.
+  \item \textbf{Gemini 3.1 Pro} --- excluded due to API infrastructure instability: sustained rate-limiting made 30-run statistical collection impractical.
+\end{itemize}
+
+The four models constituting the primary benchmark (Phase 2b) are Claude Sonnet 4.6 (Anthropic), GPT-5.4 (OpenAI), Mistral Large (Mistral), and Gemini 2.5 Flash (Google). Claude Haiku 4.5 contributed Phase 2a results where noted. All models are instruction-tuned base models; no fine-tuning on JMD examples was performed.
+
+\subsection{Format Primers and Overhead Accounting}
+
+The JSON baseline primer was approximately 40 tokens. The strict JMD primer was approximately 130 tokens. The token difference counts against JMD in all token efficiency calculations; no adjustment or normalization is applied. The reported savings are net of primer overhead across all five steps of each chain.
+
+\subsection{Validation}
+
+Output validation operated in two stages. \textbf{Syntactic validation}: each model output was parsed by the JMD reference parser or Python's \texttt{json.loads}. A response was marked valid if and only if it parsed without error; partial parses were not accepted. \textbf{Semantic validation}: parsed outputs were compared against known ground truth for each scenario step. A document that parses correctly but contains hallucinated field values is semantically invalid.
+
+\subsection{Epistemic Frontmatter Evaluation}
+
+Three conditions were evaluated in parallel: \textbf{honest signal} (JMD with accurate \texttt{confidence}, \texttt{source}, and \texttt{uncertain} fields), \textbf{misleading signal} (JMD with deliberately incorrect epistemic metadata), and \textbf{no signal} (same data serialized as JSON with no epistemic fields). The misleading signal condition is methodologically essential: it tests whether downstream models actually act on the frontmatter content, not merely acknowledge its presence. Each epistemic test ran 180 trials across three models and three conditions.
+
+\section{Results}
+\label{sec:results}
+
+\subsection{Syntax Validity (RQ1)}
+
+Across 720 five-step chains --- 360 per format --- JMD achieved a syntax validity rate of 99.7\% versus 95.6\% for pretty-printed JSON, a 4.1 percentage-point absolute reduction.
+
+\begin{table}[h]
+  \centering
+  \begin{tabular}{lcc}
+    \toprule
+    \textbf{Format} & \textbf{Valid chains} & \textbf{Error rate} \\
+    \midrule
+    JMD             & 359 / 360             & 0.3\%               \\
+    JSON (pretty)   & 344 / 360             & 4.4\%               \\
+    \bottomrule
+  \end{tabular}
+  \caption{Syntax validity across 360 chains per format (Phase 2b).}
+\end{table}
+
+JSON syntax errors concentrate at steps 3--5, where accumulated nesting depth is greatest. JMD errors are distributed more evenly and consist primarily of minor field-level formatting deviations rather than structural failures.
+
+It is worth noting that GPT-5.4 improved from 89\% syntax validity with the minimal primer (Phase 1) to 100\% with the strict primer (Phase 2b), demonstrating that primer design is itself a reliability lever.
+
+A 4.4\% per-step error rate compounds to approximately a 20\% chain failure rate over five steps under JSON; under JMD it is approximately 1.5\%.
+
+\subsection{Token and Compute Efficiency (RQ2)}
+
+\textbf{Output tokens.} Per-model output token savings in Phase 2b:
+
+\begin{table}[h]
+  \centering
+  \small
+  \begin{tabular}{lcc}
+    \toprule
+    \textbf{Model}    & \textbf{Output tokens} & \textbf{Payload tokens} \\
+    \midrule
+    Claude Sonnet 4.6 & $-$18\%                & $-$22\%                 \\
+    GPT-5.4           & $-$14\%                & $-$22\%                 \\
+    Mistral Large     & $-$8\%                 & $-$22\%                 \\
+    Gemini 2.5 Flash  & $-$1\% (n.s.)          & $-$10\%                 \\
+    \bottomrule
+  \end{tabular}
+  \caption{Token savings in Phase 2b chain execution (JMD vs.\ JSON). Payload savings determine cumulative chain cost.}
+\end{table}
+
+A separate format fidelity test --- where models reproduced structured data verbatim with no reasoning task --- showed 28--34\% output token savings across all models. This represents the structural overhead of JMD versus JSON in isolation.
+
+\textbf{Server processing time.} SPT was extracted from provider-specific HTTP response headers.
+
+\begin{table}[h]
+  \centering
+  \small
+  \begin{tabular}{lcc}
+    \toprule
+    \textbf{Model}    & \textbf{SPT change} & \textbf{Significance} \\
+    \midrule
+    GPT-5.4           & $-$8.6\%            & $p = 0.006$           \\
+    Mistral Large     & $-$2.9\%            & n.s.                  \\
+    Claude Sonnet 4.6 & $+$1.1\%            & n.s.                  \\
+    Gemini 2.5 Flash  & $+$18.3\%           & $p < 0.001$           \\
+    \bottomrule
+  \end{tabular}
+  \caption{Server processing time changes (Phase 2b).}
+\end{table}
+
+Only GPT-5.4 shows a statistically significant server-side time reduction. Gemini 2.5 Flash shows increased SPT under JMD, consistent with Gemini's internal thinking-token architecture where generation cost is not proportional to visible output tokens. A plausible additional hypothesis is that JMD, as a format underrepresented in Gemini's training data relative to JSON, requires more internal routing to produce correctly.
+
+\textbf{Streaming time to first usable byte.} TTFUB was measured from the first streaming token received to the first successfully parsed field event, median of 5 runs per scenario (Table~\ref{tab:ttfub}).
+
+\begin{table*}[t]
+  \centering
+  \small
+  \begin{tabular}{lcccr}
+    \toprule
+    \textbf{Scenario} & \textbf{Payload}   & \textbf{JMD} & \textbf{JSON}$^*$ & \textbf{Speedup} \\
+    \midrule
+    E-commerce        & $\sim$500 tokens   & 1.6 s        & 2.5 s             & 1.5$\times$      \\
+    DevOps triage     & $\sim$800 tokens   & 1.4 s        & 3.4 s             & 2.4$\times$      \\
+    Data pipeline     & $\sim$1,500 tokens & 1.5 s        & 23.1 s            & 15$\times$       \\
+    \bottomrule
+    \noalign{\vspace{2pt}}
+    \multicolumn{5}{l}{\footnotesize $^*$Minified JSON; both variants require the closing \texttt{\}} before the first field event.}
+  \end{tabular}
+  \caption{Streaming time-to-first-usable-byte.}
+  \label{tab:ttfub}
+\end{table*}
+
+\textbf{Data fidelity.} A dedicated format fidelity test showed 100\% semantic validity for both JMD and JSON: no field values were lost or corrupted in translation. In the chain benchmark, small semantic deltas were observed for Mistral Large ($-$3 percentage points versus JSON on select fields).
+
+\subsection{Epistemic Frontmatter: Adoption (RQ3)}
+
+Across 270 JMD-generating steps, models adopted \texttt{confidence} and \texttt{source} fields in 98.5\% of cases (266/270). The \texttt{uncertain} field was adopted in 218/270 steps overall (80.7\%); among steps where at least one input field was explicitly flagged or absent, the adoption rate was 84.3\%.
+
+The primer introduced the three fields by name and type but stated no requirement to use them. The near-universal adoption rate therefore reflects a genuine generation tendency --- models reach for these fields when the format makes them available --- rather than strict instruction-following. A model following an explicit rule would show 100\% adoption; the observed 98.5\% with zero enforcement is consistent with a behavioral tendency that the format channel activates rather than compels.
+
+Adoption rates varied by less than 3 percentage points across Claude, GPT, and Mistral, suggesting the underlying tendency reflects a property of instruction-tuned models generally \cite{kadavath2022language,lindsey2025introspection}.
+
+\subsection{Downstream Effects of Epistemic Signals (RQ3)}
+
+\textbf{Hallucination rates.} A hallucination was counted when a model reported a specific value for a field not present in the input (Table~\ref{tab:hallucination}).
+
+\begin{table*}[t]
+  \centering
+  \small
+  \begin{tabular}{lcc}
+    \toprule
+    \textbf{Condition}      & \textbf{Trials with $\geq$1 hallucination} & \textbf{Rate}   \\
+    \midrule
+    No signal (JSON)        & 26.7\%                                     & 4.4\%           \\
+    Honest signal (JMD)     & 15.0\%                                     & 2.6\% ($-$41\%) \\
+    Misleading signal (JMD) & 10.0\%                                     & 1.5\% ($-$66\%) \\
+    \bottomrule
+  \end{tabular}
+  \caption{Hallucination rates across 180 trials (3 models $\times$ 3 conditions $\times$ 20 runs).}
+  \label{tab:hallucination}
+\end{table*}
+
+The misleading signal condition produced the largest hallucination reduction --- a counterintuitive result that deserves attention in its own right. When frontmatter is present, regardless of its semantic content, models appear to treat the document as explicitly bounded data. This is a format effect, not a semantic effect: the channel matters more than what the channel carries.
+
+An important caveat: across all 180 trials, only a single field (\texttt{yoy\_growth\_pct}) was observed to hallucinate, and exclusively in specific model-condition combinations. The hallucination reduction figures therefore reflect a narrow, field-specific phenomenon rather than a broad suppression of fabrication. The directional finding is consistent across conditions, but its generalizability requires further investigation.
+
+\textbf{Conflict recognition.} A second experiment presented upstream data with explicit contradictions between two named sources. Under a strict-adherence prompting condition, downstream agents acknowledged the conflict in 100\% of trials (101/102) when honest epistemic signals identified the conflicting sources, versus 0\% under a misleading signal.
+
+Under a realistic prompting condition, honest epistemic signals produced conflict acknowledgment in 99\% of trials versus 48\% without epistemic signals (no-signal JSON condition). Zero false positives were observed in either condition.
+
+A separate measurement assessed gap detection --- whether agents notice that specific fields are absent from input data. Gap detection rates were lower (17.4\% under no-signal conditions, 19.0\% under honest signals). These two figures are not directly comparable and should not be read as a single phenomenon: a missing field leaves no signal in the data, while conflicting sources leave explicit contradictory evidence.
+
+\textbf{Deploy-gate decision quality.} GPT-5.4 showed a 25 percentage-point accuracy drop between honest and misleading signal conditions, confirming that downstream agents update decisions based on epistemic frontmatter content.
+
+\subsection{Parse and Serialize Performance}
+
+A C-accelerated JMD parser outperforms Python's C-accelerated \texttt{json.loads} across all tested payload sizes: 2.1$\times$ on simple objects ($\sim$75 bytes), 1.7$\times$ on medium payloads ($\sim$518 bytes), and 1.7$\times$ on large payloads ($\sim$990 bytes). The performance advantage derives from JMD's line-oriented, context-free grammar: parsing a field requires a single pass to the \texttt{:} separator with no delimiter matching, no Unicode escape processing, and no stack management.
+
+\section{Discussion}
+
+\subsection{Behavioral Alignment as an Engineering Variable}
+
+The central claim of this paper is that behavioral alignment --- designing formats and protocols that work with natural model tendencies rather than against them --- is a measurable engineering variable with direct consequences for system performance.
+
+None of the improvements reported required fine-tuning, prompt engineering beyond a minimal primer, or modifications to the models themselves. They emerged from a design decision about the format. This has a direct implication for how agentic systems should be designed: the choice of interchange format is not a neutral implementation detail. It is a design variable that determines how much of the model's capability reaches the output, how reliably, and at what cost.
+
+The same question --- what does this model already want to give, and is the system designed to receive it? --- applies wherever language models are put to work. JMD is one answer to that question in the domain of structured data interchange. The question itself is transferable.
+
+The efficiency results place JMD within the broader discipline of Sustainable Software Engineering --- understood here in its application to LLM-driven infrastructure as the practice of building systems that consume the minimum necessary resources to achieve their goal. While the field has addressed energy efficiency at the hardware, architecture, and model level, format choice as a sustainability lever has received little systematic attention. JMD is an empirical demonstration that it is one: available today, requiring no hardware change, and its effects are measured.
+
+\subsection{Epistemic Frontmatter and the Channel Problem}
+
+Models adopted epistemic frontmatter fields in 98.5\% of generation steps when the primer named them as optional --- and their presence produced downstream effects that cannot be attributed to the semantic content of the fields alone.
+
+The interpretation we favor is that epistemic frontmatter functions as a document-level commitment signal. A document that opens with \texttt{confidence: low} has declared its epistemic character before a single data field is read. This early commitment primes downstream processing in a mode that is more conservative about filling gaps.
+
+This connects directly to \cite{lindsey2025introspection}, who demonstrate that models possess functional introspective awareness. Our findings are the external complement: given that such internal representations exist, the format determines whether they are communicated explicitly to downstream agents or lost as implicit generation pressure. JMD provides the channel; the capability was already there.
+
+One open question is whether the format-level conservatism observed under the misleading signal condition is stable under broad adoption. If JMD patterns become heavily represented in future pretraining corpora, the format may lose its ``unfamiliar bounded document'' property and the conservatism effect may diminish. This is a testable prediction.
+
+The adversarial implication is direct: a system that relies on honest epistemic signals from upstream agents inherits a new vulnerability. This is not a reason to avoid epistemic frontmatter; it is a reason to treat it as a trust boundary requiring verification discipline.
+
+\subsection{Counter-Arguments}
+
+\textbf{LLMs are trained on JSON, not JMD. Won't JSON become more natural over time?}
+JMD is not a new syntax --- it is formalized Markdown, which is arguably more pervasive in training data than JSON. The benchmark evidence confirms this: models produce valid JMD from a five-rule primer, without training, at 99.7\% validity.
+
+\textbf{Constrained decoding solves the reliability problem without format changes.}
+Constrained decoding enforces JSON compliance at the token level. It does not reduce the token count, and it cannot address RQ3, because epistemic frontmatter requires the model to generate content that constrained decoding does not produce. JMD removes the reluctance; constrained decoding forces compliance with a format the model generates reluctantly.
+
+\textbf{JMD requires adoption. JSON already has universal tooling.}
+This is the most serious counter-argument. The appropriate response is to identify the specific context where the trade-off is favorable: systems where a language model is the generator, where output size and streaming latency matter, and where multi-step chains make per-step reliability compound into system-level risk.
+
+\subsection{Limitations}
+
+\textbf{Model coverage.} Four models from four providers completed the primary Phase 2b benchmark.
+
+\textbf{Scenario scope.} Three domain scenarios do not cover all agentic use cases. Scenarios with very short payloads or highly irregular structures may show smaller efficiency gains.
+
+\textbf{Hallucination benchmark scope.} The hallucination findings rest on a single field (\texttt{yoy\_growth\_pct}) hallucinating across conditions. A broader test would be needed to establish whether the epistemic structure effect generalizes.
+
+\textbf{Epistemic frontmatter calibration.} The benchmark measures adoption rates and downstream effects, but not the calibration of the frontmatter itself. A model that produces \texttt{confidence: high} for a field it is actually uncertain about is not providing a useful signal.
+
+\textbf{YAML as an untested baseline.} The streaming benchmark dataset includes YAML measurements not reported here. YAML shares some of JMD's line-oriented properties; its exclusion reflects the focus on JSON as the production-dominant format.
+
+\textbf{Single-author benchmark and development bias.} All benchmarks were designed and executed by the author of the specification. JMD was developed in an iterative process that used Claude (Anthropic) as a design partner; structural choices were refined through that dialogue. The format therefore reflects, to an unknown degree, Claude's generation preferences. This is the most plausible explanation for why Anthropic models achieve 100\% syntax validity while other providers require a more explicit primer variant. Token efficiency and streaming latency are structurally determined and show consistent results across all providers. Reliability figures for non-Anthropic models should be read with this caveat in mind.
+
+\section{Conclusion}
+
+We set out to answer a narrow empirical question: does aligning a structured data format with natural language model behavior produce measurable improvements in agentic pipeline performance? The answer, across more than 6,000 API calls and seven models from four providers, is unambiguous.
+
+Syntax validity improved from 95.6\% to 99.7\% across five-step agentic chains. Output token counts fell by 8--18\% in chain execution and 28--34\% in pure format fidelity tests; payload token savings were consistent at approximately 22\% across providers. Server processing time showed a statistically significant reduction of 8.6\% for GPT-5.4; results were mixed for other providers. Streaming latency to first usable byte improved by 1.5$\times$ to 15$\times$, scaling with payload size. Epistemic metadata fields were adopted in 98.5\% of generation steps when named as optional in the primer, reducing downstream hallucination rates by 41\% (a narrow but consistent effect) and raising conflict acknowledgment from 48\% to 99\% under realistic prompting conditions.
+
+These results share a common explanation: JMD removes friction between the format and the model. The reliability gains come from eliminating a delimiter-matching requirement that autoregressive generation handles poorly at depth. The efficiency gains come from eliminating structural tokens that models generate reluctantly. The epistemic communication gains come from providing a formalized location for uncertainty representation that models already possess but have no standard channel to express.
+
+No fine-tuning was required. No model modifications were made. The improvements are available today, to any system that adopts the format, from the first request.
+
+The broader implication reaches past the specific protocol described here. The same question --- what does this model already want to give, and is the system designed to receive it? --- applies wherever language models are put to work. Systems that ask it consistently --- in format design, in prompt architecture, in pipeline structure --- will find that reliability, efficiency, and output quality are not competing constraints to be traded off. They are consequences of the same design choice: working with the model rather than against it.
+
+The specification, reference implementation, and complete benchmark suite --- including all prompts, raw results, and evaluation code --- are available at \url{https://github.com/ostermeyer/jmd-spec}.
+
+\bibliography{jmd-paper}
+
+\end{document}
