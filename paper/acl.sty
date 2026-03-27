@@ -140,20 +140,16 @@
 \def\maketitle{\par
  \begingroup
    \def\thefootnote{\fnsymbol{footnote}}
-   \ifacl@abstractsaved
-     \twocolumn[\@maketitle\usebox{\acl@abstractbox}\vspace{0.3in}]%
-   \else
-     \twocolumn[\@maketitle]%
-   \fi
+   \twocolumn[\@maketitle]
    \@thanks
  \endgroup
  \setcounter{footnote}{0}
  \let\maketitle\relax
  \let\@maketitle\relax
  \gdef\@thanks{}\gdef\@author{}\gdef\@title{}\let\thanks\relax}
-\def\@maketitle{\vbox{\hsize\textwidth
+\def\@maketitle{\vbox to \titlebox{\hsize\textwidth
  \linewidth\hsize \vskip 0.125in minus 0.125in \centering
- {\Large\bfseries \@title \par} \vskip 0.2in minus 0.1in
+ {\Large\bfseries \@title \par} \vskip 0.2in plus 1fil minus 0.1in
  {\def\and{\unskip\enspace{\rmfamily and}\enspace}%
   \def\And{\end{tabular}\hss \egroup \hskip 1in plus 2fil
            \hbox to 0pt\bgroup\hss \begin{tabular}[t]{c}\bfseries}%
@@ -166,29 +162,20 @@
   \outauthor
    \hss\egroup
     \hfil\hfil\egroup}
-  \vskip 0.2in minus 0.1in
+  \vskip 0.3in plus 2fil minus 0.1in
 }}
 }
 
-% Abstract saved to vbox so \maketitle can include it in \twocolumn[...]
-\newsavebox{\acl@abstractbox}
-\newif\ifacl@abstractsaved
-\acl@abstractsavedfalse
-
-\renewenvironment{abstract}{%
-  \global\setbox\acl@abstractbox=\vbox\bgroup
-    \hsize\textwidth
-    \linewidth\textwidth
-    \begin{center}\large\textbf{\abstractname}\end{center}%
+% margins and font size for abstract
+\renewenvironment{abstract}%
+  {\begin{center}\large\textbf{\abstractname}\end{center}%
     \begin{list}{}%
       {\setlength{\rightmargin}{0.6cm}%
-       \setlength{\leftmargin}{0.6cm}}%
-    \item[]\ignorespaces\fontsize{10pt}{12pt}\selectfont
-}{%
-    \end{list}%
-  \egroup
-  \global\acl@abstractsavedtrue
-}
+        \setlength{\leftmargin}{0.6cm}}%
+      \item[]\ignorespaces%
+      \@setsize\normalsize{12pt}\xpt\@xpt
+  }%
+  {\unskip\end{list}}
 
 % Resizing figure and table captions - SL
 % Support for interacting with the caption, subfigure, and subcaption packages - SL
