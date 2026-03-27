@@ -3,62 +3,82 @@
 
 \bibitem[{Betz et~al.(2025)}]{betz2025sse}
 Stefanie Betz and 1 others. 2025.
-\newblock \href {https://doi.org/10.1145/3709352} {Sustainable software engineering: Concepts, challenges, and vision}.
+\newblock \href {https://doi.org/10.1145/3709352} {Sustainable software
+  engineering: Concepts, challenges, and vision}.
 \newblock \emph{ACM Transactions on Software Engineering and Methodology}.
 
-\bibitem[{Farquhar et~al.(2024)Farquhar, Kossen, Kuhn, and Gal}]{farquhar2024hallucinations}
+\bibitem[{Farquhar et~al.(2024)Farquhar, Kossen, Kuhn, and
+  Gal}]{farquhar2024hallucinations}
 Sebastian Farquhar, Jannik Kossen, Lorenz Kuhn, and Yarin Gal. 2024.
-\newblock \href {https://doi.org/10.1038/s41586-024-07421-0} {Detecting hallucinations in large language models using semantic entropy}.
+\newblock \href {https://doi.org/10.1038/s41586-024-07421-0} {Detecting
+  hallucinations in large language models using semantic entropy}.
 \newblock \emph{Nature}, 630(8017):625--630.
 
-\bibitem[{Geng et~al.(2025)Geng, Cooper, Moskal et~al.}]{geng2025jsonschemabench}
+\bibitem[{Geng et~al.(2025)Geng, Cooper, Moskal
+  et~al.}]{geng2025jsonschemabench}
 Saibo Geng, Hudson Cooper, Michal Moskal, and 1 others. 2025.
-\newblock \href {https://arxiv.org/abs/2501.10868} {{JSONSchemaBench}: A rigorous benchmark of structured outputs for language models}.
+\newblock \href {https://arxiv.org/abs/2501.10868} {{JSONSchemaBench}: A
+  rigorous benchmark of structured outputs for language models}.
 \newblock \emph{arXiv preprint arXiv:2501.10868}.
 
 \bibitem[{Husom et~al.(2024)Husom, Goknil, Shar, and Sen}]{husom2024melodi}
 Erik~Johannes Husom, Arda Goknil, Lwin~Khin Shar, and Sagar Sen. 2024.
-\newblock \href {https://arxiv.org/abs/2407.16893} {The price of prompting: Profiling energy use in large language models inference}.
+\newblock \href {https://arxiv.org/abs/2407.16893} {The price of prompting:
+  Profiling energy use in large language models inference}.
 \newblock \emph{arXiv preprint arXiv:2407.16893}.
 
-\bibitem[{Kadavath et~al.(2022)Kadavath, Conerly, Askell, Henighan, Drain, Perez, Schiefer et~al.}]{kadavath2022language}
-Saurav Kadavath, Tom Conerly, Amanda Askell, Tom Henighan, Dawn Drain, Ethan Perez, Nicholas Schiefer, and 1 others. 2022.
-\newblock \href {https://arxiv.org/abs/2207.05221} {Language models (mostly) know what they know}.
+\bibitem[{Kadavath et~al.(2022)Kadavath, Conerly, Askell, Henighan, Drain,
+  Perez, Schiefer et~al.}]{kadavath2022language}
+Saurav Kadavath, Tom Conerly, Amanda Askell, Tom Henighan, Dawn Drain, Ethan
+  Perez, Nicholas Schiefer, and 1 others. 2022.
+\newblock \href {https://arxiv.org/abs/2207.05221} {Language models (mostly)
+  know what they know}.
 \newblock \emph{arXiv preprint arXiv:2207.05221}.
 
 \bibitem[{Kuhn et~al.(2023)Kuhn, Gal, and Farquhar}]{kuhn2023semantic}
 Lorenz Kuhn, Yarin Gal, and Sebastian Farquhar. 2023.
-\newblock \href {https://arxiv.org/abs/2302.09664} {Semantic uncertainty: Linguistic invariances for uncertainty estimation in natural language generation}.
+\newblock \href {https://arxiv.org/abs/2302.09664} {Semantic uncertainty:
+  Linguistic invariances for uncertainty estimation in natural language
+  generation}.
 \newblock In \emph{International Conference on Learning Representations}.
 
 \bibitem[{Lindsey et~al.(2025)}]{lindsey2025introspection}
 Jack Lindsey and 1 others. 2025.
-\newblock \href {https://transformer-circuits.pub/2025/introspection/index.html} {Emergent introspective awareness in large language models}.
+\newblock \href
+  {https://transformer-circuits.pub/2025/introspection/index.html} {Emergent
+  introspective awareness in large language models}.
 \newblock \emph{Transformer Circuits Thread, Anthropic}.
 
 \bibitem[{Masciari et~al.(2026)Masciari, Perillo, and Russo}]{masciari2026toon}
 Orlando Masciari, Marco Perillo, and Diego Russo. 2026.
-\newblock \href {https://arxiv.org/abs/2601.12014} {Are {LLMs} ready for {TOON}? {Benchmarking} structural correctness--sustainability trade-offs in novel structured output formats}.
+\newblock \href {https://arxiv.org/abs/2601.12014} {Are {LLMs} ready for
+  {TOON}? {Benchmarking} structural correctness--sustainability trade-offs in
+  novel structured output formats}.
 \newblock \emph{arXiv preprint arXiv:2601.12014}.
 
 \bibitem[{Solovyeva and Castor(2026)}]{solovyeva2026greenai}
 Lola Solovyeva and Fernando Castor. 2026.
-\newblock \href {https://arxiv.org/abs/2602.05712} {Towards green {AI}: Decoding the energy of {LLM} inference in software development}.
+\newblock \href {https://arxiv.org/abs/2602.05712} {Towards green {AI}:
+  Decoding the energy of {LLM} inference in software development}.
 \newblock \emph{arXiv preprint arXiv:2602.05712}.
 
-\bibitem[{Venters et~al.(2023)Venters, Capilla, Nakagawa et~al.}]{venters2023sustainable}
+\bibitem[{Venters et~al.(2023)Venters, Capilla, Nakagawa
+  et~al.}]{venters2023sustainable}
 Colin~C. Venters, Rafael Capilla, Elisa~Yumi Nakagawa, and 1 others. 2023.
-\newblock \href {https://doi.org/10.1016/j.infsof.2023.107316} {Sustainable software engineering: Reflections on advances in research and practice}.
+\newblock \href {https://doi.org/10.1016/j.infsof.2023.107316} {Sustainable
+  software engineering: Reflections on advances in research and practice}.
 \newblock \emph{Information and Software Technology}, 164:107316.
 
 \bibitem[{Xia et~al.(2024)Xia, Xing, Du et~al.}]{xia2024fofo}
 Congying Xia, Chen Xing, Jiangshu Du, and 1 others. 2024.
-\newblock \href {https://arxiv.org/abs/2402.18667} {{FoFo}: A benchmark to evaluate {LLMs}' format-following capability}.
+\newblock \href {https://arxiv.org/abs/2402.18667} {{FoFo}: A benchmark to
+  evaluate {LLMs}' format-following capability}.
 \newblock \emph{arXiv preprint arXiv:2402.18667}.
 
 \bibitem[{Yang et~al.(2025)}]{yang2025structeval}
 Shuo Yang and 1 others. 2025.
-\newblock \href {https://arxiv.org/abs/2505.20139} {{StructEval}: Benchmarking {LLMs}' capabilities to generate structural outputs}.
+\newblock \href {https://arxiv.org/abs/2505.20139} {{StructEval}: Benchmarking
+  {LLMs}' capabilities to generate structural outputs}.
 \newblock \emph{arXiv preprint arXiv:2505.20139}.
 
 \end{thebibliography}
