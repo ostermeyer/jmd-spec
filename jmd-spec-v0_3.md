@@ -1709,7 +1709,7 @@ In an MCP context, schema documents serve as the contract for all four operation
 
 ## 15. Delete Documents
 
-A JMD delete document signals the intent to remove one or more resources. It uses the root marker `#-` and shares the same syntax foundation as all other JMD document modes.
+A JMD delete document signals the intent to remove a resource. It uses the root marker `#-` and shares the same syntax foundation as all other JMD document modes.
 
 ### 15.1 Root Marker
 
@@ -1719,9 +1719,9 @@ A JMD delete document signals the intent to remove one or more resources. It use
 
 The `#-` marker is parsed as a depth-1 heading with mode prefix `-`, analogous to `#?` (query) and `#!` (schema). The label identifies the resource type being deleted.
 
-### 15.2 Single Resource Deletion
+### 15.2 Delete Request
 
-A delete document for a single resource contains the identifier fields necessary to locate the target:
+A delete document contains the identifier fields necessary to locate the target:
 
 ```markdown
 #- Order
@@ -1730,68 +1730,42 @@ id: 42
 
 The body is a standard JMD object — the same syntax as a `# Order` data document. The `#-` root marker is the only difference. This means an LLM that can produce a data document can produce a delete document by changing one character in the root marker.
 
-### 15.3 Bulk Deletion
+### 15.3 Delete Response
 
-Bulk deletion uses a root array:
-
-```markdown
-#- []
-- abc123
-- def456
-- ghi789
-```
-
-The items are resource identifiers — typically scalar values (IDs, keys). For resources identified by composite keys, object items may be used:
+The response is the complete JMD data document of the deleted resource — exactly as it would have been returned by a data read before deletion:
 
 ```markdown
-#- []
-- table: orders
-  id: 42
-- table: orders
-  id: 43
-- table: customers
-  id: 7
-```
-
-### 15.4 Delete Response
-
-The response to a delete operation is a standard JMD data document confirming what was deleted:
-
-```markdown
-# Deleted
+# Order
 id: 42
-resource: orders
+status: shipped
+total: 84.99
+paid: true
+created_at: 2026-01-15T09:23:00Z
+
+## address
+street: Hauptstraße 1
+city: Hamburg
+zip: 20095
+country: Germany
+
+## items[]
+- sku: A1
+  qty: 2
+  price: 29.99
+- sku: B3
+  qty: 1
+  price: 24.99
 ```
 
-For bulk deletion:
-
-```markdown
-# Deleted
-count: 3
-resource: orders
-```
-
-A server MAY echo the full deleted resource(s) if the data is still available, or return a minimal confirmation. The response format is not prescribed — it is a standard JMD data document (`#`), not a delete document (`#-`).
-
-### 15.5 Delete Grammar (EBNF)
+### 15.4 Delete Grammar (EBNF)
 
 A delete document reuses the data document grammar from Section 11 without modification. The root marker is the only syntactic difference.
 
 ```ebnf
 delete_document  ::= "#- " label NEWLINE body
-                   | "#- []" NEWLINE bulk_delete_body
-
-bulk_delete_body ::= (array_item | BLANK_LINE)*
-                     (* Scalar items are resource identifiers (IDs, keys).
-                        Object items are composite-key identifiers.
-                        Same syntax as array items in data documents — see Section 11. *)
 ```
 
-`body` is the data document body defined in Section 11. The delete body contains identifier fields — literal values that locate the target resource. For bulk deletion, `array_item` follows the same rules as in data documents (scalar items or object items with indented fields).
-
-Conditional deletion (delete by filter, analogous to SQL `DELETE WHERE`) is intentionally not part of this specification. LLM agents operating on data naturally perform a two-step workflow: query first (`#?`) to verify the match set, then delete (`#- []`) with the resolved identifiers. This pattern is both safer — the agent sees what it will delete before deleting — and LLM-native: models trained to handle destructive operations prefer to verify before acting.
-
-### 15.6 Design Rationale
+### 15.5 Design Rationale
 
 1. **Explicit intent.** Delete is a destructive operation. A dedicated root marker (`#-`) makes the intent unambiguous at the document level — no path-suffix conventions or HTTP method inspection required.
 
