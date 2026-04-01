@@ -111,8 +111,9 @@ position zero before any field is generated.
 ## Documents
 
 | Document | Description |
-|---|---|
+| --- | --- |
 | [jmd-spec-v0_3.md](jmd-spec-v0_3.md) | Full format specification |
+| [jmd-over-xml.md](jmd-over-xml.md) | JMD over XML — companion specification for lossless XML↔JMD conversion |
 | [BENCHMARKS.md](BENCHMARKS.md) | Methodology, all prompts, and raw results |
 | [ai-whispering.md](ai-whispering.md) | The design practice behind JMD |
 | [jmd-efficiency-analysis.md](jmd-efficiency-analysis.md) | Performance data and projections |
@@ -133,6 +134,11 @@ Serializer throughput: comparable gains over `json.dumps`.
 
 Specification stable at v0.3. Benchmarks completed. A research preprint
 describing the empirical findings is forthcoming on arXiv.
+
+The [JMD over XML companion specification](jmd-over-xml.md) (Draft 0.4)
+defines lossless XML↔JMD conversion for data XML formats (OOXML, SOAP,
+XBRL, …). Implemented in [jmd-impl](https://github.com/ostermeyer/jmd-impl)
+as of v0.4.
 
 ---
 
