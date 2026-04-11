@@ -1,5 +1,5 @@
 # JMD – JSON Markdown
-## Format Specification v0.3
+## Format Specification v0.3.1
 
 Copyright (c) 2026 Andreas Ostermeyer <andreas@ostermeyer.de>. All rights reserved.
 Licensed under CC BY-NC-SA 4.0 — see LICENSE-SPEC for details.
@@ -253,7 +253,22 @@ These conventions reflect the fact that LLMs operate with personas and have a su
 
 **Frontmatter in responses.** The frontmatter channel is not exclusive to requests. A server returning a paginated result set SHOULD place pagination metadata (`total`, `page`, `pages`, `page-size`) in the response frontmatter rather than the document body. This keeps metadata structurally distinct from data — body fields like `total: 84.99` on an order line item are not confused with `total: 4832` describing the result set size. More importantly, a response document travels through a pipeline: its frontmatter is immediately available to the next agent in the chain as document-level metadata, without requiring that agent to understand the document's data schema.
 
-A conforming parser MUST collect all frontmatter fields into a key-value map and make them available to the implementation. A conforming parser MUST NOT reject unknown frontmatter keys.
+A conforming parser MUST collect all frontmatter fields into a key-value map and make them available to the implementation. A conforming parser MUST NOT reject unknown frontmatter keys, and MUST NOT silently drop them before the application layer can inspect them.
+
+**Two roles, one channel.** Frontmatter keys serve two functionally distinct roles, and the distinction matters for how unknown keys should be handled:
+
+- **Descriptive keys** (metadata such as `source`, `confidence`, `author`, `schema-version`) extend the semantics of the document for downstream observers. They describe the document without changing how it is processed. For descriptive keys, silent tolerance of unknown names is *desirable*: forward-compatibility requires that older receivers do not break when newer documents add fields they have not seen.
+- **Directive keys** (operational modifiers such as `page-size`, `select`, `sort`, `confirm`) control *how* the receiver processes the document. A dropped directive causes the receiver to perform an operation the sender did not intend — for example, a `dry-run: true` directive sent to a destructive operation and silently discarded is a genuine safety hazard, not an interoperability feature.
+
+The JMD parser MUST NOT distinguish these two roles at parse time — both kinds of key are preserved in the frontmatter map with their raw values. The distinction is made at the **application layer**, which inspects the preserved keys and decides how to handle unknown ones. Three levels of strictness are available, and the choice is per-operation:
+
+| Level | Application behavior | Typical use |
+| --- | --- | --- |
+| Silent tolerance | Unknown key is ignored without signalling | Uncritical reads, maximal forward-compatibility |
+| Observable tolerance | Unknown key is ignored but echoed in the response frontmatter (see Section 23.7) | Default for most operations; the sender can detect a silent drop |
+| Strict refusal | Unknown key causes the application to reject the operation with a structured error (Section 17) | Destructive operations (delete, drop), safety-critical modifiers |
+
+Strict refusal at the application layer is **not** a parser conformance violation. The parser accepted the key; the application chose not to act on it. This separation is exactly what the layered conformance model is for: the parser guarantees syntactic interoperability, the application enforces semantic safety where it matters.
 
 A conforming generator SHOULD omit frontmatter entirely when no metadata is needed. The absence of frontmatter is the common case for data documents.
 
@@ -323,6 +338,20 @@ Scalar fields may also appear as **scalar headings** that explicitly mark their 
 A scalar heading is syntactically a heading with a `key: value` payload. It carries no child scope. Scalar headings are used to return to a specific depth after a deeper scope (see Section 7.2).
 
 Quoted string values are JSON strings and follow JSON string escaping rules (RFC 8259). The escape sequences `\"`, `\\`, `\/`, `\b`, `\f`, `\n`, `\r`, `\t`, and `\uXXXX` are interpreted per JSON, not per Markdown. A JMD parser **must not** apply Markdown rendering to string content.
+
+### 5.1 Inline Markdown in Scalar Values
+
+JMD uses Markdown *structure* — headings, lists, blockquotes, thematic breaks — as data syntax. Markdown *formatting* — bold (`**...**`), italic (`*...*`, `_..._`), inline code (`` `...` ``), links (`[text](url)`), strikethrough (`~~...~~`) — is **not** JMD syntax. It is content, and it belongs in a different place.
+
+**Generator rule (SHOULD).** A conforming JMD generator SHOULD NOT emit inline Markdown formatting inside scalar values, whether bare or quoted. For strings that require rich-text formatting, use the blockquote multiline form (Section 9.1), which is JMD's designated channel for formatted prose. Scalar values should be plain data.
+
+**Parser rule (MUST).** A conforming JMD parser MUST treat all string content as literal — bare values, quoted strings, and blockquote multiline values alike. The parser does not interpret, render, strip, or validate Markdown formatting tokens. A string value containing `**`, `*`, `` ` ``, `[`, or `~` is a valid JSON string and roundtrips unchanged. This preserves the lossless bijection with JSON: every JSON string, including strings that happen to contain Markdown-like characters, can be represented in JMD.
+
+**Rationale.** The two rules together implement generator-strict, parser-tolerant (Section 22.1) for the specific case of Markdown content vs. JMD structure. The asymmetry matters because JMD is built on Markdown primitives: an LLM trained on Markdown holds both "data structure" and "prose formatting" patterns in the same latent space, and the boundary between them is not sharp by default. Permitting inline Markdown in scalar values blurs that boundary — and once it is blurred, the generator drifts from JMD-mode into ordinary-Markdown-mode and begins producing constructs that JMD does not support: `*` bullets instead of `-`, numbered lists (`1.`, `2.`), setext headings (underline with `===` or `---`), indented code blocks, and other native Markdown forms. Each of these is a genuine JMD parse error, and each originates from mode confusion rather than from syntactic error.
+
+Restricting inline formatting to the blockquote channel keeps the generator's mental model sharp: *scalar fields are plain data; rich text goes in `>` blocks.* This is also the rule encoded in JMD's minimum-viable primer (five bullets, ~80 tokens), which has been validated at 99.7% syntax validity in cross-model benchmarks. This specification formalizes what the empirically successful primer already tells the generator.
+
+**What this does not forbid.** A value that *contains* a character which happens to be a Markdown metacharacter — `rate: 2 * x`, `expr: **ptr`, `regex: ^[a-z]+$`, `url: https://example.com/*` — is not Markdown formatting; it is incidental character content. Such values are valid scalar data and MUST be accepted by the parser. The generator rule concerns *intentional formatting markup*, not *characters that visually resemble formatting markup*. When in doubt, the parser's literal-content rule applies.
 
 ---
 
@@ -835,6 +864,8 @@ Serializes to:
 A field value may span multiple lines when the content exceeds a single line. JMD supports two multiline forms, both native Markdown constructs that LLMs produce reliably without special prompting.
 
 ### 9.1 Rich Text (Blockquote Form)
+
+Blockquote multiline values are JMD's **designated channel for rich-text content**. They are the one place in a JMD document where inline Markdown formatting — bold, italic, inline code, links, lists — is expected and appropriate (see Section 5.1 for why scalar values should remain plain data).
 
 For formatted text that may contain inline Markdown (bold, italic, links, lists), use blockquote syntax. The field key appears on its own line with an empty value, followed by one or more `> `-prefixed lines:
 
@@ -2322,6 +2353,7 @@ This is not a loose guideline — it is a formal conformance requirement. JMD de
 - Array items SHOULD use bare `-` when unambiguous; a thematic break (`---`) MUST be emitted between items that contain nested sub-structures (Section 8.6); depth-qualified items (`## -`) MAY be used as an alternative
 - Blank lines SHOULD be used intentionally for scope reset, not inserted arbitrarily
 - Keys and values MUST be correctly quoted per Sections 4.2 and 6
+- Scalar values (bare or quoted) SHOULD NOT contain inline Markdown formatting (`**bold**`, `*italic*`, `` `code` ``, `[text](url)`, `~~strike~~`); rich-text content belongs in the blockquote multiline form (Sections 5.1, 9.1)
 
 Strict generation ensures maximum interoperability and minimizes the parsing effort for consumers.
 
@@ -2352,7 +2384,7 @@ An implementation claiming **JMD v0.3** conformance must:
 - Support depth-qualified array items (`## -`, `### -`, etc.) as an alternative to thematic breaks (Section 8.6a), including depth+1 items as described in Section 8.6b.
 - Support anonymous sub-array headings (`### []`, `#### []`, etc.).
 - Support multiline string values in blockquote form (Section 9).
-- Support document frontmatter: fields before the first heading are document-level metadata, not serialized into JSON (Section 3.5). Unknown frontmatter fields MUST be ignored.
+- Support document frontmatter: fields before the first heading are document-level metadata, not serialized into JSON (Section 3.5). Unknown frontmatter fields MUST be preserved in the parsed frontmatter map and surfaced to the application layer. The parser MUST NOT reject them, and MUST NOT drop them before the application can inspect them. Silent drop at the parser layer is non-conformant; the decision whether to silently tolerate, echo, or reject an unknown frontmatter key belongs to the application layer (Section 3.5).
 - Recognize all four document modes: `#` (data), `#?` (query), `#!` (schema), `#-` (delete). The `#-` root marker MUST be parsed as a depth-1 heading with mode prefix `-` (Section 15).
 - Parse `#-` delete documents using the same syntax rules as data documents — the body is a standard JMD object or array.
 - Reject structurally invalid input with a clear error indicating the offending line. Tolerant variations (Section 22.1) are NOT structurally invalid.
@@ -2378,6 +2410,11 @@ Recommended test cases:
 - **Frontmatter (response):** `total: 4832`, `page: 1`, `pages: 97`, `page-size: 50` before `# Orders` heading are parsed as response metadata, not as body fields of the Orders document
 - **Frontmatter with bare key:** `count` before `#? Order` heading is a valid bare frontmatter field
 - **No frontmatter:** document starting directly with `# Order` has no frontmatter (common case)
+- **Unknown frontmatter key preserved:** `dry-run: true` before `#- Order` heading is a valid frontmatter field and MUST be present in the parser output — a parser that drops it before the application layer sees it is non-conformant (Section 3.5, §22.2)
+- **Unknown frontmatter key preserved with bare value:** `verbose` (bare key, no value) before `# Order` is preserved in the frontmatter map as `{"verbose": true}` and surfaced to the application layer
+- **Application-layer strict refusal is conformant:** an application that rejects a delete operation carrying an unrecognized directive key (e.g. `dry-run: true` on `#- Order`) with a `# Error` response is spec-conformant — the parser accepted the key, the application declined to act on it (Section 3.5)
+- **Ignored-keys echo (short form):** a response carrying `ignored-keys: foo, bar` before the root heading is a valid observable-tolerance response
+- **Ignored-keys echo (long form):** a response carrying `## ignored-keys[]` with `- foo` and `- bar` items before the root heading is equally valid (Section 23.7)
 - **Thematic break separator:** `---` between items of an array with nested sub-structures (Section 8.6)
 - **Thematic break roundtrip:** serialize array of objects with nested lists, parse back, verify lossless
 - **Thematic break with blank lines:** `---` preceded and followed by blank lines is correctly parsed
@@ -2396,6 +2433,10 @@ Recommended test cases:
 - **Multiline blockquote termination:** first non-`>` line ends the blockquote value
 - **Multiline mixed with scope:** blockquote value followed by blank line resets scope to root
 - **Single-line escape form:** `key: "line 1\nline 2"` remains valid for inline multiline
+- **Inline Markdown in bare scalar (parser tolerance):** `title: The **Ultimate** Laptop Stand` parses as the literal string `"The **Ultimate** Laptop Stand"` — the parser does not render or strip the `**` markers (Section 5.1)
+- **Inline Markdown in quoted scalar (parser tolerance):** `"note": "See *docs*"` parses as the literal string `"See *docs*"` — the parser does not interpret the `*` markers
+- **Inline Markdown in blockquote (preserved verbatim):** `>` lines containing `**bold**`, `` `code` ``, `[link](url)` are preserved byte-for-byte in the parsed string value
+- **Incidental metacharacters in scalar values:** `rate: 2 * x`, `expr: **ptr`, `regex: ^[a-z]+$`, and `url: https://example.com/*` are valid scalar data and MUST be accepted by the parser — only the `# ` and `- ` structural prefixes trigger mandatory quoting (Section 6)
 - **Schema entity reference:** `customer: -> Customer` parsed as reference type in schema
 - **Schema optional reference:** `warehouse: -> Warehouse optional` parsed as optional reference type
 - **Schema array reference:** `items: []-> OrderItem` parsed as array of references
@@ -2433,7 +2474,7 @@ Recommended test cases:
 
 ## 23. Frontmatter Conventions
 
-Section 3.5 defines frontmatter as an **open extension point**: any `key: value` lines before the root heading are document-level metadata, and unknown frontmatter keys MUST be ignored. This openness allows implementations to add query parameters, result metadata, and operational hints without modifying the JMD grammar.
+Section 3.5 defines frontmatter as an **open extension point**: any `key: value` lines before the root heading are document-level metadata, and unknown frontmatter keys MUST be preserved by the parser and passed through to the application layer (never silently dropped). This openness allows implementations to add query parameters, result metadata, and operational hints without modifying the JMD grammar.
 
 The following conventions standardize the most widely useful frontmatter keys. An implementation that supports these features SHOULD use these names to ensure interoperability and familiar behaviour for LLM agents that have learned the conventions from one server and encounter another.
 
@@ -2596,7 +2637,53 @@ depth: 2
 
 Implementations SHOULD enforce a reasonable maximum depth to prevent runaway recursion on circular or deeply connected schemas. A server MAY silently cap `depth` at its maximum supported value rather than returning an error.
 
-### 23.7 Conventions Summary
+### 23.7 Ignored Key Echo
+
+When an application chooses to tolerate unknown directive frontmatter keys (rather than reject them with a structured error), it SHOULD echo the ignored keys in the response frontmatter under the key `ignored-keys`. This makes tolerance *observable*: a sender that included a typo, an unsupported modifier, or a key from a newer spec version can detect the drop without having to compare state before and after the operation.
+
+**Response frontmatter:**
+
+| Key | Type | Meaning |
+| --- | --- | --- |
+| `ignored-keys` | string or array | Comma-separated list, or array, of frontmatter keys received by the application and not acted on. |
+
+**Short form** (few keys, inline list):
+
+```markdown
+ignored-keys: dry-run, limit
+
+# Result
+...
+```
+
+**Long form** (many keys or programmatic consumption):
+
+```markdown
+## ignored-keys[]
+- dry-run
+- limit
+- group_by
+
+# Result
+...
+```
+
+Either form is valid. A consumer SHOULD accept both.
+
+**Interaction with destructive operations.** Applications performing destructive operations (`#-` delete, schema drop, and similar) MAY instead reject unknown directive keys with a structured error document (Section 17) rather than echo them. This choice is per-operation, not per-server: a server MAY use observable tolerance for reads and strict refusal for deletes within the same session. The selection of policy is a domain decision — the spec does not mandate one policy per operation type. The conventional mapping is:
+
+| Operation | Typical policy |
+| --- | --- |
+| `#` data read / response | Observable tolerance |
+| `#?` query | Observable tolerance |
+| `#` data write | Observable tolerance |
+| `#!` schema read / publish | Observable tolerance |
+| `#-` delete | Strict refusal |
+| Destructive admin operations (drop, truncate) | Strict refusal |
+
+**Rationale.** Silent tolerance is useful for forward-compatibility (descriptive keys such as `source`, `confidence`, `author`). But for directive keys, silent tolerance creates a safety hazard: the sender communicates an intention, the receiver discards it, and the outcome looks like success. Echoing ignored keys restores visibility without sacrificing tolerance — the operation still succeeds, but the sender learns that a key was not acted on. For destructive operations, visibility alone is insufficient; the sender must be *prevented* from issuing an operation whose directives the server does not honor, and strict refusal at the application layer is the correct response. Both tiers are compatible with parser tolerance: the parser accepted the input in every case, the application made the semantic decision.
+
+### 23.8 Conventions Summary
 
 | Key | Direction | Meaning |
 | --- | --- | --- |
@@ -2611,9 +2698,10 @@ Implementations SHOULD enforce a reasonable maximum depth to prevent runaway rec
 | `page` | response | Page number returned |
 | `pages` | response | Total page count |
 | `page-size` | response | Effective page size |
+| `ignored-keys` | response | Frontmatter keys received by the application and not acted on (Section 23.7) |
 
-All request keys appear before the root heading. All response keys appear before the root heading. Unknown keys in either direction MUST be ignored (Section 22.2).
+All request keys appear before the root heading. All response keys appear before the root heading. Unknown keys in either direction MUST be preserved by the parser and passed to the application layer (Section 3.5); the application then chooses silent tolerance, observable tolerance (Section 23.7), or strict refusal based on the operation's destructiveness.
 
 ---
 
-*JMD Specification v0.3 – Draft*
+*JMD Specification v0.3.1 – Draft*

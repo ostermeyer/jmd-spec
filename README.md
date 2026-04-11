@@ -132,7 +132,7 @@ Serializer throughput: comparable gains over `json.dumps`.
 
 ## Status
 
-Specification stable at v0.3. Benchmarks completed. A research preprint
+Specification stable at v0.3.1. Benchmarks completed. A research preprint
 describing the empirical findings is forthcoming on arXiv.
 
 The [JMD over XML companion specification](jmd-over-xml.md) (Draft 0.4)

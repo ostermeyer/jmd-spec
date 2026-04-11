@@ -4,13 +4,15 @@ This document describes the current state of the specification and the direction
 
 ---
 
-## Current Status — v0.3 (stable)
+## Current Status — v0.3.1 (stable)
 
 The specification is stable. The core syntax, document modes, and epistemic frontmatter are defined and will not change in breaking ways. The benchmark suite is complete.
 
+v0.3.1 is a clarification patch on top of v0.3. It adds no new syntax and no breaking changes. It formalizes two things the specification was previously silent or ambiguous about: the separation between JMD-structure and Markdown-formatting within scalar values (§5.1), and the asymmetric preservation rule for unknown frontmatter keys plus the associated application-layer policies (§3.5, §23.7). Documents valid under v0.3 remain valid under v0.3.1.
+
 What exists today:
 
-- Full format specification ([jmd-spec-v0_3.md](jmd-spec-v0_3.md))
+- Full format specification ([jmd-spec-v0_3.md](jmd-spec-v0_3.md) — currently v0.3.1)
 - Benchmark methodology and raw results ([BENCHMARKS.md](BENCHMARKS.md), [benchmark_results/](benchmark_results/))
 - Python reference implementation with C-accelerated parser and serializer ([jmd-impl](https://github.com/ostermeyer/jmd-impl))
 - Design rationale ([ai-whispering.md](ai-whispering.md))
@@ -38,7 +40,7 @@ Adapters for LangChain, LlamaIndex, and Pydantic AI that make JMD available as a
 The current benchmark measures adoption rates and downstream effects of epistemic fields. It does not measure calibration — whether the confidence and uncertainty signals models produce are accurate. A calibration benchmark is the logical next step for the RQ3 findings.
 
 **Specification v0.4**
-Based on accumulated feedback and edge cases from adoption, a minor revision addressing any ambiguities identified in v0.3. No breaking changes planned.
+A further minor revision driven by adoption feedback beyond the clarifications already shipped in v0.3.1. Candidate topics: calibration conventions for epistemic frontmatter, additional directive/descriptive frontmatter keys that emerge from production MCP servers, and refinements to the JMD-over-XML companion specification. No breaking changes planned — v0.4 will remain a strict superset of v0.3.1.
 
 **MCP server**
 A Model Context Protocol server that exposes JMD parsing, serialization, and validation as tools, enabling JMD-native communication in MCP-based agentic systems.
@@ -56,7 +58,7 @@ If this direction interests you — as a researcher, engineer, or potential foun
 
 ## What Is Not Planned
 
-**Breaking changes to v0.3 syntax**
+**Breaking changes to v0.3.x syntax**
 The core syntax is stable. Any future version will be a strict superset.
 
 **A centralized registry or package index**
