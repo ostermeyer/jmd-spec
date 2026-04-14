@@ -1,0 +1,8 @@
+# Order
+## items[]
+- sku: A1
+  qty: 2
+  price: 29.99
+- sku: B3
+  qty: 1
+  price: 24.99

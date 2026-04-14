@@ -1,0 +1,15 @@
+{
+  "n": 42,
+  "f": 3.14,
+  "neg": -7,
+  "zero": 0,
+  "b_true": true,
+  "b_false": false,
+  "nil": null,
+  "str": "hello",
+  "spaces": "hello world",
+  "quoted_number": "42",
+  "quoted_bool": "true",
+  "quoted_null": "null",
+  "empty_string": ""
+}

@@ -1,0 +1,29 @@
+{
+  "id": 42,
+  "status": "pending",
+  "paid": false,
+  "notes": null,
+  "description": "Ships within **2 business days**\nfrom our central warehouse.",
+  "address": {
+    "street": "Hauptstraße 1",
+    "city": "Berlin",
+    "zip": "10115",
+    "geo": {
+      "lat": 52.52,
+      "lng": 13.4
+    }
+  },
+  "tags": ["express", "fragile"],
+  "items": [
+    {
+      "sku": "A1",
+      "qty": 2,
+      "price": 29.99
+    },
+    {
+      "sku": "B3",
+      "qty": 1,
+      "price": 24.99
+    }
+  ]
+}
