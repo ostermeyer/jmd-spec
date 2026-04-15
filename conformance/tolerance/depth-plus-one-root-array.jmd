@@ -1,0 +1,5 @@
+# products[]
+## - name: Widget
+  price: 29.99
+## - name: Gadget
+  price: 49.99

@@ -13,7 +13,8 @@ Fixtures are organized by document mode:
     ├── data/        # # Label — data documents
     ├── schema/      # #! Label — schema documents (planned)
     ├── query/       # #? Label — query documents (planned)
-    └── delete/      # #- Label — delete documents (planned)
+    ├── delete/      # #- Label — delete documents (planned)
+    └── tolerance/   # parser-tolerance cases (non-canonical input)
 
 ## Fixture Format
 
@@ -43,6 +44,20 @@ For each fixture, a conforming implementation must pass:
    preamble.
 3. **Round-trip** — `parse(serialize(parse(jmd).value, ...))` yields the
    same value. Follows structurally from 1 and 2.
+
+## Tolerance Fixtures
+
+The `tolerance/` subdirectory contains fixtures that exercise
+parser-tolerance rules — inputs a conforming generator would not emit
+(the canonical output is in `data/`), but that a conforming parser MUST
+accept. Examples include depth-qualified array items (`## -`, §8.6a) and
+depth+1 items (`## - key: val` under a depth-1 array heading, §8.6b).
+
+Only the **Parse** test applies: `parse(jmd).value` deep-equals the
+value in `.json`. The Serialize and Round-trip tests are not run against
+tolerance fixtures, because serializing the parsed value re-canonicalizes
+it (to bare `-` items with thematic-break separators) and so will not
+match the non-canonical input byte-for-byte.
 
 ## Canonical Form
 

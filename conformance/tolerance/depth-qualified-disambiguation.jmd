@@ -1,0 +1,10 @@
+# Document
+
+## groups[]
+- name: A
+### members[]
+- Alice
+- Bob
+## - name: B
+### members[]
+- Charlie
