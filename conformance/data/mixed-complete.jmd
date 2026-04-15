@@ -6,16 +6,20 @@ notes: null
 description:
 > Ships within **2 business days**
 > from our central warehouse.
+
 ## address
 street: Hauptstraße 1
 city: Berlin
 zip: "10115"
+
 ### geo
 lat: 52.52
 lng: 13.4
+
 ## tags[]
 - express
 - fragile
+
 ## items[]
 - sku: A1
   qty: 2

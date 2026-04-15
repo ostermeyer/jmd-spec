@@ -47,24 +47,42 @@ For each fixture, a conforming implementation must pass:
 ## Canonical Form
 
 The canonical form is the output any conforming serializer must produce
-given a JavaScript/JSON value, a label, and optional frontmatter:
+given a value, a label, and optional frontmatter. Both `jmd-format` on
+PyPI (Python) and `jmd-format` on npm (JavaScript) emit byte-identical
+documents for the same input:
 
-- **Object fields** appear in insertion order, but scalar fields precede
-  nested structures (objects and arrays). This keeps documents readable
-  and avoids scalar headings for scope return.
+- **Object fields** appear in insertion order. When a nested object or
+  array is followed by more scalar fields of the same object, those
+  scalars are emitted as scalar-valued headings (`## key: value`) — this
+  is how the format expresses scope return within an insertion-ordered
+  stream.
+- **A blank line** precedes each nested heading (object or array) inside
+  an object scope. The document opens with the root heading on its first
+  line with no leading blank.
 - **Numbers** are formatted as the shortest round-trippable decimal
-  representation (JavaScript `String(n)`, Python `str(n)`).
-- **Strings** are bare unless quoting is required by §6.1 (mandatory
-  quoting triggers). Ambiguous values (strings parsable as number,
-  boolean, or null) are always quoted.
+  representation (JavaScript `String(n)`, Python `str(n)`). For typical
+  JSON-sourced values the two agree byte-for-byte.
+- **Strings** are bare unless quoting is required (§6.1) or the string
+  starts with a double quote, contains a newline, or contains a tab.
+  Internal double quotes and backslashes are left bare — the parser is
+  tolerant enough to accept them, matching the Python C-accelerated
+  serializer.
 - **Arrays of objects** place the first scalar field on the `- ` line;
   remaining scalar fields follow as 2-space-indented continuation
   lines; nested structures come last as headings at the item's depth.
+  When items contain nested structures, a thematic break (`---`) on its
+  own line — preceded by one blank line and followed directly by the
+  next `- ` — separates successive items (§8.6).
+- **Root arrays** use `# <label>[]`; when no meaningful label is
+  available, the canonical form is `# []`.
 - **Multiline strings** (any string containing `\n`) use the blockquote
   (`> `) form.
 - **Frontmatter** appears above the root heading, separated by one
   blank line.
-- The document ends with a single newline.
+- **Document termination.** The serializer returns its output without a
+  trailing newline (matching the Python reference byte-for-byte). The
+  `.jmd` fixture files add a single trailing newline as the customary
+  POSIX line terminator.
 
 ## Running the Tests
 
