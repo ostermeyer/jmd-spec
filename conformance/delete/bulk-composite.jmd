@@ -1,0 +1,5 @@
+#- []
+- table: orders
+  id: 42
+- table: invoices
+  id: 99
