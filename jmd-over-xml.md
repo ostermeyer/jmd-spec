@@ -2,8 +2,8 @@
 
 ## Companion Specification — Draft 0.4
 
-Copyright (c) 2026 Andreas Ostermeyer <andreas@ostermeyer.de>. All rights reserved.
-Licensed under CC BY-NC-SA 4.0 — see LICENSE for details.
+Copyright (c) 2026 Andreas Ostermeyer <andreas@ostermeyer.de>.
+Licensed under CC BY 4.0 — see [LICENSE](LICENSE) for details.
 
 ---
 

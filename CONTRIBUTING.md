@@ -80,4 +80,4 @@ Be precise, be honest about uncertainty, and be kind. Discussions about the spec
 
 ## License
 
-By contributing to this repository, you agree that your contributions to the specification will be licensed under [CC BY-NC-SA 4.0](LICENSE), and your contributions to code will be licensed under [MIT](LICENSE-CODE).
+By contributing to this repository, you agree that your contributions to the specification will be licensed under [CC BY 4.0](LICENSE), and your contributions to code will be licensed under [Apache 2.0](LICENSE-CODE).

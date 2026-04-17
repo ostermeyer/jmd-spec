@@ -145,5 +145,6 @@ as of v0.4.
 ## License
 
 The JMD specification is licensed under
-[CC BY-NC-SA 4.0](LICENSE). Commercial use requires a separate agreement.
-Code in this repository is licensed under [MIT](LICENSE-CODE).
+[CC BY 4.0](LICENSE) — free for any use, including commercial, with attribution.
+Code in this repository (benchmarks, examples, samples) is licensed under
+[Apache 2.0](LICENSE-CODE).

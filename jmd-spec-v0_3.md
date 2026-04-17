@@ -1,8 +1,9 @@
 # JMD – JSON Markdown
-## Format Specification v0.3.1
+## Format Specification v0.3.2
 
-Copyright (c) 2026 Andreas Ostermeyer <andreas@ostermeyer.de>. All rights reserved.
-Licensed under CC BY-NC-SA 4.0 — see LICENSE-SPEC for details.
+Copyright (c) 2026 Andreas Ostermeyer <andreas@ostermeyer.de>.
+Licensed under CC BY 4.0 — see [LICENSE](LICENSE) for details.
+Code samples in this document are licensed under Apache 2.0 — see [LICENSE-CODE](LICENSE-CODE).
 
 ---
 
@@ -14,18 +15,28 @@ LLM compute cost scales directly with token count — for both consumed input an
 
 **The design philosophy** behind JMD is to work with the natural behavior of language models, not against it. LLMs are autoregressive text generators trained on vast corpora of Markdown, code, and structured documents. They have deeply internalized patterns like headings for hierarchy, `key: value` for fields, `- ` for list items, and blank lines for section boundaries. JMD does not invent new syntax for these structures — it formalizes the patterns that LLMs already produce when generating structured output. Every syntax decision in this specification passes a single test: *Would an LLM produce this naturally, without special instruction?* Where the answer is no, the design is reconsidered. This methodology is called *AI Whispering* throughout this specification.
 
-JMD is a **tetradic protocol** for the full lifecycle of structured data in LLM-native systems:
+JMD uses a subset of Markdown syntax — headings, blockquotes, and line breaks — to encode JSON's full type system. The choice of Markdown is not motivated by human readability but by the fact that LLMs are trained on vast amounts of Markdown and can generate it reliably and efficiently.
 
-| Root Marker | Mode | Purpose |
-| --- | --- | --- |
-| `# Label` | **Data** | Bidirectional data transport |
-| `#! Label` | **Schema** | Structure contracts and type validation |
-| `#? Label` | **Query** | Query by Example: intuitive data selection |
-| `#- Label` | **Delete** | Resource deletion |
+**Core syntax principle:** Heading depth defines data hierarchy. A heading at depth N establishes scope for all following content until the next heading at depth N or shallower, or until a blank line resets scope to root. This directly mirrors the Markdown section model that LLMs have deeply internalized, where a `##` heading governs everything that follows until the next `##` or `#`, and blank lines separate top-level sections.
 
-These four modes share the same syntax foundation. An LLM that can produce a JMD data document can produce a schema, query, or delete document with no additional training — only a different root marker.
+### 1.1 Purpose
 
-**One document, one mode.** A JMD document has exactly one root marker, and therefore exactly one mode. Mixing modes within a single document is not permitted. This is a deliberate design decision, not a parser constraint: each mode corresponds to a distinct semantic operation (analogous to distinct HTTP methods), and a document with a single, unambiguous intention is easier to route, validate, and audit than a multi-operation bundle. Sequences of operations are composed by producing multiple documents, not by combining modes.
+JMD is a text-based, structured data format.
+
+Any useful data format must support the four canonical operations on data:
+
+| Operation | JMD document mode | Root marker |
+|---|---|---|
+| **Create / Update** (write) | Data | `#` |
+| **Read** | Data (as response to a read request) | `#` |
+| **Query** (read with filter) | Query by Example | `#?` |
+| **Delete** | Delete | `#-` |
+
+A schema document (`#!`) is not an operation — it is a contract describing the shape of data exchanged by the operations above.
+
+JMD is transport-agnostic: the operation is carried by the document's root marker, not by any surrounding protocol.
+
+**One document, one mode.** A JMD document has exactly one root marker, and therefore exactly one mode. Mixing modes within a single document is not permitted. Each mode corresponds to a distinct operation; a document with a single, unambiguous intention is easier to route, validate, and audit than a multi-operation bundle. Sequences of operations are composed by producing multiple documents, not by combining modes.
 
 **Lossless** means:
 
@@ -43,17 +54,15 @@ Three properties distinguish JMD from JSON. The first two are co-equal design go
 
 Compute efficiency and streamability are not independent — they are two manifestations of the same design choice: hierarchy through heading depth rather than through matched delimiters. The same syntax that eliminates braces and quotes also eliminates the need for closing delimiters. Neither goal is subordinate to the other; both guide every syntax decision in this specification.
 
-**Tetradic protocol.** JMD covers the full data lifecycle with a single, unified syntax: data transport (`#`), schema contracts (`#!`), Query by Example (`#?`), and resource deletion (`#-`). An LLM that understands one mode understands all four — the root marker is the only difference. JSON requires separate tooling ecosystems for each of these concerns.
+**Full CRUD surface in one syntax.** JMD covers create, read, update, query, and delete — the complete set of operations on structured data — with a single unified syntax. An LLM that understands one mode understands all four; the root marker is the only difference. JSON requires separate tooling ecosystems for each of these concerns.
 
 **Sustainability implications.** The compute efficiency described above has consequences beyond cost savings. LLM inference is GPU-bound, and GPU clusters are among the most energy-intensive computing systems ever deployed. Structured data output — the domain where JMD replaces JSON — accounts for a significant share of LLM inference volume (tool calls, API responses, agent-to-agent communication, retrieval pipelines). Reducing per-request GPU time through structural simplification translates directly to reduced energy consumption and, at infrastructure scale, reduced hardware provisioning. Every GPU that does not need to be provisioned is a data centre that does not need to be built. Quantitative projections are provided in the companion document *JMD Efficiency Analysis*.
 
 Together, these properties make JMD a natural fit for the infrastructure that is emerging around LLM agents: MCP servers, tool-calling pipelines, Server-Sent Events, and chained agentic workflows where one tool's output becomes the next tool's input.
 
-**REST integration.** JMD can serve as a drop-in alternative to JSON in REST APIs via content negotiation (`application/jmd`). Because every completed JMD line is independently parseable, a standard HTTP chunked transfer response is inherently streaming — no protocol changes, wrapper formats, or separate streaming endpoints required. Media type definitions, HTTP method mappings, and content negotiation patterns are defined in the companion document *JMD over HTTP — REST Integration Proposal*.
+**Not limited to LLM contexts.** JMD is a general-purpose structured data format. Anywhere JSON serves today — configuration files, service-to-service APIs, log payloads, document storage, data interchange between non-LLM systems — JMD is an equally valid choice. It carries no LLM-specific assumptions in its grammar; the line-oriented streaming and token-efficient encoding are structural benefits that happen to matter intensely in LLM pipelines but cost nothing when the data flows between ordinary services. A codebase may adopt JMD incrementally: speak JMD natively in new interfaces, translate at boundaries to legacy JSON consumers, or continue with JSON where no benefit justifies the change.
 
-JMD uses a subset of Markdown syntax — headings, blockquotes, and line breaks — to encode JSON's full type system. The choice of Markdown is not motivated by human readability but by the fact that LLMs are trained on vast amounts of Markdown and can generate it reliably and efficiently.
-
-**Core syntax principle:** Heading depth defines data hierarchy. A heading at depth N establishes scope for all following content until the next heading at depth N or shallower, or until a blank line resets scope to root. This directly mirrors the Markdown section model that LLMs have deeply internalized, where a `##` heading governs everything that follows until the next `##` or `#`, and blank lines separate top-level sections.
+**REST integration.** JMD can serve as a drop-in alternative to JSON in REST APIs via content negotiation (`application/jmd`). Because every completed JMD line is independently parseable, a standard HTTP chunked transfer response is inherently streaming — no protocol changes, wrapper formats, or separate streaming endpoints required. Media type definitions, HTTP method mappings, content negotiation patterns, and related conventions are proposed in the companion document *JMD over HTTP — REST Integration Proposal*, as recommendations for implementers rather than normative requirements.
 
 **Design goals:**
 
@@ -271,6 +280,70 @@ The JMD parser MUST NOT distinguish these two roles at parse time — both kinds
 Strict refusal at the application layer is **not** a parser conformance violation. The parser accepted the key; the application chose not to act on it. This separation is exactly what the layered conformance model is for: the parser guarantees syntactic interoperability, the application enforces semantic safety where it matters.
 
 A conforming generator SHOULD omit frontmatter entirely when no metadata is needed. The absence of frontmatter is the common case for data documents.
+
+### 3.6 Canonical Parse Result
+
+A conforming JMD parser returns every parsed document as a uniform **envelope** with four fields:
+
+| Field | Type | Description |
+|---|---|---|
+| `mode` | string | `"data"`, `"schema"`, `"query"`, or `"delete"` — determined by the root marker |
+| `label` | string | Root heading label, with mode-mark and `[]` sigil stripped |
+| `frontmatter` | object | Map of frontmatter fields; the empty object `{}` when no frontmatter is present |
+| `value` | object \| array | Parsed document body |
+
+The envelope is the single entry point of the parser API. Applications that need only the body inspect `value`; applications that need document-level metadata inspect `mode`, `label`, and `frontmatter`. No information about the document is conveyed through side channels.
+
+#### 3.6.1 Field Semantics
+
+**`mode`** is derived from the root heading prefix and uses these exact lowercase string literals:
+
+| Root marker | `mode` |
+|---|---|
+| `#` (no mark) | `"data"` |
+| `#!` | `"schema"` |
+| `#?` | `"query"` |
+| `#-` | `"delete"` |
+
+**`label`** is the root heading's bare label text, after the following normalizations:
+
+- The mode-mark character (`!`, `?`, `-`) is stripped — it is already carried in `mode`.
+- A trailing `[]` sigil is stripped — the array nature of the body is carried by `value` being a list.
+- The empty string `""` is a valid label. Anonymous root headings (`#`, `# []`, `#- []`) all produce `label: ""`.
+
+**`frontmatter`** is the map of frontmatter fields preserved verbatim (Section 3.5). Scalar values are parsed per Section 5; bare-key frontmatter (a line containing only a key with no `:`) is encoded as the boolean `true`. When the document has no frontmatter, `frontmatter` is the empty object `{}` — never `null`, never absent.
+
+**`value`** is the parsed document body. Its runtime type is determined by the root-array sigil:
+
+- Root without `[]` → `value` is an object (possibly empty `{}`)
+- Root with `[]` → `value` is an array (possibly empty `[]`)
+
+`value` is never `null` or absent for a validly parsed document.
+
+#### 3.6.2 Prose in Body is a Parse Error
+
+A document body containing prose — a bare line that is neither a key-value field, an indented continuation, a bullet (`-`), a blockquote (`>`), a heading, nor a thematic break (`---`) — MUST be rejected with a parse error.
+
+```markdown
+# Answer
+
+42
+```
+
+This is valid Markdown (a heading followed by a paragraph) but not valid JMD: the line `42` is prose, not a JMD structural element. A parser MUST NOT silently drop prose or return an empty `value`. The correct response is a structured parse error identifying the offending line.
+
+**Rationale.** JMD formalizes Markdown structures for data. Bare prose under a heading is a content construct of Markdown that has no meaning in the JMD data grammar. Accepting such input silently would hide a mode error — the caller wrote Markdown text where JMD data was expected — and would cause data loss downstream. Rejecting it explicitly makes the layer boundary visible: *this input is Markdown, not JMD; use a different path to transmit prose.*
+
+#### 3.6.3 Round-Trip Contract
+
+For any valid JMD document, the envelope round-trips losslessly:
+
+```
+parse(serialize(envelope)) ≡ envelope   (byte-identical for canonical input)
+serialize(parse(source))   ≡ source     (up to canonical normalization)
+```
+
+The serializer accepts an envelope directly as its input. Implementations MAY additionally offer convenience signatures that take `(value, mode, label, frontmatter)` as separate parameters; the envelope form is the canonical shape.
 
 ---
 
@@ -1216,11 +1289,9 @@ This model uses indentation in exactly one context: list item continuation withi
 
 ---
 
-## 13. Query by Example (QBE)
+## 13. Query by Example (QBE) Documents
 
-JMD includes a query dialect based on the Query by Example paradigm. A QBE query is a JMD document that describes the *shape and conditions* of desired results. The LLM writes an example of what it wants — using the same structure as a data document, with filter conditions in place of literal values.
-
-QBE is the most LLM-native query form possible: the model does not learn a query language — it writes a data document and annotates it. The filter syntax uses regex patterns and comparison operators that LLMs know from their training on code and SQL, not from any QBE-specific convention.
+JMD defines a **query document mode** for expressing *what data is desired*. A query document uses the root marker `#?` and shares the complete body syntax of a data document — nested headings, bare fields, arrays, bullets, blockquotes, frontmatter. JMD itself assigns no filter-semantic interpretation to field values. The consuming application determines what filter, projection, or pagination semantics apply.
 
 ### 13.1 Document Mode
 
@@ -1229,241 +1300,30 @@ The root marker `#?` signals a query document:
 ```markdown
 #? Order
 status: pending
-```
-
-Pagination and count requests are expressed as frontmatter — fields before the `#?` heading (see Section 3.5). They control the *delivery* of results, not the selection:
-
-```markdown
-count
-
-#? Order
-status: pending
-```
-
-Returns only the count of matching orders — no data. The bare field `count` (with no value) requests a count. This allows the LLM to assess result set size before requesting data.
-
-```markdown
-page: 1
-page-size: 50
-
-#? Order
-status: pending
 total: > 50
 ```
 
-Returns the first 50 matching orders. The response carries pagination metadata as frontmatter (see Section 16):
+Body syntax is identical to Sections 7–9. Each field-value pair is a string parsed per Sections 2.1 and 5. The envelope (§3.6) reports `mode: "query"`, `label: "Order"`, `frontmatter: {...}`, and `value: {status: "pending", total: "> 50"}` — with the values preserved verbatim as strings.
 
-```markdown
-total: 4832
-page: 1
-pages: 97
-page-size: 50
+### 13.2 Values Are Raw Strings
 
-# Orders
+A conforming JMD parser returns query document values verbatim. The value `"> 50"` in `total: > 50` is the string `"> 50"`; it is not parsed into a comparison object, operator tuple, or filter AST by JMD. The parser reports the raw string in `value`; any structured interpretation is performed by the application that consumes the envelope.
 
-## data[]
-- id: 1
-  status: pending
-  total: 84.99
-- id: 2
-  status: active
-  total: 120.00
-```
+This is a deliberate design decision:
 
-The LLM sees `total: 4832` before the root heading — because JMD is streaming and frontmatter precedes the document body. It can close the connection, narrow the query, or request the next page.
+- Different applications have fundamentally different filter semantics (SQL `WHERE`, Firestore queries, MongoDB `$gt`/`$in`, OData `$filter`, SmartSuite filter DSL, GraphQL where-clauses, …). Freezing one dialect as the JMD parse contract would unnecessarily exclude the others.
+- Applications that want structured interpretation of query values implement their own parser over the raw string, producing whatever filter representation their target backend requires.
+- JMD's role is carrier: deliver the document structure and string contents; leave semantic interpretation to the application layer.
 
-### 13.2 Projection
+### 13.3 Recommended Conventions
 
-`?` as a field value means: *return this field, apply no filter condition.*
+A common QBE dialect — equality, comparison operators (`>`, `>=`, `<`, `<=`), contains (`~`), negation (`!`), projection (`?`), EXISTS-style array semantics — is collected non-normatively in **Appendix A.1**. Applications MAY adopt it as-is, extend it, or replace it entirely; documents using any application-specific dialect remain valid JMD as long as they obey the structural grammar.
 
-```markdown
-#? User
-name: ?
-email: ?
-active: true
-```
+Request and response metadata (pagination, projection, sort, count, expansion) are conveyed via frontmatter. Recommendations for frontmatter keys are given in §23; they are non-normative SHOULDs.
 
-Meaning: return `name` and `email` of all users where `active = true`.
+### 13.4 Four Operations
 
-`?: ?` inside an object scope means: *project all remaining fields of this object.*
-
-```markdown
-#? User
-active: true
-## address
-city: Berlin
-?: ?
-```
-
-Returns all users where active=true and address.city=Berlin, projecting the full address object.
-
-### 13.3 Filter Conditions
-
-A field value in a query document is interpreted as a filter condition. The condition syntax combines three mechanisms that LLMs already know:
-
-**Literal values** are equality conditions:
-
-```markdown
-status: pending
-city: Berlin
-active: true
-```
-
-**Regex patterns** are used for pattern matching. Any value that contains regex metacharacters (`|`, `.`, `*`, `+`, `?`, `^`, `$`, `[`, `]`, `(`, `)`, `\`) is interpreted as a regex pattern and matched against the field value:
-
-```markdown
-status: pending|active|processing
-name: .*Corp.*
-sku: ^A\d+
-email: .*@example\.com$
-city: Berlin|München|Hamburg
-```
-
-The regex dialect is PCRE-compatible. A pattern must match the entire field value (implicit anchoring), unless explicit `.*` is used. LLMs produce regex reliably from extensive training on programming languages, and regex provides all common query operations — alternation (OR), wildcards, character classes, anchoring — in a single, well-defined syntax.
-
-**Comparison operators** are used for numeric and date range filters. A value starting with `>`, `>=`, `<`, or `<=` is a comparison condition:
-
-```markdown
-total: > 50
-qty: >= 10
-price: < 100.00
-created: >= 2026-01-01
-```
-
-A conforming parser MUST accept optional whitespace between the operator and the value (e.g., both `>50` and `> 50` are valid). LLMs naturally insert spaces after operators.
-
-**Negation** inverts any condition. A value starting with `!` negates the following condition:
-
-```markdown
-deleted: !true
-status: !cancelled
-sku: !^LEGACY.*
-```
-
-The `!` prefix composes with all other condition types: `!true` (not equal), `!cancelled` (not equal), `!^LEGACY.*` (regex negation), `!~Corp` (not contains).
-
-**Contains** matches documents where the field value contains the given substring (case-insensitive). A value starting with `~` is a contains condition:
-
-```markdown
-name: ~Corp
-city: ~berlin
-notes: ~urgent
-```
-
-`~Corp` matches any value containing "corp" (case-insensitive). This is more concise than the equivalent regex `.*Corp.*` and avoids regex overhead for simple substring checks.
-
-### 13.4 Filter Summary
-
-| Condition | Syntax | Example |
-|---|---|---|
-| Equality | bare value | `status: pending` |
-| Regex pattern | regex metacharacters | `status: pending\|active` |
-| Contains (case-insensitive) | `~` prefix | `name: ~Corp` |
-| Greater than | `>` prefix | `total: > 50` |
-| Greater or equal | `>=` prefix | `score: >= 90` |
-| Less than | `<` prefix | `price: < 100` |
-| Less or equal | `<=` prefix | `qty: <= 5` |
-| Negation | `!` prefix | `deleted: !true` |
-| Negated regex | `!` + regex | `sku: !^LEGACY.*` |
-| Negated contains | `!~` prefix | `name: !~Corp` |
-| Projection | `?` | `email: ?` |
-| Wildcard projection | `?: ?` | All remaining fields |
-
-### 13.5 Array Conditions
-
-An array condition in a query acts as an **EXISTS** predicate: match documents where at least one array item satisfies all sub-conditions.
-
-```markdown
-#? Order
-status: pending
-## items[]
-- sku: ^A\d+
-  qty: > 1
-```
-
-Meaning: *orders where status=pending AND at least one item has sku matching `^A\d+` and qty > 1.*
-
-Array items with all fields as `?` project the full array:
-
-```markdown
-## items[]
-- sku: ?
-  price: ?
-```
-
-### 13.6 Complete QBE Example
-
-Query:
-
-```markdown
-page: 1
-page-size: 25
-
-#? Order
-status: pending|processing
-total: > 50.0
-## tags[]
-- express
-## items[]
-- sku: ?
-  qty: ?
-  price: > 10.0
-## address
-city: ?
-?: ?
-```
-
-In prose: *Find orders where status is pending or processing, total > 50, tagged "express", containing at least one item with price > 10 — return sku and qty of matching items, and the full address. Return page 1 with 25 results.*
-
-### 13.7 QBE Grammar Extension (EBNF)
-
-```ebnf
-query_document  ::= frontmatter? "#? " label NEWLINE query_body
-
-frontmatter     ::= (frontmatter_field NEWLINE)+ BLANK_LINE?
-frontmatter_field ::= key ": " value
-                    | key                    (* bare key with no value, e.g. 'count' *)
-
-query_body      ::= (query_element | BLANK_LINE)*
-
-query_element   ::= query_heading | query_bare_field | query_array_item
-
-query_heading   ::= query_object_heading | query_array_heading
-query_object_heading  ::= heading_prefix key NEWLINE
-query_array_heading   ::= heading_prefix key "[]" NEWLINE
-
-query_bare_field ::= key ": " condition NEWLINE
-                   | wildcard_projection
-
-query_array_item ::= "-" NEWLINE
-                   | "- " key ": " condition NEWLINE
-query_indent_field ::= INDENT key ": " condition NEWLINE
-
-condition       ::= projection | filter_expr
-projection      ::= "?"
-filter_expr     ::= negation? (comparison | contains | regex_or_literal)
-negation        ::= "!"
-comparison      ::= comp_op " "? scalar
-comp_op         ::= ">" | ">=" | "<" | "<="
-contains        ::= "~" scalar
-regex_or_literal ::= (* A value containing regex metacharacters
-                        (|.*+?^$[]()\) is treated as a regex pattern.
-                        A value without metacharacters is an equality match. *)
-
-wildcard_projection  ::= "?: ?" NEWLINE
-```
-
-### 13.8 Design Rationale
-
-QBE deliberately omits sorting, aggregation, grouping, and computed expressions. An LLM receiving a result set can sort, filter, count, sum, and group as a reasoning step — these are cognitive operations, not data transport operations. QBE's sole purpose is to reduce the result set to a size that fits the LLM's context window. Everything beyond that is the LLM's job.
-
-The choice of regex as the primary pattern language reflects the design philosophy of working with the LLM's existing capabilities. LLMs produce regex fluently from extensive training on programming languages, documentation, and Stack Overflow. Regex provides alternation (OR), wildcards, character classes, and anchoring in a single, universally understood syntax — eliminating the need for format-specific operators. The comparison operators (`>`, `>=`, `<`, `<=`) are the only addition, because numeric range comparisons cannot be expressed in regex.
-
-Pagination is expressed as frontmatter — fields before the `#?` heading — because it controls the *delivery* of results, not their *selection*. This is both structurally correct (transport metadata belongs outside the query body) and LLM-native: an LLM naturally writes preamble information before the main content, just as it would write a header before a document body. The frontmatter uses the same `key: value` syntax the LLM already knows from JMD data fields — no new syntax is required. This keeps the query body clean: every field in the body is either a filter or a projection, with no meta-concerns mixed in.
-
-### 13.9 QBE and the Four Operations
-
-In a JMD-native MCP or API context, the four canonical operations map cleanly:
+In a JMD-native MCP or API context, the four canonical operations map cleanly to document modes:
 
 | Operation | Input | Output |
 |---|---|---|
@@ -1472,262 +1332,46 @@ In a JMD-native MCP or API context, the four canonical operations map cleanly:
 | `query(body)` | JMD query document (`#?`) | JMD result document |
 | `delete(path, body)` | path + JMD delete document (`#-`) | confirmation |
 
-This gives an LLM a complete, minimal interface to any data source using only JMD documents as the communication format. Each operation corresponds to a document mode: `#` for data (read/write), `#?` for query, `#!` for schema, and `#-` for delete.
+This gives an LLM a complete, minimal interface to any data source using only JMD documents as the communication format.
 
 ---
 
 ## 14. Schema Documents
 
-A JMD schema document describes the expected structure and types of a data document. It uses the root marker `#!` and is convertible to and from JSON Schema.
+A JMD schema document describes the expected structure of a data document. It uses the root marker `#!` and shares the complete body syntax of a data document — nested headings, bare fields, arrays, bullets. JMD itself assigns no type-semantic interpretation to field values. The consuming application determines what type system, constraints, or validation semantics apply.
 
-### 14.1 Root Marker
+### 14.1 Document Mode
 
-```markdown
-#! Order
-```
-
-### 14.2 Field Types
-
-A schema field specifies its JSON type as the value:
-
-| JMD Schema Syntax | JSON Schema type |
-|---|---|
-| `key: string` | `{"type": "string"}` |
-| `key: number` | `{"type": "number"}` |
-| `key: integer` | `{"type": "integer"}` |
-| `key: boolean` | `{"type": "boolean"}` |
-| `key: null` | `{"type": "null"}` |
-| `key: binary` | `{"type": "string", "contentEncoding": "sha256"}` |
-
-The `binary` type represents opaque binary content. In JMD data documents, a `binary` field is serialized as `sha256:<hex>` — the SHA-256 hash of the raw bytes. This allows an LLM to detect content changes without processing or transmitting the raw binary data.
-
-### 14.3 Schema Modifiers
-
-Schema fields support modifiers that follow the base type or enum. Modifiers are **keywords** — reserved words with defined meaning that are not available as type names or enum values.
-
-**Defined keywords:**
-
-| Keyword | Position | Meaning |
-| --- | --- | --- |
-| `optional` | after type/enum | Field may be omitted (not required) |
-| `readonly` | after type/enum | Field is read-only — must not be included in write operations |
-
-**Default values** use `= value` after the type (before or after keywords):
-
-```markdown
-status: pending|active|shipped = pending
-retries: integer = 3
-```
-
-**Format hints** follow the base type as a keyword. They describe the expected shape of a string value:
-
-| Format hint | Meaning |
-| --- | --- |
-| `email` | Email address |
-| `date` | ISO 8601 date (`2026-03-12`) |
-| `datetime` | ISO 8601 date-time (`2026-03-12T14:30:00Z`) |
-| `uri` | URI / URL |
-
-Format hints are **semantic context for the LLM**, not validation constraints. A parser is not required to validate that a `string email` value is actually a valid email address.
-
-**Enum constraints** use a pipe-separated list of values without delimiters:
-
-```markdown
-status: pending|active|shipped|cancelled
-role: admin|user|guest
-priority: low|medium|high|critical = medium
-```
-
-The pipe character `|` makes enums visually distinct from format hints and base types. An LLM recognizes the alternation pattern from regex training.
-
-**Combining modifiers:**
-
-```markdown
-id: integer readonly
-notes: string optional
-email: string email optional
-created_at: string datetime readonly
-due_date: string date optional
-status: pending|active|shipped = pending
-priority: low|medium|high|critical = medium optional
-```
-
-The order after the type is: format hint, default, keywords. A parser SHOULD accept modifiers in any order.
-
-### 14.4 Nested Objects
-
-Nested objects use headings at deeper levels:
+The root marker `#!` signals a schema document:
 
 ```markdown
 #! Order
 id: integer
-## address
-street: string
-city: string
-zip: string
-country: string optional
-```
-
-### 14.5 Arrays
-
-Array fields use the `[]` sigil. The item type follows as a bare field or heading:
-
-```markdown
-## tags[]: string
-
-## items[]: object
-- sku: string
-  qty: integer
-  price: number
-```
-
-### 14.5a Inline Object Types
-
-For edge cases where a nested object or array-of-objects must be expressed inside
-an existing object item body — where heading syntax would close the enclosing scope
-— JMD provides an **inline object type** notation:
-
-```markdown
-address: object(street: string, city: string, zip: string optional) optional
-```
-
-The inline object lists its fields as comma-separated `key: type_expr` pairs inside
-parentheses.  The closing `)` ends the inline object; modifiers on the containing
-field follow outside the parentheses.
-
-**Array of inline objects** uses the `[]:` bare-field sigil (see below):
-
-```markdown
-items[]: object(sku: string, qty: integer, price: number) optional
-```
-
-**Array of enum or scalar** — when a multi-select or array-of-scalar field must
-appear as a bare field (e.g. inside an object item body), the `[]:` sigil extends
-`schema_bare_field`:
-
-```markdown
-## Order[]: object optional
-- id: integer
-  tags[]: express|standard|fragile optional
-  address: object(street: string, city: string) optional
-```
-
-Both forms are intended for **inline / embedded contexts only** — where a `##`
-heading would incorrectly close the enclosing scope.  At the top level of a schema
-document, the heading form (`## field[]: type_expr`) is preferred.
-
-### 14.6 Entity References
-
-The `->` marker declares that a field references another entity:
-
-```markdown
-#! Order
-id: integer
+status: pending|active|shipped
 customer: -> Customer
-warehouse: -> Warehouse optional
 ```
 
-`-> Customer` means: this field holds a reference to a `Customer` entity. The marker is a **semantic hint**, not a validation constraint — it does not require a corresponding `#! Customer` schema to exist.
+Body syntax is identical to Sections 7–9. Each field-value pair is a string parsed per Sections 2.1 and 5. The envelope (§3.6) reports `mode: "schema"`, `label: "Order"`, and `value: {id: "integer", status: "pending|active|shipped", customer: "-> Customer"}` — with the values preserved verbatim as strings.
 
-**How references are serialized in data documents:** The schema declares the *relationship*; the generator decides the *representation*. A reference field may appear in data as a bare ID, a URI, or an inline-resolved object:
+### 14.2 Values Are Raw Strings
 
-```markdown
-# Order
-customer: 42
-```
+A conforming JMD parser returns schema document values verbatim. The value `"integer"` is the string `"integer"`; the value `"-> Customer"` is the string `"-> Customer"`. JMD does not parse these into type ASTs, reference objects, or constraint structures.
 
-```markdown
-# Order
-## customer
-id: 42
-name: Müller
-city: Berlin
-```
+This is a deliberate design decision:
 
-Both are valid data for the same `customer: -> Customer` schema field. This is analogous to OData NavigationProperties, where the client decides via `$expand` whether to inline-resolve or return a reference. In JMD, the generator makes this decision autonomously.
+- Different applications have fundamentally different type systems (TypeScript type literals, JSON Schema, OData EDM, Protocol Buffers, SmartSuite field types, Firestore security rules, GraphQL schemas, Pydantic models, …). Freezing one as the JMD parse contract would unnecessarily exclude the others.
+- Applications that want structured interpretation of schema values implement their own parser over the raw string, producing whatever type representation their target domain requires.
+- JMD's role is carrier: deliver the document structure and string contents; leave type interpretation to the application layer.
 
-**Array references** use the standard array sigil:
+The previous versions of this section prescribed a specific type vocabulary (base types, modifiers, defaults, enum alternation, entity references, inline object types, binary encoding). In v0.3.2 this prescription was recognized as over-specification: the JMD parser's role is structural, and different applications legitimately need different type systems. The prescribed conventions remain available — see Appendix A.2 — but as recommendations, not requirements.
 
-```markdown
-#! Order
-items: []-> OrderItem
-tags: []-> Tag optional
-```
+### 14.3 Recommended Conventions
 
-Serialized as a list of IDs (`items: [101, 102, 103]`) or as an inline-resolved array of objects — the generator decides.
+A common schema dialect — scalar type names (`string`, `integer`, `boolean`, `number`, `null`, `object`), modifiers (`optional`, `readonly`), default values (`= scalar`), enum alternation (`a|b|c`), format hints (`email`, `date`, `datetime`, `uri`), entity references (`->`), inline object types (`object(...)`), and binary content conventions (Base64, `sha256:`) — is collected non-normatively in **Appendix A.2**. Applications MAY adopt it as-is, extend it, or replace it entirely; documents using any application-specific dialect remain valid JMD as long as they obey the structural grammar.
 
-**Self-references** work naturally:
+### 14.4 Four Operations
 
-```markdown
-#! Category
-name: string
-parent: -> Category optional
-```
-
-### 14.7 Complete Schema Example
-
-```markdown
-#! Order
-id: integer readonly
-status: pending|active|shipped|cancelled = pending
-total: number
-paid: boolean
-notes: string optional
-description: string optional
-email: string email optional
-created_at: string datetime readonly
-customer: -> Customer
-
-## address
-street: string
-city: string
-zip: string
-country: string optional
-### geo
-lat: number
-lng: number
-
-## tags[]: string
-
-## items[]: object
-- sku: string
-  qty: integer
-  price: number
-```
-
-### 14.8 Schema Grammar (EBNF)
-
-```ebnf
-schema_document  ::= "#! " label NEWLINE schema_body
-schema_body      ::= (schema_element | BLANK_LINE)*
-
-schema_element   ::= schema_heading | schema_bare_field
-
-schema_heading   ::= heading_prefix key NEWLINE
-                    | heading_prefix key "[]: " type_expr NEWLINE
-                    | heading_prefix key "[]" NEWLINE
-
-schema_bare_field ::= key ": " type_expr NEWLINE
-                    | key "[]: " type_expr NEWLINE
-
-type_expr        ::= (base_type format_hint? | enum_expr | ref_type | "[]" ref_type
-                     | inline_object)
-                     default_value? modifier*
-
-inline_object    ::= "object(" field_spec ("," field_spec)* ")"
-field_spec       ::= key ": " type_expr
-
-base_type        ::= "string" | "number" | "integer" | "boolean" | "null" | "object" | "binary"
-format_hint      ::= " " ("email" | "date" | "datetime" | "uri")
-enum_expr        ::= scalar ("|" scalar)+
-ref_type         ::= "-> " label
-default_value    ::= " = " scalar
-modifier         ::= " optional" | " readonly"
-```
-
-### 14.9 Schema and the Four Operations
-
-In an MCP context, schema documents serve as the contract for all four operations. The LLM receives the schema as context and generates a conforming JMD document:
+In an MCP context, schema documents serve as the contract for all four operations:
 
 | Operation | Schema role |
 |---|---|
@@ -1927,7 +1571,7 @@ The line types and their streaming semantics:
 
 | Line | Event emitted | Information available immediately |
 |---|---|---|
-| `# Label` | `DOCUMENT_START` | Document label, mode |
+| first heading (after frontmatter) | `DOCUMENT_START` | `mode`, `label`, `frontmatter` (full envelope header — see §3.6) |
 | `key: value` | `FIELD` | Key name, parsed value |
 | `key:` (empty value) | `FIELD_START` | Key name; value follows as multiline |
 | `> text` (blockquote) | `FIELD_CONTENT` | Incremental multiline content (streamable) |
@@ -1943,10 +1587,12 @@ The blockquote form for multiline strings preserves this streaming property: eac
 
 `SCOPE_RESET` is followed by implicit `OBJECT_END` / `ARRAY_END` events for each scope on the stack, in reverse order. A blank line within an array body that is followed by a `-` item is cosmetic and does not emit `SCOPE_RESET`.
 
+The `DOCUMENT_START` event carries the full envelope header (mode, label, frontmatter) — the same three fields that appear on the envelope returned by a non-streaming parser (§3.6). A receiver that buffers only the first event has complete document-level metadata before any body event arrives. Subsequent events (`FIELD`, `OBJECT_START`, `ARRAY_START`, …) carry only body content; they do not re-transmit the envelope header. This mirrors standard streaming conventions (SAX, Server-Sent Events, gRPC streaming): the header is transmitted once, the body streams.
+
 The complete event sequence for a typical Order document:
 
 ```
-DOCUMENT_START  "Order"
+DOCUMENT_START  mode="data", label="Order", frontmatter={}
 FIELD           id = 42
 FIELD           status = "pending"
 FIELD           paid = false
@@ -2195,7 +1841,7 @@ JMD exists in a world where JSON is deeply entrenched in LLM pretraining data. A
 
 2. **Streaming.** Every completed JMD line is immediately parseable. Truncated output degrades gracefully — a partial JMD document contains all fields received so far. JSON cannot offer this without non-standard extensions or workarounds.
 
-3. **Query by Example.** JMD is a tetradic protocol: data, query, schema, and delete share one syntax. An LLM that can produce a JMD data document can produce a query (`#?`), schema (`#!`), or delete (`#-`) with only a different root marker. JSON requires separate tooling ecosystems for each concern.
+3. **Full CRUD surface in one syntax.** Data, query, schema, and delete documents share one structural grammar. An LLM that can produce a JMD data document can produce a query (`#?`), schema (`#!`), or delete (`#-`) with only a different root marker. JSON requires separate tooling ecosystems for each concern.
 
 These three pillars are not independent features bolted onto a data format — they are structural consequences of the same design choice. JMD's design methodology — *AI Whispering*, the systematic validation of every syntax decision against the natural generation behaviour of LLMs — is what makes these three properties co-emerge from a single design.
 
@@ -2207,14 +1853,16 @@ Quantitative benchmark results, methodology details, and alternative format expe
 
 All JMD document modes at a glance:
 
-| Root Marker | Mode | Description |
-|---|---|---|
-| `# Label` | **Data** | Standard data document |
-| `# []` | **Data (root array)** | Root-level array |
-| `#? Label` | **Query** | QBE query document |
-| `#! Label` | **Schema** | Structure and type definition |
-| `#- Label` | **Delete** | Resource deletion |
-| `#- []` | **Delete (bulk)** | Bulk resource deletion |
+| Root Marker | Envelope `mode` | Purpose | Value Interpretation |
+|---|---|---|---|
+| `# Label` | `"data"` | Standard data document | Values are parsed per §2.1 (null/bool/number/string) |
+| `# []` | `"data"` | Root-level array | Items are parsed per §2.1 |
+| `#? Label` | `"query"` | Query document (QBE) | Values are raw strings; semantics are application-defined (§13, Appendix A.1) |
+| `#! Label` | `"schema"` | Structure/type definition | Values are raw strings; semantics are application-defined (§14, Appendix A.2) |
+| `#- Label` | `"delete"` | Resource deletion | Values are parsed per §2.1 (same as data) |
+| `#- []` | `"delete"` | Bulk resource deletion | Items are parsed per §2.1 (same as data) |
+
+All modes share the same structural grammar (§3–§9). The body of every JMD document is a JSON value — object or array — with scalar leaves parsed per §2.1. The only per-mode difference is how the consuming application **interprets** the resulting string values: data and delete documents contain payload data; query and schema documents contain expressions in an application-defined sub-language that JMD itself does not parse.
 
 ---
 
@@ -2246,9 +1894,7 @@ If an application needs annotations that travel with the data, the correct JMD a
 
 **Sorting (ORDER BY):** An LLM can sort any result set as a reasoning step. Formalizing sort syntax in QBE would add grammar productions and require the LLM to learn an ordering convention (`_sort: -date`, `+name`?) that varies across every existing query language. Since QBE's purpose is domain reduction — narrowing the result set to context-window size — sort order is irrelevant to that goal. The LLM sorts the reduced set itself, in whatever order its task requires.
 
-**Full query language / custom operators:** Existing query syntaxes (MongoDB's `$gt`/`$in`/`$regex`, GraphQL filters, OData `$filter`) each define a bespoke operator vocabulary that an LLM must memorize as an opaque convention. JMD's QBE avoids this entirely: filter conditions use regex (which LLMs know from code) and comparison operators (which LLMs know from every programming language). There is no JMD-specific operator vocabulary to learn. A full query language would also tempt implementers to push computation into the query layer (aggregation, joins, subqueries) — capabilities the LLM already has natively and that would bloat the format specification for marginal benefit.
-
-**Matched delimiters in query syntax:** An early QBE design considered function-call operators like `in(a, b, c)` and `not(value)`. These were rejected because matched delimiters — opening and closing parentheses that must be balanced — contradict a core JMD design principle. JMD eliminates `{}` and `[]` from data syntax precisely because closure-based constructs are token-inefficient and impede streaming. Reintroducing matched delimiters in the query dialect would undermine this principle. The prefix negation operator `!` and regex alternation `a|b|c` achieve the same expressiveness without any closing delimiter.
+**A JMD-normative query language:** Earlier drafts of this specification prescribed a specific QBE dialect as part of §13 (regex-based pattern matching, explicit comparison operators, `~` contains, `!` negation, `?` projection). In v0.3.2 the normative prescription was withdrawn: JMD is a carrier format, and the interpretation of filter expressions is application-defined. The common dialect that was previously normative is preserved non-normatively in Appendix A.1. Freezing one dialect as required would have excluded applications whose backends use different filter semantics (SQL, MongoDB, Firestore, OData, SmartSuite, GraphQL), which is exactly the over-specification this revision corrects.
 
 **Fenced code blocks for multiline strings:** An earlier version of JMD included fenced code blocks (triple-backtick delimiters) as a second multiline string form alongside blockquotes. Fenced blocks were intended for raw text — code, config, logs — where Markdown interpretation should be suppressed. They were removed in v0.3 for a fundamental reason: fenced blocks are the only Markdown construct that uses matched delimiters (an opening fence and a closing fence). This directly contradicts JMD's core anti-delimiter principle — the same principle that motivates the elimination of `{}`, `[]`, and `()` throughout the format. More importantly, matched delimiters break the streaming guarantee: a parser must buffer all content between the opening and closing fence, unable to emit any events until the closing fence arrives. Every other JMD construct is a position marker — a line that self-identifies its role without reference to any future line. Fenced blocks are the sole exception, and removing them makes JMD's streaming guarantee complete and unconditional. Blockquotes handle all multiline use cases, including code and raw text. The `>` prefix on each line is a position marker, not a delimiter pair, and each line can be processed independently as it arrives.
 
@@ -2256,11 +1902,11 @@ If an application needs annotations that travel with the data, the correct JMD a
 
 **Native date/time types:** JSON has no date type; ISO 8601 strings are the established convention. JMD inherits this: `created: 2024-03-08T14:30:00Z` is parsed as an unambiguous string. Adding a typed date sigil would solve a problem that tooling already handles at the application layer.
 
-**Binary data:** Out of scope for a text-based format. Base64 strings are the appropriate fallback where binary data must be represented.
+**Binary data:** Out of scope for a text-based format. Base64 strings are the appropriate fallback where binary data must be represented. See Appendix A.2.8 for recommended encoding conventions (Base64 inline, `sha256:` hash reference).
 
 **References and anchors:** YAML's anchor/alias mechanism adds parsing complexity and is rarely needed in LLM-generated output. JMD prefers explicit repetition over implicit reference.
 
-**Linked data and cross-document references (JSON-LD style):** Formal link semantics between documents — typed resource references, URI resolution, RDF-style predicates — are explicitly out of scope. JMD's `->` entity reference (Section 14.7) covers the practical need: declaring that a field references another entity so that an LLM or system can resolve it through sequential `read` calls. This is a lightweight semantic hint, not a linked-data model. Full JSON-LD-style semantics (RDF triples, `@context`, URI expansion) would impose a conceptual framework that adds complexity without benefit for the primary use case of LLM-to-system communication.
+**Linked data and cross-document references (JSON-LD style):** Formal link semantics between documents — typed resource references, URI resolution, RDF-style predicates — are explicitly out of scope. An entity-reference convention (`->`) is available in Appendix A.2.6 as a lightweight, application-level semantic hint for declaring that a field references another entity. Full JSON-LD-style semantics (RDF triples, `@context`, URI expansion) would impose a conceptual framework that adds complexity without benefit for the primary use case of LLM-to-system communication.
 
 **Streaming aggregation / reactive queries:** Interesting, but a concern for runtime implementations rather than the data format itself.
 
@@ -2294,7 +1940,9 @@ If an application needs annotations that travel with the data, the correct JMD a
 
 **Why QBE for queries?** QBE is not a query language — it is a domain reduction mechanism. Its purpose is to narrow a potentially large result set to a size that fits the LLM's context window. The LLM then performs precise filtering, sorting, aggregation, and transformation as reasoning steps on the reduced set. This distinction is fundamental: a query language must be complete and exact (every expressible query must return exactly the right rows); a domain reduction mechanism only needs to be *sufficient* (the result set must be small enough and must contain the relevant data). This dramatically lowers the bar for what QBE syntax must express. The LLM does not need `ORDER BY` because it can sort. It does not need `GROUP BY` because it can aggregate. It does not need subqueries because it can issue sequential calls. QBE handles the one thing the LLM cannot do for itself: tell the server which subset of data to transmit.
 
-**Why regex as QBE filter syntax?** LLMs have extensive training on regular expressions from programming languages, documentation, and code review. Regex is not a QBE-specific convention — it is a pre-existing skill that QBE reuses. This matters for two reasons. First, the LLM needs no QBE-specific training to write filter patterns: `status: pending|shipped` and `sku: ^LEGACY.*` are patterns it would produce in any programming context. Second, the self-reinforcing tokenizer effect applies: as JMD QBE documents appear in training corpora, the characteristic pattern of `key: regex` within a `#?` document becomes increasingly familiar, making QBE generation more reliable over time. The initial unfamiliarity of seeing regex in a data-document context is a transitional cost that adoption itself eliminates — the same flywheel that drives JMD's core token efficiency (Section 1) applies to its query dialect.
+**Why no JMD-normative sub-language for filter and type expressions?** Queries and schemas are both cases where a field value carries a *sub-language expression* (a filter condition, a type specifier) rather than a plain data value. The temptation is to formalize the sub-language in the JMD spec and require parsers to return a structured representation. Earlier drafts did this in §13 and §14, with EBNF grammars and prescribed vocabularies. This was wrong for three compounding reasons: (1) *Applications have genuinely different needs.* A SmartSuite adapter, a TypeScript codegen, a SQL adapter, and an OData bridge each require a different filter and type representation to map cleanly to their target backend — no single spec-mandated AST can serve all of them without imposing conversion overhead on every consumer. (2) *We cannot anticipate future needs.* The set of applications that will consume JMD is unbounded. A frozen AST shape excludes every application whose requirements were not foreseen at spec-authorship time — a prognosis the spec has no business making. (3) *Token inflation defeats JMD's own purpose.* A structured AST for `total: > 50` inflates from ~10 characters to ~70 characters in serialized form, directly contradicting JMD's token-efficiency mandate; and LLMs naturally write the string form, not the AST form, so the AST is a layer of *added* translation cost with no originating benefit. The correct layering is: JMD delivers the document structure and string contents; the application interprets the sub-language strings per its own needs. Common conventions for both QBE and schema are collected non-normatively in Appendix A.
+
+**Why regex autodetection was removed (v0.3.2).** The earlier §13.3 specified: *a value containing regex metacharacters (`|`, `.`, `*`, `+`, `?`, `^`, `$`, `[`, `]`, `(`, `)`, `\`) is interpreted as a regex pattern.* A common LLM input like `name: Max.Mustermann` (a personal name with a literal dot) would silently become a regex where the dot matches any character, producing surprise matches. The autodetection rule failed the AI-Whispering test: it interpreted natural LLM output against the LLM's actual intent. v0.3.2 removes this mechanism entirely — not only from the normative spec but also as a recommended convention. Applications that need regex-based filters SHOULD signal regex intent explicitly (e.g., a `~re:` prefix or `/.../ `-style delimiters), not via content sniffing.
 
 **Why free-form fields in error documents?** Error documents serve two audiences: machines (routing, retry logic, monitoring) and LLMs (understanding what went wrong and how to recover). The `status` and `code` fields serve machines; `message`, `suggestion`, and `context` serve LLMs. Like the epistemic `source` field in frontmatter, the free-form error fields carry the generator's perspective rather than a standardized vocabulary. A database server writes `suggestion: Check foreign key constraints`; an LLM-powered API writes `suggestion: The customer name looks like a typo — did you mean "Müller"?`. Prescribing the content of these fields would suppress the very information that makes them valuable. The error code vocabulary is similarly left to domain convention rather than specification mandate, because error taxonomies are inherently domain-specific and will converge through usage patterns rather than top-down standardization.
 
@@ -2302,15 +1950,9 @@ If an application needs annotations that travel with the data, the correct JMD a
 
 **Why is frontmatter an open extension point?** JMD's frontmatter channel carries transport-level metadata that the implementation — not the format — interprets. Different backends have fundamentally different metadata needs: a query server uses `page` and `page-size` for pagination; a database adapter uses `group` and `sum` for aggregation; an LLM generator uses `confidence` and `source` for epistemic self-assessment. Prescribing a fixed vocabulary would force every implementation to work within a common denominator that fits none of them well. An open channel lets each implementation define exactly the keys it needs, without format changes. The epistemic conventions (`confidence`, `source`, `uncertain`) are a particularly valuable example: LLMs operate with personas and have a contextual self-understanding of how they arrived at each piece of data. Providing a channel for this self-assessment — rather than suppressing it into prose — makes the metadata honest and machine-processable. But these are conventions, not format definitions. `source` is deliberately free-form: a RAG agent writes `source: vector search, 3 documents matched`; a database adapter writes `source: postgresql`; a medical assistant writes `source: clinical guidelines 2024`. The receiver interprets this contextually. Forcing diverse generator perspectives into a fixed enum would lose the very information that makes the field valuable.
 
-**Why `->` for entity references?** An earlier design considered `ref(Customer)` with function-call syntax. This was rejected for the same reason as `in()` and `not()` in QBE: matched delimiters (parentheses) contradict JMD's core anti-delimiter principle. The arrow `->` is delimiter-free, visually self-explanatory ("points to"), and deeply familiar to LLMs from ER diagrams, UML associations, type annotations, and pointer notation across programming languages. It is typically a single token in BPE tokenizers. The `->` marker is a semantic hint, not a validation constraint — the schema declares the relationship, the generator decides the representation (bare ID, URI, or inline-resolved object). This mirrors OData NavigationProperties and keeps the schema layer lightweight: no resolution rules, no join semantics, no circular-dependency handling. The LLM resolves references through sequential `read` calls, which is the natural agentic pattern.
-
-**Why `optional` and `readonly` as keywords instead of sigils?** An earlier design used `?` as a trailing sigil for optional fields (`notes: string?`). While compact and familiar from programming languages, sigils are opaque to readers who are not programmers — and JMD schemas are meant to be read and understood by LLMs and humans alike. The keyword `optional` is self-documenting: its meaning is immediate and unambiguous in any context. The same principle applies to `readonly`. Using full English keywords also maintains consistency with the rest of JMD's design, which favors readable constructs over terse notation. The minor cost in token count (one word vs. one character) is negligible in schema documents, which are typically small and read once, not transmitted repeatedly.
-
-**Why delimiter-free enums?** An earlier design used `string(pending|active|shipped)` with parentheses around enum values. This contradicts JMD's core anti-delimiter principle — the same principle that led to rejecting `ref()`, `in()`, and `not()`. The delimiter-free form `pending|active|shipped` uses the pipe character as alternation, which LLMs know from regex. The base type `string` is implicit for enum values (all enum members are strings). This is both more concise and consistent with the delimiter-free philosophy that runs through the entire specification.
-
-**Why format hints as keywords, not formal validation?** Schema format hints (`string email`, `string datetime`) are semantic context for the LLM, not validation rules for a parser. An LLM that reads `email: string email` understands "this field should contain an email address" — it does not need a regex validator to enforce this. Keeping format hints as informational keywords rather than formal constraints keeps the schema layer lightweight and avoids the complexity trap of schema validation languages like JSON Schema's `format` keyword, where the boundary between "annotation" and "assertion" has caused years of specification debate.
-
 **Why `#!` for schema?** The `!` sigil is conventionally associated with declarations and directives (shebang lines, YAML directives, DOCTYPE). It is visually distinct from `#?` (query) and `#` (data), making document mode immediately recognizable.
+
+(Rationales for the specific schema-vocabulary conventions — entity references, keyword modifiers, delimiter-free enums, format hints, inline objects — were previously listed here and have been moved to Appendix A.2 alongside the conventions themselves. The meta-rationale for why no such vocabulary is normative appears above under "Why no JMD-normative sub-language for filter and type expressions?")
 
 **Why generator-strict, parser-tolerant?** JMD is consumed by parsers but generated by LLMs. These two roles have different capabilities: a parser sees the complete text and can apply flexible rules; an LLM generates sequentially and cannot correct earlier output. Postel's Law — "be conservative in what you send, be liberal in what you accept" — is the natural conformance model for this asymmetry. A strict generator ensures interoperability; a tolerant parser ensures reliability with real LLM output. Benchmark testing confirms that tolerant parsing eliminates syntax-related failures without introducing ambiguity: anonymous headings, depth+1 array items, and cosmetic blank lines are all unambiguously parseable. The alternative — requiring LLMs to produce pixel-perfect syntax — forces retry loops, corrective prompting, and post-processing that negate JMD's latency and token advantages.
 
@@ -2386,8 +2028,10 @@ An implementation claiming **JMD v0.3** conformance must:
 - Support multiline string values in blockquote form (Section 9).
 - Support document frontmatter: fields before the first heading are document-level metadata, not serialized into JSON (Section 3.5). Unknown frontmatter fields MUST be preserved in the parsed frontmatter map and surfaced to the application layer. The parser MUST NOT reject them, and MUST NOT drop them before the application can inspect them. Silent drop at the parser layer is non-conformant; the decision whether to silently tolerate, echo, or reject an unknown frontmatter key belongs to the application layer (Section 3.5).
 - Recognize all four document modes: `#` (data), `#?` (query), `#!` (schema), `#-` (delete). The `#-` root marker MUST be parsed as a depth-1 heading with mode prefix `-` (Section 15).
-- Parse `#-` delete documents using the same syntax rules as data documents — the body is a standard JMD object or array.
+- Parse `#-` delete, `#?` query, and `#!` schema documents using the same syntax rules as data documents — the body is a standard JMD object or array. Values in query and schema documents MUST be returned as raw strings (parsed per §2.1 and §5); the parser MUST NOT attempt structured interpretation of filter or type expressions (Sections 13, 14).
+- Return every parsed document as the canonical envelope `{mode, label, frontmatter, value}` (Section 3.6). Frontmatter is always present as an object (empty `{}` when no frontmatter fields are present). The label has the mode-mark and any trailing `[]` sigil stripped.
 - Reject structurally invalid input with a clear error indicating the offending line. Tolerant variations (Section 22.1) are NOT structurally invalid.
+- Reject prose in the document body with a parse error (§3.6.2). A bare line that is not a key-value field, indented continuation, bullet (`-`), blockquote (`>`), heading, or thematic break (`---`) is invalid JMD and MUST NOT be silently dropped or returned as an empty value.
 - Not apply Markdown rendering to string content; only JSON string escaping rules apply. (Note: inline Markdown in blockquote multiline values is preserved as literal text in the parsed string, not rendered.)
 
 Recommended test cases:
@@ -2437,16 +2081,16 @@ Recommended test cases:
 - **Inline Markdown in quoted scalar (parser tolerance):** `"note": "See *docs*"` parses as the literal string `"See *docs*"` — the parser does not interpret the `*` markers
 - **Inline Markdown in blockquote (preserved verbatim):** `>` lines containing `**bold**`, `` `code` ``, `[link](url)` are preserved byte-for-byte in the parsed string value
 - **Incidental metacharacters in scalar values:** `rate: 2 * x`, `expr: **ptr`, `regex: ^[a-z]+$`, and `url: https://example.com/*` are valid scalar data and MUST be accepted by the parser — only the `# ` and `- ` structural prefixes trigger mandatory quoting (Section 6)
-- **Schema entity reference:** `customer: -> Customer` parsed as reference type in schema
-- **Schema optional reference:** `warehouse: -> Warehouse optional` parsed as optional reference type
-- **Schema array reference:** `items: []-> OrderItem` parsed as array of references
-- **Schema self-reference:** `parent: -> Category optional` within `#! Category` is valid (no circularity check)
-- **Schema enum without delimiters:** `status: pending|active|shipped` parsed as enum type
-- **Schema enum with default:** `status: pending|active|shipped = pending` parsed as enum with default value
-- **Schema format hint:** `email: string email` parsed as string type with email format hint
-- **Schema readonly:** `id: integer readonly` parsed as integer type with readonly modifier
-- **Schema optional:** `notes: string optional` parsed as optional string field
-- **Schema combined modifiers:** `created_at: string datetime readonly` parsed with format hint and readonly
+- **Filter-like prefixes in data scalars:** `deleted: !true`, `note: > urgent`, `search: ~berlin`, `status: >= 5` in a data document (`#`) are valid scalar strings — the values are `"!true"`, `"> urgent"`, `"~berlin"`, `">= 5"` respectively; the `!`, `>`, `~` characters have no JMD-normative meaning in scalar position
+- **Envelope shape for data:** `# Order\nid: 42` returns `{mode: "data", label: "Order", frontmatter: {}, value: {id: 42}}` (§3.6)
+- **Envelope shape for schema:** `#! Order\nid: integer` returns `{mode: "schema", label: "Order", frontmatter: {}, value: {id: "integer"}}` — the `#!` mode-mark is in `mode`, not `label`
+- **Envelope shape for delete bulk:** `#- []\n- 42\n- 43` returns `{mode: "delete", label: "", frontmatter: {}, value: [42, 43]}` — anonymous bulk delete yields `label: ""` (both the mode-mark and the `[]` sigil are stripped)
+- **Envelope shape with frontmatter:** `page: 1\n\n#? Order\nstatus: pending` returns `{mode: "query", label: "Order", frontmatter: {page: 1}, value: {status: "pending"}}`
+- **Prose body rejected:** `# Answer\n\n42\n` MUST produce a parse error — the bare line `42` is prose, not a JMD field; silently returning `{}` is non-conformant (§3.6.2)
+- **Whitespace-only body accepted:** `# Order\n\n` returns `value: {}` — whitespace and blank lines without non-structural content are not prose and are parsed as empty body
+- **Schema document — values are raw strings:** `#! Order` with `id: integer` returns `value: {"id": "integer"}` — the value is the literal string `"integer"`, not a type object; the parser does not interpret schema vocabulary (Section 14, Appendix A.2)
+- **Schema document — entity reference is opaque:** `customer: -> Customer` returns `value: {"customer": "-> Customer"}` — parser preserves the arrow-and-label string verbatim
+- **Schema document — inline object expression is opaque:** `address: object(street: string, city: string)` returns the full parenthetical expression as a single string value, not a parsed inner schema
 - **Frontmatter key-value:** `confidence: high` and `source: database` before `# Customer` are parsed as frontmatter metadata, not serialized into JSON
 - **Frontmatter bare string:** `uncertain: zip, phone` in frontmatter is a valid bare string frontmatter field
 - **Frontmatter absent:** document without frontmatter fields carries no metadata (common case)
@@ -2454,16 +2098,9 @@ Recommended test cases:
 - **Error document with free-form fields:** `suggestion` and `context` are parsed as regular bare string fields
 - **Error document with errors array:** `## errors[]` with `- field: x` + indented `reason: y`, `value: z` parsed correctly
 - **Streaming error:** `# Error` after partial data document closes all open scopes
-- **QBE equality filter:** `#? Order` with `status: pending` matches documents where status equals "pending"
-- **QBE regex filter:** `status: pending|active` treated as regex pattern (contains `|` metacharacter); `name: .*Corp.*` matches by wildcard
-- **QBE comparison — greater than:** `total: > 50` parsed as numeric comparison condition, not a string value
-- **QBE comparison — all operators:** `>=`, `<`, `<=` parsed correctly; optional whitespace between operator and value (`>50` and `> 50` are both valid)
-- **QBE projection:** `email: ?` means "return this field"; literal `?` is a projection marker, not a string value
-- **QBE wildcard projection:** `?: ?` within an object scope means "project all remaining fields of this object"
-- **QBE negation:** `deleted: !true` (negated equality), `status: !cancelled` (negated literal), `sku: !^LEGACY.*` (negated regex)
-- **QBE array EXISTS:** `## items[]` with `- sku: ^A\d+` + indented `qty: > 1` means at least one array item satisfies all sub-conditions
-- **QBE combined:** document with frontmatter pagination, equality, regex, comparison, projection, and array condition all parsed correctly in one document (Section 13.6)
-- **QBE mode detection:** `#?` root marker detected; label extracted; body parsed as query (conditions, not data values)
+- **Query document — values are raw strings:** `#? Order` with `total: > 50` returns `value: {"total": "> 50"}` — the value is the literal string `"> 50"`, not a parsed comparison; the parser does not interpret filter vocabulary (Section 13, Appendix A.1)
+- **Query document — projection marker is opaque:** `email: ?` returns `value: {"email": "?"}` — the `?` is a literal string value, not a parsed projection
+- **Query mode detection:** `#?` root marker is recognized; envelope reports `mode: "query"`, `label: "Order"`, with values as raw strings
 - **Delete document single:** `#- Order` with `id: 42` parsed as object `{'id': 42}` with delete mode detected
 - **Delete document bulk:** `#- []` with scalar items parsed as list of identifiers with delete mode detected
 - **Delete document composite key:** `#- []` with object items (`- table: orders` + indented `id: 42`) parsed correctly
@@ -2704,4 +2341,251 @@ All request keys appear before the root heading. All response keys appear before
 
 ---
 
-*JMD Specification v0.3.1 – Draft*
+## Appendix A — Recommended Conventions (Non-Normative)
+
+This appendix collects conventions for query and schema documents that JMD implementations MAY adopt. These conventions describe one reasonable dialect for common use cases, but JMD itself does not mandate them: an application that defines its own filter semantics, type system, or expression syntax is fully conformant as long as the structural grammar (§3–§9) is respected.
+
+Earlier revisions of this specification (through v0.3.1) placed the content of this appendix in normative sections §13 and §14. In v0.3.2 the normative prescription was withdrawn, because the applications that use JMD have genuinely different needs — any single dialect frozen into the spec would exclude valid applications whose backends use different semantics. The conventions are preserved here, without normative force, for three reasons: (1) they are still useful defaults for applications without specific requirements; (2) they document a dialect that existing JMD tooling understands; (3) they provide a shared vocabulary that LLM-generated content can target when no application-specific dialect has been specified.
+
+Everything in this appendix is **RECOMMENDED** (RFC 2119 SHOULD), never **REQUIRED** (MUST). Applications MAY adopt, extend, replace, or ignore any part of it. An application that adopts a non-standard dialect SHOULD document the deviation in its own interface documentation.
+
+### A.1 Query Conventions
+
+These conventions describe a minimal filter dialect suitable as a default for query documents (`#? Label`). They cover equality, comparisons, substring matching, negation, projection, and array-existence semantics. The filter syntax deliberately uses constructs LLMs know from SQL, code, and regex training — with one explicit exception noted below.
+
+#### A.1.1 Equality
+
+A bare value after a key is an equality filter:
+
+```markdown
+#? Order
+status: pending
+city: Berlin
+active: true
+```
+
+Matches orders where `status = "pending"` AND `city = "Berlin"` AND `active = true`.
+
+#### A.1.2 Comparison Operators
+
+A value prefixed with `>`, `>=`, `<`, or `<=` is a numeric or date comparison. Optional whitespace between the operator and the value is permitted (`> 50` and `>50` are both valid):
+
+```markdown
+total: > 50
+qty: >= 10
+price: < 100.00
+created: >= 2026-01-01
+```
+
+#### A.1.3 Substring (Contains)
+
+A value prefixed with `~` is a case-insensitive substring match:
+
+```markdown
+name: ~Corp
+city: ~berlin
+notes: ~urgent
+```
+
+`~Corp` matches any value whose lowercase form contains `"corp"`.
+
+#### A.1.4 Negation
+
+A value prefixed with `!` negates the condition that follows:
+
+```markdown
+deleted: !true
+status: !cancelled
+name: !~Corp
+```
+
+`!~Corp` composes negation with contains.
+
+#### A.1.5 Projection
+
+A literal `?` as the value means *return this field but apply no filter*:
+
+```markdown
+#? User
+name: ?
+email: ?
+active: true
+```
+
+A field with value `?: ?` inside an object scope means *project all remaining fields of this object*:
+
+```markdown
+#? User
+active: true
+## address
+city: Berlin
+?: ?
+```
+
+#### A.1.6 Array EXISTS Semantics
+
+An array in a query document is treated as an EXISTS predicate: the document matches if **at least one** array item satisfies all the sub-conditions.
+
+```markdown
+#? Order
+status: pending
+## items[]
+- sku: ~A123
+  qty: > 1
+```
+
+Matches orders with `status = "pending"` AND at least one item with `sku` containing "a123" AND `qty > 1`.
+
+#### A.1.7 Summary Table
+
+| Condition | Syntax | Example |
+|---|---|---|
+| Equality | bare value | `status: pending` |
+| Greater than | `>` prefix | `total: > 50` |
+| Greater or equal | `>=` prefix | `score: >= 90` |
+| Less than | `<` prefix | `price: < 100` |
+| Less or equal | `<=` prefix | `qty: <= 5` |
+| Contains (case-insensitive) | `~` prefix | `name: ~Corp` |
+| Negation | `!` prefix | `deleted: !true` |
+| Negated contains | `!~` prefix | `name: !~Corp` |
+| Projection | `?` | `email: ?` |
+| Wildcard projection | `?: ?` | All remaining fields of an object |
+
+#### A.1.8 Why Regex Autodetection Was Removed
+
+Earlier revisions specified: *a value containing regex metacharacters (`|`, `.`, `*`, `+`, `?`, `^`, `$`, `[`, `]`, `(`, `)`, `\`) is interpreted as a regex pattern*. This autodetection rule has been removed entirely — not just from the normative spec, but also as a recommended convention. An LLM writing `name: Max.Mustermann` (a common personal name with a literal dot) would silently produce a regex where the dot matches any character, generating surprise matches. Content-based autodetection fails the AI-Whispering test: it interprets natural LLM output against the LLM's actual intent.
+
+Applications that need regex-based filter semantics SHOULD signal regex intent **explicitly**, e.g. via a dedicated prefix such as `~re:pattern` or delimiters such as `/pattern/`. The specific regex signal is left to the application — different backends have different regex dialects (PCRE, POSIX, JavaScript, ECMA-262), and no single form fits all.
+
+#### A.1.9 Rationale for the A.1 Dialect
+
+The operator vocabulary above is a composition of patterns LLMs produce fluently from their general training — comparison operators from SQL and programming languages, substring-contains as a common pseudo-code construct, negation-as-`!` from every C-family language, and projection-as-`?` from GraphQL and partial-data conventions. None of these require QBE-specific training. The dialect is deliberately narrow: sorting, grouping, and aggregation are LLM reasoning operations performed on the reduced result set, not query constructs. QBE's role is domain reduction, not full query expression.
+
+### A.2 Schema Conventions
+
+These conventions describe a minimal type-expression dialect suitable as a default for schema documents (`#! Label`). They cover scalar types, modifiers, defaults, enums, format hints, entity references, inline object types, and binary-content encoding.
+
+#### A.2.1 Scalar Type Names
+
+| Convention | Meaning | JSON Schema equivalent |
+|---|---|---|
+| `string` | UTF-8 string | `{"type": "string"}` |
+| `number` | JSON number (int or float) | `{"type": "number"}` |
+| `integer` | Whole number | `{"type": "integer"}` |
+| `boolean` | `true` or `false` | `{"type": "boolean"}` |
+| `null` | Null value only | `{"type": "null"}` |
+| `object` | Object with unspecified structure | `{"type": "object"}` |
+
+#### A.2.2 Modifiers
+
+| Modifier | Position | Meaning |
+|---|---|---|
+| `optional` | after the type/enum | Field may be omitted (not required) |
+| `readonly` | after the type/enum | Field is read-only — must not be included in write operations |
+
+Example:
+
+```markdown
+id: integer readonly
+notes: string optional
+```
+
+#### A.2.3 Default Values
+
+A default is declared with `= value` after the type (and before or after keyword modifiers):
+
+```markdown
+status: pending|active|shipped = pending
+retries: integer = 3
+```
+
+#### A.2.4 Enum Alternation
+
+A pipe-separated list of scalar values declares an enum. The underlying type is inferred from the values (all strings → string enum; all integers → integer enum; etc.):
+
+```markdown
+status: pending|active|shipped|cancelled
+role: admin|user|guest
+priority: low|medium|high|critical = medium
+```
+
+#### A.2.5 Format Hints
+
+Format hints are semantic keywords after a base type. They describe the expected shape of the string value but are **not** validation constraints — a consumer is not required to enforce them:
+
+| Format hint | Meaning |
+|---|---|
+| `email` | Email address |
+| `date` | ISO 8601 date (`2026-03-12`) |
+| `datetime` | ISO 8601 date-time (`2026-03-12T14:30:00Z`) |
+| `uri` | URI / URL |
+
+Example:
+
+```markdown
+email: string email optional
+created_at: string datetime readonly
+```
+
+#### A.2.6 Entity References
+
+The `->` marker declares a reference to another entity:
+
+```markdown
+#! Order
+customer: -> Customer
+items: []-> OrderItem
+warehouse: -> Warehouse optional
+```
+
+`-> Customer` means: this field holds a reference to a `Customer` entity. The marker is a semantic hint — it does not require a corresponding `#! Customer` schema to exist, and it imposes no resolution rules. The generator decides, case by case, whether a reference is serialized as a bare ID, a URI, or an inline-resolved object. Self-references (`parent: -> Category` within `#! Category`) are valid.
+
+The `->` form is delimiter-free, which aligns with JMD's broader avoidance of matched delimiters (no parentheses, braces, or brackets in structural positions). The arrow is visually self-explanatory and familiar to LLMs from ER diagrams, UML, type annotations, and pointer notation — typically a single token in BPE tokenizers.
+
+#### A.2.7 Inline Object Types
+
+For edge cases where a nested object must appear inside an item body — where a `##` heading would close the enclosing scope — an inline-object syntax is available:
+
+```markdown
+address: object(street: string, city: string, zip: string optional) optional
+items[]: object(sku: string, qty: integer, price: number) optional
+```
+
+The parenthetical expression lists field specs as comma-separated `key: type_expr` pairs. Modifiers on the containing field follow outside the parentheses. This form is intended for inline / embedded contexts only; at the top level of a schema document, the heading form (`## field[]: type_expr`) is preferred.
+
+This is the one construct in the A.2 conventions that uses matched delimiters (the parentheses), and is accepted as a pragmatic compromise for a narrow situation where no alternative exists within the heading-scope model.
+
+#### A.2.8 Binary Content Encoding
+
+JMD is a text format. Binary payloads are carried via an application-defined text encoding. Two common conventions:
+
+- **Base64**: inline encoding of the raw bytes as a Base64 string. Appropriate for small payloads where the binary content must travel with the document.
+
+  ```markdown
+  signature: base64:VGhpcyBpcyBiaW5hcnkgZGF0YQ==
+  ```
+
+- **sha256 hash reference**: a hex-encoded SHA-256 hash of the raw bytes. Appropriate for large payloads or content-addressed storage, where the bytes themselves are retrieved out-of-band.
+
+  ```markdown
+  attachment: sha256:3a7bd3e2360a3d29eea436fcfb7e44c735d117c42d1c1835420b6b9942dd4f1b
+  ```
+
+Neither is prescribed; both are prefix conventions that applications recognize as signaling binary content. A corresponding schema convention is:
+
+```markdown
+signature: string base64
+attachment: string sha256
+```
+
+(where `base64` and `sha256` are treated as informal format hints, not normative additions to A.2.5.)
+
+#### A.2.9 Rationale for the A.2 Dialect
+
+The vocabulary above is designed to be writable by LLMs from general training — scalar type names from every typed language, `optional`/`readonly` as familiar English keywords (more self-documenting than the sigils `?` and `const`), delimiter-free enums via `|` alternation, and `->` for entity references. The design deliberately avoids matched delimiters (except in the narrowly-scoped inline-object form), keeping most of the schema surface parseable line-by-line and streamable.
+
+Applications whose backends need richer type systems (discriminated unions, generic types, branded types, regex patterns as constraints, numeric bounds, length bounds, custom validators) SHOULD extend this vocabulary in their own documentation rather than forcing their needs into the above minimum. JMD's role is to carry the string; the application defines what the string means.
+
+---
+
+*JMD Specification v0.3.2 – Draft*
