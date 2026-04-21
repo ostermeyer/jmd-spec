@@ -120,19 +120,21 @@ position zero before any field is generated.
 
 ---
 
-## Implementation
+## Implementations
 
 A Python reference implementation with C-accelerated parser and serializer is
 available at [jmd-impl](https://github.com/ostermeyer/jmd-impl).
-
 Parser throughput: **1.7–2.1× faster than `json.loads`** across payload sizes.
-Serializer throughput: comparable gains over `json.dumps`.
+
+A JavaScript reference implementation (pure ESM, zero dependencies) is available
+at [jmd-js](https://github.com/ostermeyer/jmd-js). Byte-compatible with the
+Python reference, with streaming support for both parsing and serialization.
 
 ---
 
 ## Status
 
-Specification stable at v0.3.1. Benchmarks completed. A research preprint
+Specification stable at v0.3.2. Benchmarks completed. A research preprint
 describing the empirical findings is forthcoming on arXiv.
 
 The [JMD over XML companion specification](jmd-over-xml.md) (Draft 0.4)
