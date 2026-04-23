@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: Apache-2.0
 """Streaming chain benchmark — measures real TTFUB advantage in agentic workflows.
 
 Compares two execution modes for a 3-step chain:

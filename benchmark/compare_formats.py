@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: Apache-2.0
 """Compare JMD vs JSON minified: tokens, time & validity across 3 models × 4 sizes.
 
 Uses JMD primer in system prompts and validates all JMD output through the parser.

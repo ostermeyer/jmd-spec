@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """Data Pipeline scenario: 5-step agent chain."""
 
 from __future__ import annotations

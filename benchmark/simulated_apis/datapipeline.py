@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """Simulated Data Pipeline REST API.
 
 30 sales records, aggregation, anomaly detection.

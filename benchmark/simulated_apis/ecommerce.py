@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """Simulated E-Commerce REST API.
 
 15 products, availability checks, cart, orders.

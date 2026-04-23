@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """Simulated Filesystem API for Phase 6b: Deep Nesting Stress Test.
 
 Generates deterministic directory trees at configurable depths.

@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """Simulated CI/CD API for deploy-gate epistemic evaluation.
 
 Generates deterministic test suite results with known flaky tests.

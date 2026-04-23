@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """Simulated Employee Directory API with rich, schema-testable types.
 
 Designed for Phase 6c Schema-Roundtrip benchmark:

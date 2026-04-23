@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: Apache-2.0
 """Phase 6b: Deep Nesting Stress Test — JMD Heading Depth vs. JSON Braces.
 
 Tests whether LLMs maintain syntactic and structural correctness as nesting

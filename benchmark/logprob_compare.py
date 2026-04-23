@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: Apache-2.0
 """Compute-cost comparison: Pretty JSON vs Minified JSON vs JMD.
 
 Three formats compared:

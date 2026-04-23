@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """JMD primer variants for system prompts.
 
 Assessment feedback: test 2-3 primer variants to quantify primer effect

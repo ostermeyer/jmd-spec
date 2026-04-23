@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """Strong semantic validators.
 
 Assessment feedback: validators must check against concrete expected answers,

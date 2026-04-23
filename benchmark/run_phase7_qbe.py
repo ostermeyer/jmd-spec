@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: Apache-2.0
 """Phase 7: Query-by-Example — JMD #? vs. MongoDB-style JSON Queries.
 
 Tests whether LLMs can translate natural-language questions into

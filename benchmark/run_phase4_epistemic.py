@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: Apache-2.0
 """Phase 4: Epistemic Evaluation — Do LLMs read and act on uncertainty signals?
 
 Design:

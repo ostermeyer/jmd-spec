@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """Simulated DevOps REST API (Issues, PRs).
 
 20 issues with text-heavy bodies/comments, open PRs.

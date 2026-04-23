@@ -1,5 +1,10 @@
 # *AI Whispering*
 
+Copyright (c) 2026 Andreas Ostermeyer <andreas@ostermeyer.de>.
+Licensed under CC BY 4.0 — see [LICENSE](LICENSE) for details.
+
+---
+
 *AI Whispering* is a practice. Not a framework, not a methodology — a practice.
 It is the accumulated skill of working with large language models in a way that
 produces reliable, efficient results: not by mastering them, but by understanding

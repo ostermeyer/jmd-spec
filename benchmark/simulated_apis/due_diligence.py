@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """Simulated Due-Diligence API for Phase 5 hallucination evaluation.
 
 Generates deterministic company profiles with controlled data gaps.

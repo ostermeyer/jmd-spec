@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: Apache-2.0
 """Phase 5: Hallucination Evaluation — Does Epistemic Frontmatter Prevent Fabrication?
 
 Design:

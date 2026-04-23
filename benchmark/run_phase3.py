@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: Apache-2.0
 """Phase 3 benchmark — Agentic multi-model chain.
 
 Measures the real-world advantage of JMD in agentic workflows:

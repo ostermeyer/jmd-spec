@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """Simulated Org-Chart API for Phase 6b: Deep Nesting Stress Test.
 
 Generates deterministic organization hierarchies at configurable depths.

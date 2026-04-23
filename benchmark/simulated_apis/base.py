@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """Base class for simulated REST APIs.
 
 Each API produces deterministic data from a seed, and exposes methods

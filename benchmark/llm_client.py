@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """Multi-provider LLM client with normal and streaming modes.
 
 Supports Anthropic (Claude), OpenAI (GPT/o-series), and Google (Gemini).

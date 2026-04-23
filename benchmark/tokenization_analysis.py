@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: Apache-2.0
 """Tokenization analysis: structural vs content tokens in JMD, JSON, YAML.
 
 Measures the "signal-to-noise ratio" of each format — how many tokens carry

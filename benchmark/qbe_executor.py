@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """JMD QBE and MongoDB-style JSON query executors.
 
 Parses query documents and executes them against in-memory data.

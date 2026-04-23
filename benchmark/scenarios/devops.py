@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """DevOps scenario: 5-step agent chain."""
 
 from __future__ import annotations

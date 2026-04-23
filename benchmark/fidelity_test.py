@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """Format Fidelity Test — measures format accuracy independently of data reasoning.
 
 Unlike the chain benchmark (which tests extraction + reasoning + serialization),

@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """Base classes for scenarios and steps."""
 
 from __future__ import annotations

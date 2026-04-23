@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """Format abstraction: JSON (pretty/minified) and JMD.
 
 Assessment feedback: minified JSON as third condition isolates whitespace

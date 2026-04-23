@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """Simulated Inventory Management API for Phase 6a: Mode Agility.
 
 Tests whether LLMs can correctly switch between all four JMD document

@@ -1,5 +1,8 @@
 # JMD Efficiency Analysis
 
+Copyright (c) 2026 Andreas Ostermeyer <andreas@ostermeyer.de>.
+Licensed under CC BY 4.0 — see [LICENSE](LICENSE) for details.
+
 Benchmark Results, Performance Data, and Projections
 
 This document provides the quantitative evidence behind JMD. The format specification explains the design; this document shows what the design produces when measured. For full methodology, prompts, and raw results, see [BENCHMARKS.md](BENCHMARKS.md).

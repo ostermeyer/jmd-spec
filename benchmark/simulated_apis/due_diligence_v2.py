@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """Simulated Due-Diligence API v2 for Phase 5b — inference hallucination.
 
 Key differences from v1:

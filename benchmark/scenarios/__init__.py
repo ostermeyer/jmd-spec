@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """Benchmark scenarios."""
 
 from .ecommerce import ecommerce_scenario

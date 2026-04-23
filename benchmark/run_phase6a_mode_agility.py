@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: Apache-2.0
 """Phase 6a: Mode Agility — Can LLMs Switch Between JMD Document Modes?
 
 Tests whether LLMs correctly switch between all four JMD document modes

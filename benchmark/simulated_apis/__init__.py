@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """Simulated REST APIs with deterministic, seed-parameterized data."""
 
 from .ecommerce import ECommerceAPI

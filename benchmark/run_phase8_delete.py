@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: Apache-2.0
 """Phase 8: Delete Documents — JMD #- vs. JSON delete operations.
 
 Tests whether LLMs can produce correct delete documents from

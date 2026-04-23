@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """Reporting: CSV export, console summary, primer comparison."""
 
 from __future__ import annotations

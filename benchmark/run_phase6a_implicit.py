@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: Apache-2.0
 """Phase 6a-implicit: Situational Mode Awareness — Do LLMs Choose the Right Mode?
 
 Follow-up to Phase 6a. The original experiment used explicit prompts like

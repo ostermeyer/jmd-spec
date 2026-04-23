@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: Apache-2.0
 """Phase 5b: Inference Hallucination — Does Frontmatter Improve Transparency of Estimates?
 
 Key differences from Phase 5:

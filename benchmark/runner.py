@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """Chain runner — executes scenarios step by step, collects metrics."""
 
 from __future__ import annotations
