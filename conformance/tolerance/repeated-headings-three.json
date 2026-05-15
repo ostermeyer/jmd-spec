@@ -1,0 +1,13 @@
+{
+  "Op": [
+    {
+      "type": "rect"
+    },
+    {
+      "type": "text"
+    },
+    {
+      "type": "path"
+    }
+  ]
+}
