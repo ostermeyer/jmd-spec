@@ -14,7 +14,8 @@ Fixtures are organized by document mode:
     ├── schema/      # #! Label — schema documents (planned)
     ├── query/       # #? Label — query documents (planned)
     ├── delete/      # #- Label — delete documents (planned)
-    └── tolerance/   # parser-tolerance cases (non-canonical input)
+    ├── tolerance/   # parser-tolerance cases (non-canonical input)
+    └── must-fail/   # inputs a conforming parser MUST reject
 
 ## Fixture Format
 
@@ -58,6 +59,45 @@ value in `.json`. The Serialize and Round-trip tests are not run against
 tolerance fixtures, because serializing the parsed value re-canonicalizes
 it (to bare `-` items with thematic-break separators) and so will not
 match the non-canonical input byte-for-byte.
+
+## Must-Fail Fixtures
+
+The `must-fail/` subdirectory contains JMD inputs that a conforming
+parser MUST reject with a structured error. Fixture format:
+
+    <name>.jmd            # input the parser must reject
+    <name>.error.json     # structured description of the expected error
+
+`<name>.error.json` carries a minimal structured description:
+
+```json
+{
+  "kind": "repeated_scalar_key",
+  "line": 5,
+  "key": "x"
+}
+```
+
+The `kind` field identifies the error category and MUST match across
+all backends. The `line` field identifies the offending source line.
+Additional fields (`key`, `depth`, `form`) are category-specific and
+advisory; backends MAY include implementation-specific extras.
+
+The Must-Fail test asserts only that parsing raises an error and that
+the error's structured description matches the expected `kind` and
+`line`. Error message wording and exception class identity are
+implementation-specific.
+
+The canonical error kinds for v0.3.3 are:
+
+| `kind` | Specification section |
+|---|---|
+| `sigil_conflict` | §7.4.2(a) |
+| `repeated_explicit_array` | §7.4.2(b) |
+| `repeated_scalar_key` | §7.4.2(c) |
+
+Additional kinds will be added as the specification gains new
+structured-error categories.
 
 ## Canonical Form
 

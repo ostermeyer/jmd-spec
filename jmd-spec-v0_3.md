@@ -1,5 +1,5 @@
 # JMD – JSON Markdown
-## Format Specification v0.3.2
+## Format Specification v0.3.3
 
 Copyright (c) 2026 Andreas Ostermeyer <andreas@ostermeyer.de>.
 Licensed under CC BY 4.0 — see [LICENSE](LICENSE) for details.
@@ -281,6 +281,39 @@ Strict refusal at the application layer is **not** a parser conformance violatio
 
 A conforming generator SHOULD omit frontmatter entirely when no metadata is needed. The absence of frontmatter is the common case for data documents.
 
+### 3.5.1 Frontmatter Marker Tolerance
+
+LLMs trained on YAML-prefixed Markdown ecosystems (Jekyll, Hugo, Astro, Obsidian) frequently emit a `---` marker before and after a frontmatter block by reflex. JMD requires no such markers — frontmatter is delimited by document position (everything before the first heading is frontmatter; the first heading ends it).
+
+A conforming parser MUST accept stray `---` lines around the frontmatter block as decorative noise and consume them without semantic effect:
+
+- A line containing **three or more hyphens** (`---`, `----`, `-----`, …) **before** any frontmatter field, including as the **first** line of the document.
+- A line containing **three or more hyphens** **between** the last frontmatter field and the root heading.
+
+Both forms below parse identically:
+
+```markdown
+---
+confidence: high
+source: ledger
+---
+
+# Order
+id: 42
+```
+
+```markdown
+confidence: high
+source: ledger
+
+# Order
+id: 42
+```
+
+A conforming generator MUST NOT emit such markers. The canonical form omits them. This rule exists solely to accommodate the established LLM reflex without rejecting documents that would otherwise be syntactically correct.
+
+**Interaction with §8.6 (Thematic Break).** §8.6 defines `---` as an array-item separator *inside* an array body. The tolerance defined here applies only outside any array scope — by definition true before the first heading. The two rules do not conflict.
+
 ### 3.6 Canonical Parse Result
 
 A conforming JMD parser returns every parsed document as a uniform **envelope** with four fields:
@@ -425,6 +458,53 @@ JMD uses Markdown *structure* — headings, lists, blockquotes, thematic breaks 
 Restricting inline formatting to the blockquote channel keeps the generator's mental model sharp: *scalar fields are plain data; rich text goes in `>` blocks.* This is also the rule encoded in JMD's minimum-viable primer (five bullets, ~80 tokens), which has been validated at 99.7% syntax validity in cross-model benchmarks. This specification formalizes what the empirically successful primer already tells the generator.
 
 **What this does not forbid.** A value that *contains* a character which happens to be a Markdown metacharacter — `rate: 2 * x`, `expr: **ptr`, `regex: ^[a-z]+$`, `url: https://example.com/*` — is not Markdown formatting; it is incidental character content. Such values are valid scalar data and MUST be accepted by the parser. The generator rule concerns *intentional formatting markup*, not *characters that visually resemble formatting markup*. When in doubt, the parser's literal-content rule applies.
+
+### 5.2 Multi-Line Block-Scalar Syntax Tolerance
+
+The canonical form for multi-line string values is the blockquote form (§9.1):
+
+```markdown
+key:
+> line one
+> line two
+```
+
+LLMs trained on YAML — where multi-line string syntax uses the block-scalar forms `key: |` (literal) and `key: >` (folded) — frequently emit these forms by reflex. A conforming parser MUST accept them as parser-tolerant alternatives.
+
+Note on terminology: the block-scalar syntax spans multiple input lines, but the resulting scalar value is multi-line only for the literal form. The folded form produces a single-line string value (with words joined by spaces). "Multi-line" describes the input syntax, not the resulting value.
+
+**Literal form (`|`):**
+
+```markdown
+key: |
+  line one
+  line two
+```
+
+parses to the multi-line string `"line one\nline two"`. Newlines between indented lines are preserved.
+
+**Folded form (`>`):**
+
+```markdown
+key: >
+  line one
+  line two
+```
+
+parses to the single-line string `"line one line two"`. Newlines between non-empty indented lines are folded to a single space; a blank line within the block preserves a newline.
+
+**Parser rules:**
+
+- The line containing `key: |` or `key: >` opens the block. Following lines indented by two or more spaces belong to the value.
+- The first non-indented line terminates the block.
+- Indentation is normalized: the leading whitespace of the first indented line is stripped from each line in the block.
+- A trailing blank line at the end of the block is dropped.
+
+**Generator rule (SHOULD).** A conforming generator SHOULD emit multi-line string values using the blockquote form, not the block-scalar forms. The block scalars are parser-tolerance only; a round-trip canonicalizes a `|`-input to its blockquote equivalent.
+
+**Rationale.** The blockquote form is JMD-native. The block-scalar forms exist in this specification because LLM generators emit them naturally — rejecting them would produce frequent parse failures on otherwise structurally correct documents. Per §22.1 (Generator-strict, Parser-tolerant), the parser accommodates what generators naturally produce.
+
+**Out of scope.** YAML's chomping indicators (`|+`, `|-`, `>+`, `>-`), the explicit indentation indicator (e.g. `|2`), and folded-mode's many edge cases (more-indented lines preserving their newlines, multi-paragraph folding behavior) are not part of this tolerance. The two unmarked forms cover the LLM reflex; chomping and explicit indentation are YAML-specific features without observed LLM-reflex pressure.
 
 ---
 
@@ -630,6 +710,110 @@ Serializes to:
 ```json
 {"metadata": {}, "id": 42}
 ```
+
+### 7.4 Repeated Headings as Implicit Arrays
+
+LLMs trained on Markdown have a strong reflex to express a sequence of similar structured items as a sequence of headings at the same depth, without an enclosing `[]` array marker:
+
+```markdown
+# Canvas
+## Op
+type: rect
+## Op
+type: text
+## Op
+type: path
+```
+
+A naive tree-building parser would map this to `{"Canvas": {"Op": {...}}}` with last-write-wins object-key semantics — silently discarding the first two `Op` blocks. This is the most common silent data-loss class in early JMD implementations.
+
+JMD specifies the behavior as **array promotion**: a parser treats the second and later occurrences of a same-label heading at the same depth in the same parent scope as items of an implicit array, promoting the first occurrence retroactively. The example above maps to:
+
+```json
+{
+  "Canvas": {
+    "Op": [
+      {"type": "rect"},
+      {"type": "text"},
+      {"type": "path"}
+    ]
+  }
+}
+```
+
+This rule is symmetric to §8.6b (Depth+1 Items as Natural LLM Pattern): both rules recognize an LLM-natural variant of an array construction and map it parser-tolerantly to the canonical array representation.
+
+#### 7.4.1 Parser Behavior
+
+A conforming parser MUST apply array promotion when all three conditions hold:
+
+1. **Same parent scope.** The repeated heading occurs within the same enclosing object scope as the first occurrence.
+2. **Same depth.** The repeated heading is at the same depth level.
+3. **Same label, no `[]` sigil.** Both occurrences use the same label text with no trailing `[]`.
+
+When all three conditions are met, the parser promotes the existing object value at that key to a single-element array containing the first object, then appends the second object. Subsequent same-key occurrences are appended.
+
+The promotion is decided at the moment the parser encounters the second occurrence — no lookahead is required. A streaming parser emits `object_start` / `object_end` event pairs for each occurrence and need not buffer; a tree-building parser performs the promotion as a constant-cost edit when the second occurrence is seen.
+
+#### 7.4.2 Error Conditions
+
+Three constellations involving repeated keys MUST be rejected with a structured parse error:
+
+**a) Sigil conflict.** A key appears once without `[]` and once with `[]` (in either order):
+
+```markdown
+## Op
+type: rect
+## Op[]
+- type: text
+```
+
+The author's intent is ambiguous — promote-to-array vs. explicit-array. The parser MUST emit a structured error identifying both occurrences.
+
+**b) Repeated explicit array.** A key appears twice with the `[]` sigil at the same depth in the same parent:
+
+```markdown
+## Op[]
+- type: rect
+## Op[]
+- type: text
+```
+
+This is a redeclaration. The parser MUST emit a structured error. (Both items in one array would be written as items of a single `## Op[]` block.)
+
+**c) Repeated scalar key.** A scalar field key — whether emitted as a bare field (`x: 10`) or as a scalar heading (`## x: 10`, §7.2) — appears twice in the same object scope, in any combination:
+
+```markdown
+## point
+x: 10
+## x: 20
+```
+
+The parser MUST emit a structured error. Scalar fields are plain key-value pairs without array-promotion semantics; silent overwrite is exactly the data-loss this section is designed to prevent. The rule applies symmetrically across the two scalar-field forms — they are equivalent at the data level, so repetition across the forms is treated the same as repetition within one form.
+
+#### 7.4.3 Generator Behavior
+
+A conforming generator MUST emit arrays canonically — with the `[]` sigil and item form (§8.3 or §8.6b):
+
+```markdown
+## Op[]
+- type: rect
+- type: text
+- type: path
+```
+
+The promoted-array form (repeated headings without `[]`) is parser-tolerance only. A round-trip canonicalizes: input with repeated headings yields output with `[]` array.
+
+#### 7.4.4 Single-Element Arrays
+
+A key that appears exactly once without `[]` is parsed as a single object, not as a single-element array. Authors who require a single-element array MUST use the explicit `[]` form:
+
+```markdown
+## Ops[]
+- type: rect
+```
+
+This avoids the lookahead that "parse as single object now, promote later if a sibling appears" would require, and keeps streaming-parser and tree-building behavior identical. The `[]` sigil is the disambiguator: with sigil → array (zero, one, or many items); without sigil → object (single occurrence) or promoted array (multiple occurrences).
 
 ---
 
@@ -2588,4 +2772,4 @@ Applications whose backends need richer type systems (discriminated unions, gene
 
 ---
 
-*JMD Specification v0.3.2 – Draft*
+*JMD Specification v0.3.3 – Draft*
