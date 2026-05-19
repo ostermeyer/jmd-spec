@@ -134,7 +134,7 @@ Python reference, with streaming support for both parsing and serialization.
 
 ## Status
 
-Specification stable at v0.3.2. Benchmarks completed. A research preprint
+Specification stable at v0.3.3. Benchmarks completed. A research preprint
 describing the empirical findings is forthcoming on arXiv.
 
 The [JMD over XML companion specification](jmd-over-xml.md) (Draft 0.4)

@@ -44,7 +44,7 @@ informative:
     target: https://spec.commonmark.org/
     date: 2024
   JMD-SPEC:
-    title: JMD Specification v0.3.2
+    title: JMD Specification v0.3.3
     author:
       - ins: A. Ostermeyer
     target: https://github.com/ostermeyer/jmd-spec/blob/main/jmd-spec-v0_3.md

@@ -47,7 +47,7 @@ Optional parameters:
 
     version:
         An optional parameter carrying the JMD Specification version
-        targeted by the document (e.g., "0.3.2"). When omitted, the
+        targeted by the document (e.g., "0.3.3"). When omitted, the
         receiver SHOULD assume the latest stable JMD specification
         version it supports.
 
@@ -136,7 +136,7 @@ Interoperability considerations:
     and "\r" as line terminators. Canonical form uses "\n".
 
 Published specification:
-    JMD Specification v0.3.2, available at:
+    JMD Specification v0.3.3, available at:
         https://github.com/ostermeyer/jmd-spec/blob/main/jmd-spec-v0_3.md
 
     A companion proposal for HTTP integration is available at:

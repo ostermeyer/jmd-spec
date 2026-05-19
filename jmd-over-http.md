@@ -1,7 +1,7 @@
 # JMD over HTTP — REST Integration Proposal
 
 **Status:** Proposal / Draft
-**Version:** 0.1 (tracks JMD Specification v0.3.2)
+**Version:** 0.1 (tracks JMD Specification v0.3.3)
 **Copyright** © 2026 Andreas Ostermeyer <andreas@ostermeyer.de>
 **License:** CC BY 4.0 (same as the JMD Specification)
 
