@@ -1,5 +1,5 @@
 # JMD – JSON Markdown
-## Format Specification v0.3.3
+## Format Specification v0.3.4
 
 Copyright (c) 2026 Andreas Ostermeyer <andreas@ostermeyer.de>.
 Licensed under CC BY 4.0 — see [LICENSE](LICENSE) for details.
@@ -955,7 +955,7 @@ Within an array body, a `---` line:
 2. **Signals** that the next `- key: value` or bare `-` line starts a new item in the same parent array.
 3. Has **no effect** on the heading-depth stack — it is purely a visual and scope separator within the current array.
 
-A `---` line outside of an array with nested-object items has no effect and is ignored by the parser.
+A `---` line **outside of any array body** has no effect on array structure and is ignored by the parser; at document scope before the first heading it is the decorative frontmatter marker tolerated under §3.5.1. **Within an array body, a `---` line is always an item separator** (semantics 1–2 above), regardless of whether the *preceding* item carried nested sub-structures. In a mixed array the item that justifies the separators may appear *after* a flat item, so a conforming forward-only parser MUST treat every in-body `---` as an item separator and MUST NOT gate this on the preceding item's shape (clarified in v0.3.4 — earlier wording invited parsers to drop items following a `---` after a flat item).
 
 #### Canonical Form
 
@@ -973,7 +973,6 @@ The serializer emits a `---` separator between array items **if and only if** th
 - Bob
 
 ---
-
 - name: Beta
   status: Active
 
@@ -1005,6 +1004,38 @@ Arrays of flat objects do not emit thematic breaks:
 - sku: B3
   qty: 1
 ```
+
+#### Mixed Arrays
+
+An array qualifies for thematic-break separators as a whole: if **any** item carries a nested sub-structure, the serializer emits `---` between **all** consecutive items — including after a flat item that itself has no sub-structure. The separator that follows a flat item is therefore canonical, and a conforming parser MUST honour it:
+
+```markdown
+## apis[]
+- name: public
+  auth: none
+
+---
+- name: clockodo
+  auth: headers
+
+### headers[]
+- name: X-Api-User
+  value: alice
+```
+
+Parses to:
+
+```json
+{
+  "apis": [
+    {"name": "public", "auth": "none"},
+    {"name": "clockodo", "auth": "headers",
+     "headers": [{"name": "X-Api-User", "value": "alice"}]}
+  ]
+}
+```
+
+A parser that drops the second item — because the item *preceding* the `---` was flat — is non-conforming (§8.6 semantics 1–2): the `---` closes the flat item's scope and signals the next item regardless of either item's shape.
 
 #### Design Rationale
 
@@ -2772,4 +2803,4 @@ Applications whose backends need richer type systems (discriminated unions, gene
 
 ---
 
-*JMD Specification v0.3.3 – Draft*
+*JMD Specification v0.3.4 – Draft*
