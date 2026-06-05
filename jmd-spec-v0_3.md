@@ -312,7 +312,7 @@ id: 42
 
 A conforming generator MUST NOT emit such markers. The canonical form omits them. This rule exists solely to accommodate the established LLM reflex without rejecting documents that would otherwise be syntactically correct.
 
-**Interaction with §8.6 (Thematic Break).** §8.6 defines `---` as an array-item separator *inside* an array body. The tolerance defined here applies only outside any array scope — by definition true before the first heading. The two rules do not conflict.
+**Interaction with §8.6 (Level-Pop).** §8.6 structures arrays with anonymous-heading level-pops, not `---`. A `---` is pure decoration both at document scope before the first heading (this tolerance) and within an array body (§8.6). The two do not conflict.
 
 ### 3.6 Canonical Parse Result
 
@@ -939,63 +939,82 @@ Serializes to:
 }
 ```
 
-### 8.6 Thematic Break as Array Item Separator
+### 8.6 Level-Pop (Returning to an Outer Array)
 
-When an array of objects contains items with nested sub-structures (child objects or child arrays), the boundary between consecutive items is visually ambiguous: a reader must count heading levels to determine where one record ends and the next begins. JMD uses the **thematic break** (`---`) as an explicit visual separator between such items.
+When an array of objects contains items with nested sub-structures (child objects or child arrays), a problem arises: after the nested structure has been written at a deeper heading level, how does the *next* item return to the **outer** array? Going **deeper** is self-describing — a `##`/`###` heading declares its own depth. Coming back **up** needs an equally self-describing signal. JMD uses the **level-pop**.
 
 #### Syntax
 
-A thematic break is a line containing three or more hyphens (`---`), following the CommonMark specification (Section 4.1). It is a universally recognized Markdown convention for a horizontal rule or section divider.
+A **level-pop** is an **anonymous heading** (§3.2a): a line containing only `#` characters (`#`, `##`, `###`, …) with no label.
 
 #### Semantics
 
-Within an array body, a `---` line:
+An anonymous heading at depth *D* **pops the scope stack back to depth *D*** and continues there. It is the depth-aware generalization of the blank-line reset (§3.3): a blank line returns to the root; an anonymous `#`×*D* returns to depth *D*.
 
-1. **Closes** the current array item's scope — all nested sub-structures (child arrays, child objects) are terminated.
-2. **Signals** that the next `- key: value` or bare `-` line starts a new item in the same parent array.
-3. Has **no effect** on the heading-depth stack — it is purely a visual and scope separator within the current array.
+- A **labelled** heading at depth *D* *opens* a scope at depth *D*.
+- An **anonymous** heading at depth *D* *returns to* the scope already established at depth *D*.
 
-A `---` line **outside of any array body** has no effect on array structure and is ignored by the parser; at document scope before the first heading it is the decorative frontmatter marker tolerated under §3.5.1. **Within an array body, a `---` line is always an item separator** (semantics 1–2 above), regardless of whether the *preceding* item carried nested sub-structures. In a mixed array the item that justifies the separators may appear *after* a flat item, so a conforming forward-only parser MUST treat every in-body `---` as an item separator and MUST NOT gate this on the preceding item's shape (clarified in v0.3.4 — earlier wording invited parsers to drop items following a `---` after a flat item).
+So within an array whose heading is at depth *D*, after an item has opened a deeper sub-structure, an anonymous heading `#`×*D* closes that sub-structure (and any deeper ones, in a single step) and returns to the array — the next `- ` line is then a new item of *that* array.
 
 #### Canonical Form
 
-The serializer emits a `---` separator between array items **if and only if** the array contains objects with nested sub-structures (dicts or lists as field values). For flat object arrays and scalar arrays, no separator is emitted.
+Records of an array stay **bare `-` items** with plain `key: value` fields; their sub-structures are deeper headings. The serializer emits a level-pop `#`×*D* (where *D* is the array's heading depth) **after** any record that opened a sub-structure **and** that is followed by further records. The last record needs no pop — end-of-scope closes it. Flat object arrays and scalar arrays need no level-pop at all.
 
 #### Example
 
 ```markdown
-## teams[]
-- name: Alpha
-  status: Active
-
-### members[]
-- Alice
-- Bob
-
----
-- name: Beta
-  status: Active
-
-### members[]
-- Charlie
+# Api[]
+- name: clockodo
+  auth: headers
+## headers[]
+- name: X-Api-User
+  value: alice
+#
+- name: ifs
+  auth: oauth2
 ```
 
-Serializes to:
+Parses to:
 
 ```json
-{
-  "teams": [
-    {"name": "Alpha", "status": "Active", "members": ["Alice", "Bob"]},
-    {"name": "Beta", "status": "Active", "members": ["Charlie"]}
-  ]
-}
+[
+  {"name": "clockodo", "auth": "headers",
+   "headers": [{"name": "X-Api-User", "value": "alice"}]},
+  {"name": "ifs", "auth": "oauth2"}
+]
 ```
 
-The record boundary between Alpha and Beta is immediately visible — no heading-level counting required.
+The `#` after the `## headers[]` sub-array pops back to the depth-1 `# Api[]` array, so `- name: ifs` is a new API record, not another header.
 
-#### Flat Arrays (Unchanged)
+#### Multi-Level Pop
 
-Arrays of flat objects do not emit thematic breaks:
+A single anonymous heading closes *arbitrary* nesting in one step — `#`×*D* returns straight to depth *D* no matter how deep the current scope is:
+
+```markdown
+# x[]
+- name: a
+## h[]
+- name: h1
+### g[]
+- gg
+##
+- name: h2
+#
+- name: b
+```
+
+`##` returns to depth 2 (the `## h[]` array → next item `h2`); `#` returns to depth 1 (the `# x[]` array → next item `b`):
+
+```json
+[
+  {"name": "a", "h": [{"name": "h1", "g": ["gg"]}, {"name": "h2"}]},
+  {"name": "b"}
+]
+```
+
+#### Flat Arrays Need No Pop
+
+Arrays of flat objects (no record opens a sub-structure) and scalar arrays use bare `-` items and never need a level-pop:
 
 ```markdown
 ## items[]
@@ -1005,45 +1024,17 @@ Arrays of flat objects do not emit thematic breaks:
   qty: 1
 ```
 
-#### Mixed Arrays
-
-An array qualifies for thematic-break separators as a whole: if **any** item carries a nested sub-structure, the serializer emits `---` between **all** consecutive items — including after a flat item that itself has no sub-structure. The separator that follows a flat item is therefore canonical, and a conforming parser MUST honour it:
-
-```markdown
-## apis[]
-- name: public
-  auth: none
-
----
-- name: clockodo
-  auth: headers
-
-### headers[]
-- name: X-Api-User
-  value: alice
-```
-
-Parses to:
-
-```json
-{
-  "apis": [
-    {"name": "public", "auth": "none"},
-    {"name": "clockodo", "auth": "headers",
-     "headers": [{"name": "X-Api-User", "value": "alice"}]}
-  ]
-}
-```
-
-A parser that drops the second item — because the item *preceding* the `---` was flat — is non-conforming (§8.6 semantics 1–2): the `---` closes the flat item's scope and signals the next item regardless of either item's shape.
-
 #### Design Rationale
 
-1. **Markdown familiarity.** `---` is universally recognized as a section divider. LLMs trained on Markdown produce and consume it naturally — this is AI Whispering applied to visual structure.
-2. **Visual strength.** A horizontal rule is a stronger visual signal than a heading-level difference (`#` vs. `##`). It does not require counting characters to parse visually.
-3. **Token-neutral.** The `---` separator adds one token per inter-item boundary, replacing the depth-qualified `## -` marker (also one token). Net token impact: zero.
+1. **Self-describing.** Each `#`×*D* declares its own target depth. The parser tracks no state, and a generator cannot "forget to close" the way an indentation- or balanced-delimiter scheme can — the depth is *in the marker*.
+2. **One-shot.** One marker pops through any number of nested levels to the named depth.
+3. **Consistent with the core principle.** JMD's hierarchy *is* heading depth (§1). The level-pop stays entirely within that model — it is the natural inverse of opening a deeper heading, and a strict generalization of the blank-line reset.
+4. **Clean records.** Item and field lines carry no depth bookkeeping (`- name`, `auth:`); only the pop carries a depth.
 
-**Note on YAML:** In YAML, `---` is a document separator. JMD builds on Markdown, not YAML, so `---` follows CommonMark semantics (horizontal rule). This distinction should be noted when communicating with developers experienced in YAML.
+#### Thematic Break (`---`) — Decoration Only
+
+A line of three or more hyphens (`---`) is a CommonMark horizontal rule. JMD treats it as **pure decoration**: outside an array it is the frontmatter marker tolerated under §3.5.1; **within an array body it has no structural effect and is skipped** by a conforming parser. It is **not** an item separator. (Earlier drafts used `---` as a separator; it was withdrawn because it carries no depth information and is therefore ambiguous in nested object-arrays — the level-pop replaces it.)
+
 
 ### 8.6a Depth-Qualified Array Items (Parser Tolerance)
 
@@ -1073,7 +1064,7 @@ LLMs trained on Markdown have a strong preference for expressing array items one
 This pattern is valid JMD and is functionally equivalent to bare `-` items:
 
 ```markdown
-# products[]
+The canonical generator form is bare `-` records with the level-pop (§8.6); depth-qualified markers (`## -`, `### -`, …) are accepted as parser tolerance only and are never emitted.
 ## - name: Widget
   price: 29.99
   sku: A1

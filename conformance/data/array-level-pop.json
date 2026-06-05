@@ -1,0 +1,18 @@
+{
+  "apis": [
+    {
+      "name": "clockodo",
+      "auth": "headers",
+      "headers": [
+        {
+          "name": "X-Api-User",
+          "value": "alice"
+        }
+      ]
+    },
+    {
+      "name": "public",
+      "auth": "none"
+    }
+  ]
+}
