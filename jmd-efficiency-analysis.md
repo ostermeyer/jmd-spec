@@ -17,9 +17,9 @@ JSON uses matched delimiters: opening and closing braces for objects, brackets f
 
 The measurement confirms this. Two complementary measurements tell the story.
 
-In a dedicated format fidelity test — where models were given explicit structured data to reproduce verbatim, with no reasoning task — JMD requires **28–34% fewer output tokens** than pretty-printed JSON across seven models from four providers. This represents the structural overhead of JMD versus JSON in isolation: the tokens eliminated are pure format syntax, not content.
+In a dedicated format fidelity test — where models were given explicit structured data to reproduce verbatim, with no reasoning task — JMD requires **28–34% fewer output tokens** than pretty-printed JSON across six models from four providers. This represents the structural overhead of JMD versus JSON in isolation: the tokens eliminated are pure format syntax, not content.
 
-In production agentic chain benchmarks — where models reason, transform, and generate alongside structured output — the savings are **8–18% per model** (Claude Sonnet 4.6: −18%, GPT-5.4: −14%, Mistral Large: −8%, Gemini 2.5 Flash: −1%). The chain figures are lower because they include reasoning text and explanation, which compresses less uniformly across formats. Payload token savings — the cumulative cost of passing outputs between agents — are consistent at approximately **22%** across all providers except Gemini (−10%), reflecting Gemini's more aggressive JSON tokenization.
+In production agentic chain benchmarks — where models reason, transform, and generate alongside structured output — the savings range from **−0.7% to −18% per model** (Claude Sonnet 4.6: −18%, GPT-5.4: −14.1%, Mistral Large: −8.1%, Claude Haiku 4.5: −6.4%, Gemini 2.5 Flash: −0.7%; average −12.6%). The chain figures are lower because they include reasoning text and explanation, which compresses less uniformly across formats. Payload token savings — the cumulative cost of passing outputs between agents — are approximately **22%** for the Anthropic, OpenAI, and Mistral models and **−9.8%** for Gemini (−19.2% average), reflecting Gemini's more aggressive JSON tokenization.
 
 Data fidelity is 100% in the fidelity test: JMD introduces no data loss compared to JSON.
 
@@ -45,7 +45,7 @@ JMD's efficiency has a compounding property. As JMD patterns appear more frequen
 
 JMD is not only cheaper to generate — it is faster to process.
 
-A C-accelerated JMD parser outperforms Python's C-accelerated `json.loads()` by **1.7–2.1×** across payload sizes (simple objects to large documents). The advantage is largest for small objects, where JMD's line-oriented grammar requires no delimiter matching, no escape processing, and no look-ahead for the common case. A plain `key: value` line is parsed with a single pass. JSON requires tracking nested brace depth at every character.
+A C-accelerated JMD parser outperforms Python's stdlib C-accelerated `json.loads()` by **1.7–2.1×** across payload sizes (simple objects to large documents). (Comparison against optimized third-party JSON parsers such as `orjson` is planned; see BENCHMARKS.md §8 for the exact setup.) The advantage is largest for small objects, where JMD's line-oriented grammar requires no delimiter matching, no escape processing, and no look-ahead for the common case. A plain `key: value` line is parsed with a single pass. JSON requires tracking nested brace depth at every character.
 
 A C-accelerated JMD serializer outperforms `json.dumps()` by comparable margins. Serialization is fast because JMD writes bare keys without quoting, emits no delimiters or commas, and requires no indentation computation — the heading prefix replaces the recursive whitespace tracking that JSON pretty-printing demands.
 
@@ -65,9 +65,11 @@ Time-to-first-useful-byte (TTFUB) — measured from the start of streaming to th
 
 | Scenario | Payload | JMD TTFUB | JSON TTFUB | Speedup |
 |---|---|---|---|---|
-| E-commerce | ~500 tokens | 1.6 s | 2.5 s | **1.5×** |
-| DevOps triage | ~800 tokens | 1.4 s | 3.4 s | **2.4×** |
+| E-commerce | ~500 tokens | 1.6 s | 2.6 s | **1.6×** |
+| DevOps triage | ~800 tokens | 1.3 s | 3.4 s | **2.6×** |
 | Data pipeline | ~1,500 tokens | 1.5 s | 23.1 s | **15×** |
+
+*Dataset: per-scenario single-step measurements, 5 runs each, against a **minified-JSON** baseline (`benchmark_results/benchmark_results_streaming.csv`). The controlled per-model measurement over 180 five-step streaming chains against pretty-printed JSON — 2.5–2.9× per step, 4.1–5.7× cumulative, up to 7.3× for the data-pipeline scenario — is reported in BENCHMARKS.md §2; the 15× figure is specific to the scenario and baseline above and should always be cited with that context.*
 
 The advantage scales with payload size. For large documents, JSON's first useful byte arrives only after significant buffering. JMD's first useful byte arrives with the first line.
 
@@ -83,7 +85,7 @@ JMD does not draw this line. A JMD document is readable as Markdown — headings
 
 This has an implication that extends beyond REST APIs. When language models respond in conversational contexts — chat interfaces, assistant replies, inline tool responses — they already reach for exactly this structure: headings for sections, `key: value` for structured fields, bullet lists for sequences. They do this naturally, without instruction, because it is what they have learned works.
 
-JMD formalizes that natural tendency into a specification. A chat response organized as JMD is simultaneously readable by the human receiving it and parseable by the application processing it — with no conversion step, no code block wrapper, no format negotiation. The format that LLMs produce naturally in conversation is the same format that machines can consume directly.
+JMD formalizes that natural tendency into a specification. The *structured portion* of a chat response, organized as JMD, is simultaneously readable by the human receiving it and parseable by the application processing it — with no conversion step and no format negotiation. Note the boundary: the JMD core grammar deliberately rejects free prose inside a document body (spec §3.6.2) — a document is either data or it is not. Mixed prose-and-data documents are the subject of the planned `jmd-richtext` companion (see ROADMAP, v0.4 candidates); until that exists, the claim here applies to the structured document, not to arbitrary conversational text around it.
 
 ---
 
@@ -167,7 +169,7 @@ The calculation has four parameters:
 |---|---|---|
 | **Inference capacity** | GPU power allocated to LLM inference (MW) | 350 MW (global 2026 est.) |
 | **Structured output share** | Fraction of inference that is structured data output | 40% |
-| **JMD processing savings** | Reduction in server processing time per request | 25% (measured lower bound) |
+| **JMD generation savings** | Reduction in GPU generation time per request, proxied by measured output-token reduction | 12.6% (measured chain average; see note below) |
 | **Grid carbon intensity** | CO₂ per kWh of electricity consumed | 400 g/kWh |
 
 ```
@@ -179,21 +181,23 @@ CO₂ reduction potential (t/yr) =
   × Grid carbon intensity (t/kWh)
 ```
 
+**Note on the savings parameter.** Direct server-processing-time measurements were mixed across providers (see Section 1: GPT-5.4 −8.6%, statistically significant; Claude and Mistral not significant; Gemini 2.5 Flash +18.3% *slower*). The framework therefore does not use processing time directly. Instead it uses the measured output-token reduction in production chains (12.6% average, BENCHMARKS.md §1) as a proxy: generation is autoregressive, so GPU generation time scales with the number of output tokens produced. This is the defensible, measured basis — workloads dominated by verbatim structured reproduction may substitute the fidelity-test figure (28–34%), and Gemini-class tokenizers may see close to zero.
+
 With the baseline assumptions:
 
 ```
-350 MW × 0.40 × 0.25 × 8,760 h × 0.0004 t/kWh = ~122,000 t CO₂/yr
+350 MW × 0.40 × 0.126 × 8,760 h × 0.0004 t/kWh = ~62,000 t CO₂/yr
 ```
 
-**One important note on what this measures — and what it does not.** The baseline uses GPU processing time, which is the directly measured variable. It excludes cooling and facility overhead, which typically add 20–50% to the energy draw of a GPU cluster (expressed as PUE — Power Usage Effectiveness). A data center operating at PUE 1.4 should multiply the result accordingly: the 122,000-tonne baseline becomes approximately 171,000 tonnes. Network transfer savings from shorter payloads and the embodied carbon of hardware that need not be manufactured add further — but are harder to quantify. The baseline figure is therefore a lower bound, not a complete accounting.
+**One important note on what this measures — and what it does not.** The calculation excludes cooling and facility overhead, which typically add 20–50% to the energy draw of a GPU cluster (expressed as PUE — Power Usage Effectiveness). A data center operating at PUE 1.4 should multiply the result accordingly: the 62,000-tonne baseline becomes approximately 87,000 tonnes. Network transfer savings from shorter payloads and the embodied carbon of hardware that need not be manufactured add further — but are harder to quantify. Conversely, the token→GPU-time proxy itself is an approximation; the direct processing-time evidence is mixed across providers (see note above). The figure is an order-of-magnitude estimate, not an accounting.
 
-**Your numbers.** If you operate an inference cluster, you know your actual power draw, your PUE, and your structured output fraction better than any external estimate. Substitute them. A team running 10 MW of inference at PUE 1.4, 60% structured output, 30% savings, and a 200 g/kWh grid:
+**Your numbers.** If you operate an inference cluster, you know your actual power draw, your PUE, and your structured output fraction better than any external estimate. Substitute them. A team running 10 MW of inference at PUE 1.4, 60% structured output, the measured 12.6% average savings, and a 200 g/kWh grid:
 
 ```
-10 MW × 1.4 (PUE) × 0.60 × 0.30 × 8,760 h × 0.0002 t/kWh = ~4,414 t CO₂/yr
+10 MW × 1.4 (PUE) × 0.60 × 0.126 × 8,760 h × 0.0002 t/kWh = ~1,850 t CO₂/yr
 ```
 
-That is 4,414 tonnes per year — from one team's decision to change a serialization format. Not from hardware upgrades. Not from a switch to renewable energy. From the structure of the output.
+That is roughly 1,850 tonnes per year — from one team's decision to change a serialization format. Not from hardware upgrades. Not from a switch to renewable energy. From the structure of the output.
 
 ---
 
@@ -216,11 +220,11 @@ Annual cost saving ($) =
     Requests per day
   × 365
   × Output tokens per request
-  × JMD output token savings (8–34%, depending on workload)
+  × JMD output token savings (0.7–34%, depending on workload and model)
   × Price per output token
 ```
 
-Use the fidelity-test figure (28–34%) for workloads where models reproduce structured data verbatim — data pipeline steps, schema generation, and similar tasks. Use the chain-benchmark figure (8–18%) for workloads where models reason and generate alongside structured output. For mixed workloads, 20% is a reasonable conservative middle estimate.
+Use the fidelity-test figure (28–34%) for workloads where models reproduce structured data verbatim — data pipeline steps, schema generation, and similar tasks. Use the chain-benchmark figures (8–18% for the Sonnet-, GPT- and Mistral-class models; −0.7% for Gemini 2.5 Flash) for workloads where models reason and generate alongside structured output. For mixed workloads on the larger models, 15–20% is a reasonable middle estimate; Gemini-class tokenizers may see substantially less.
 
 With the example values and a conservative 20% savings:
 
@@ -232,7 +236,7 @@ Over a third of a million dollars per year. No infrastructure change. No provide
 
 **Your numbers.** The formula above is the complete model. Substitute your own request volume, token counts, and pricing. Teams with deeper nesting or larger payloads will see savings toward the upper end of the range; flat structures with short values will see savings toward the lower end. Both endpoints are measured.
 
-Note that this calculation covers output tokens only. Input token savings (approximately 22% for payload tokens) add a further reduction that depends on your input-to-output token ratio.
+Note that this calculation covers output tokens only. Input token savings (19.2% average for payload tokens; 22% for three of the four providers tested) add a further reduction that depends on your input-to-output token ratio.
 
 ---
 

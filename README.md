@@ -2,7 +2,7 @@
 
 A structured data format for LLM-driven infrastructure. JMD is what language
 models produce naturally when asked to organize data — formalized into a
-specification, benchmarked across seven models from four providers.
+specification, benchmarked across six models from four providers.
 
 ---
 
@@ -45,19 +45,24 @@ email: anna@example.com
 
 ## What the Benchmarks Show
 
-Tested across seven models from four providers (Anthropic, OpenAI, Mistral,
-Google), approximately 6,000 API calls, three independent domain scenarios:
+Tested across six models from four providers (Anthropic, OpenAI, Mistral,
+Google), approximately 3,500 API calls, three independent domain scenarios:
 
 **99.7% syntax validity** across 720 five-step agentic chains — versus 95.6%
 for JSON. A 4.4% per-step error rate compounds to a ~20% chain failure rate
 under JSON; under JMD it is ~1.5%.
 
-**8–18% fewer output tokens** in production chain execution; **22% fewer
-payload tokens** when passing outputs between agents (consistent across
-providers). A separate format fidelity test showed 28–34% savings in pure
-structural overhead.
+**12.6% fewer output tokens** on average in production chain execution —
+8–18% for the Sonnet-, GPT- and Mistral-class models, near zero for
+Gemini 2.5 Flash (−0.7%) and Haiku (−6.4%), reflecting tokenizer differences.
+**19% fewer payload tokens** on average when passing outputs between agents
+(−22% for the Anthropic, OpenAI, and Mistral models; −9.8% for Gemini).
+A separate format fidelity test showed 28–34% savings in pure structural
+overhead.
 
-**Up to 15× faster streaming** time-to-first-usable-byte. Every completed JMD
+**2.5–5.7× faster streaming** time-to-first-usable-byte (2.5–2.9× per step,
+4.1–5.7× cumulative over five-step chains, up to 7.3× in the most
+structure-heavy scenario). Every completed JMD
 line is a parseable field event. A partial JMD document is not a broken document
 — it contains all fields received so far. A partial JSON document is a parse
 error.
@@ -124,7 +129,8 @@ position zero before any field is generated.
 
 A Python reference implementation with C-accelerated parser and serializer is
 available at [jmd-impl](https://github.com/ostermeyer/jmd-impl).
-Parser throughput: **1.7–2.1× faster than `json.loads`** across payload sizes.
+Parser throughput: **1.7–2.1× faster than Python's stdlib `json.loads`**
+across payload sizes (C extension vs. C implementation; see BENCHMARKS.md §8).
 
 A JavaScript reference implementation (pure ESM, zero dependencies) is available
 at [jmd-js](https://github.com/ostermeyer/jmd-js). Byte-compatible with the
@@ -134,7 +140,8 @@ Python reference, with streaming support for both parsing and serialization.
 
 ## Status
 
-Specification stable at v0.3.3. Benchmarks completed. A research preprint
+**Current version: v0.3.5** — this line is the single source of truth for the
+specification version; all companion documents reference it. Benchmarks completed against the v0.3.1–v0.3.3 dialect (see the dialect note in BENCHMARKS.md); a full re-measurement against v0.3.5 is planned. A research preprint
 describing the empirical findings is forthcoming on arXiv.
 
 The [JMD over XML companion specification](jmd-over-xml.md) (Draft 0.4)

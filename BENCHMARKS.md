@@ -2,7 +2,9 @@
 
 This document reports empirical validation of JMD's design claims. It is organized by claim: what was asserted, how it was tested, what prompts were used, and what the results were.
 
-**Models tested:** Claude Haiku 4.5, Claude Sonnet 4.6, GPT-5.4, Mistral Large, Gemini 2.5 Flash, and Gemini 3.1 Pro (6 models, 2 providers, 3 price tiers). GPT-5 Nano proofed early not being capable to produce JMD syntax.
+> **Dialect note (added 2026-07-03).** These results were measured against the JMD dialect current at test time (v0.3.1–v0.3.3). In particular, the mode-agility, schema-roundtrip, and QBE primers in Section 5 use conventions that were later removed or changed (regex auto-detection in QBE, `enum(...)` and `type | modifier` schema syntax — see spec Appendix A for the current conventions). The structural core grammar tested is unchanged. A full re-measurement against spec v0.3.5, with additional format baselines (YAML, TOON) and a reproducibility harness, is planned; until then, Section 5's 100%-claims should be read as validated against the v0.3.1 dialect.
+
+**Models tested:** Claude Haiku 4.5, Claude Sonnet 4.6, GPT-5.4, Mistral Large, Gemini 2.5 Flash, and Gemini 3.1 Pro (6 models, 4 providers, 3 price tiers). Gemini 3.1 Pro was used in the format-fidelity test only. GPT-5 Nano proved early not to be capable of producing JMD syntax and was excluded.
 
 **Scenarios:** Three independent domain scenarios — e-commerce shopping flow, DevOps issue triage, and sales data pipeline — each implemented as a 5-step agentic chain where the output of one step becomes the input for the next.
 

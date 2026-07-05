@@ -173,10 +173,12 @@ made JMD simpler and the system more efficient.
 The results of designing this way are measurable:
 
 - **99.7%** syntax validity across 720-chain benchmark tests (vs. 95.6% for JSON)
-- **31–38%** fewer output tokens than pretty-printed JSON
+- **28–34%** fewer output tokens than pretty-printed JSON in the format-fidelity
+  test (8–18% in production chains for the Sonnet-, GPT- and Mistral-class
+  models; −0.7% for Gemini 2.5 Flash)
 - **4.1–5.7×** faster streaming time-to-first-usable-byte in multi-step chains
-- **1.8×** faster parse throughput than `json.loads` (C-optimized JMD parser)
-- **2.1×** faster serialize throughput than `json.dumps` (C-optimized serializer)
+- **1.8×** faster parse throughput than Python's stdlib `json.loads` (C extension vs. C implementation)
+- **2.1×** faster serialize throughput than stdlib `json.dumps` (same comparison)
 
 These are not incidental. They are the measurable consequence of a format that
 asks nothing of the model that the model does not already want to give — and
@@ -200,5 +202,5 @@ available to anyone willing to pay attention.
 
 ---
 
-*JMD's benchmark results — validation across 7 models, 3 providers, and
+*JMD's benchmark results — validation across 6 models, 4 providers, and
 approximately 3,500 API calls — are documented in [`BENCHMARKS.md`](BENCHMARKS.md).*
