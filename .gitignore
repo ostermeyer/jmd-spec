@@ -8,3 +8,6 @@ __pycache__/
 # AI tooling / workspace-level config (not repo-scoped)
 CLAUDE.md
 .DS_Store
+
+# Local working notes / review documents (not tracked)
+local/

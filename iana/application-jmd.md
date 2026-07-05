@@ -5,9 +5,15 @@ for the media type `application/jmd`, following the template defined in
 RFC 6838 §5.6. It is prepared for submission to `media-types@iana.org`
 under the Provisional Registration procedure (RFC 6838 §5.3).
 
-**Upgrade path.** Once an Internet-Draft describing JMD is published by
-the IETF or another recognized standards body, this registration may be
-promoted from provisional to permanent under the Standards Tree.
+**Upgrade path.** The provisional registration secures the name and is
+useful in its own right. For permanence there are three honest options:
+(1) pursue IETF adoption of the Internet-Draft (natural venues: HTTPAPI
+or DISPATCH; `application/yaml` via RFC 9512 is the blueprint), which
+supports a Standards-Tree entry; (2) remain provisional indefinitely —
+permissible, but weaker for adoption arguments; (3) fall back to the
+personal tree (`application/prs.jmd`) — avoided deliberately, as it
+would break the name. Strategy and current status are tracked in
+ROADMAP.md.
 
 ---
 
@@ -38,18 +44,7 @@ Required parameters:
     None
 
 Optional parameters:
-    charset:
-        A charset parameter indicating the character encoding of the
-        document. The only supported charset is "utf-8"; this is also
-        the default when the parameter is omitted. Receivers MAY reject
-        any other value with a 415 Unsupported Media Type response (for
-        HTTP transport) or an equivalent error condition.
-
-    version:
-        An optional parameter carrying the JMD Specification version
-        targeted by the document (e.g., "0.3.3"). When omitted, the
-        receiver SHOULD assume the latest stable JMD specification
-        version it supports.
+    None
 
 Encoding considerations:
     JMD is a text format and MUST be encoded as UTF-8 (RFC 3629).
@@ -61,55 +56,69 @@ Encoding considerations:
     necessary nor recommended for modern HTTP or MCP transport.
 
 Security considerations:
-    JMD inherits the security posture of "application/json". Specific
-    considerations:
+    The normative treatment is Section 24 of the JMD Specification;
+    this template summarizes it. JMD inherits the security posture of
+    "application/json", with one format-specific addition (item 1).
 
-    1.  Injection into downstream rendering contexts. JMD string
+    1.  Structure injection in naive generation. JMD assigns
+        structural meaning to line starts (headings, mode markers,
+        list items, frontmatter position). A generator MUST emit
+        untrusted content as quoted strings (RFC 8259 escaping) and
+        MUST NOT interpolate untrusted text into bare-value, key,
+        label, or frontmatter position (Specification Section 24.1).
+        A JMD byte sequence contains exactly one document
+        (Specification Section 18.0); an injected root heading or
+        mode marker mid-document therefore produces a parse error
+        rather than a second, potentially destructive document.
+
+    2.  Injection into downstream rendering contexts. JMD string
         content is literal data, but documents may contain characters
         that are structurally significant in downstream contexts
         (HTML, SQL, shell). Receivers that render JMD content into
         such contexts MUST apply the appropriate escaping. This is
         identical to the JSON situation and is not specific to JMD.
 
-    2.  Parser resource consumption. A conforming JMD parser processes
+    3.  Parser resource consumption. A conforming JMD parser processes
         documents in O(n) time and O(d) stack depth, where n is the
         document length in bytes and d is the maximum heading depth.
-        Implementations SHOULD enforce a practical bound on d (a
-        reasonable default is 32) to prevent stack exhaustion from
-        adversarial inputs. Line length, blockquote length, and field
-        count have no inherent bound in the grammar, and
-        implementations SHOULD impose application-specific limits
-        consistent with their memory budget.
+        The grammar itself places no bound on depth, line length,
+        blockquote length, or field count; implementations SHOULD
+        enforce practical, configurable bounds (a reasonable default
+        depth bound is 32) to prevent stack exhaustion and memory
+        abuse from adversarial inputs. Rejecting a document that
+        exceeds a resource bound is a resource-limit error, not a
+        conformance violation (Specification Section 24.3).
 
-    3.  Content confusion with Markdown. JMD and conventional Markdown
-        share a syntactic subset (headings, bullets, blockquotes).
-        A receiver that renders a JMD document as Markdown will produce
-        a document that is technically well-formed but semantically
-        nonsensical (data fields become apparent section headings and
-        bullet lists). Implementations MUST dispatch on the declared
+    4.  Content confusion with Markdown. JMD and conventional Markdown
+        share surface syntax, but JMD is not guaranteed to be valid
+        CommonMark: heading depth beyond six and the mode markers
+        "#!", "#?", "#-" are not ATX headings. A receiver that
+        renders a JMD document as Markdown will produce misleading
+        output. Implementations MUST dispatch on the declared
         Content-Type and not on file content sniffing.
 
-    4.  No active content. JMD has no scripting, no template
+    5.  No active content. JMD has no scripting, no template
         expansion, no external reference resolution, no schema
         validation directives, and no anchor/alias mechanism. Parsing
         a JMD document does not trigger network access, code
         execution, or arbitrary I/O. This is identical to the JSON
         security model.
 
-    5.  Privacy. JMD documents are opaque structured data. They do not
+    6.  Privacy. JMD documents are opaque structured data. They do not
         carry fragment identifiers, external references, or embedded
         URIs that are interpreted implicitly by a conforming parser.
         Any URI-valued fields are application-level data; no JMD
         parser is required to follow them.
 
-    6.  Streaming parse semantics. JMD is line-oriented and every
-        completed line is independently parseable. This means that a
-        partial JMD document may be partially processed by a receiver
-        before the full document has arrived. Implementations that act
-        on streaming data before the document is complete MUST ensure
-        that such actions are safe under truncation (for example, a
-        database write that commits only when the document terminator
-        is observed).
+    7.  Streaming parse semantics. JMD is line-oriented and every
+        completed line is independently parseable, and each framing
+        unit carries exactly one document (Specification Section
+        18.0). A partial JMD document may be partially processed by a
+        receiver before the full document has arrived. Implementations
+        that act on streaming data before the document is complete
+        MUST ensure that such actions are safe under truncation (for
+        example, a database write that commits only when the framing
+        unit terminates cleanly).
 
 Interoperability considerations:
     JMD is defined such that every valid data document is in bijection
@@ -132,21 +141,27 @@ Interoperability considerations:
     and are intended for use by consuming applications that understand
     those conventions.
 
-    Line-ending handling: a conforming parser accepts "\n", "\r\n",
-    and "\r" as line terminators. Canonical form uses "\n".
+    Line-ending handling (Specification Section 11.2): canonical form
+    uses "\n" (LF). A conforming parser accepts "\r\n" by consuming the
+    "\r" as part of the line terminator; a "\r" not followed by "\n" is
+    a parse error. A single leading U+FEFF (byte order mark) is
+    consumed and ignored; generators never emit one.
 
 Published specification:
-    JMD Specification v0.3.3, available at:
+    JMD Specification v0.3.5, available at:
         https://github.com/ostermeyer/jmd-spec/blob/main/jmd-spec-v0_3.md
 
     A companion proposal for HTTP integration is available at:
         https://github.com/ostermeyer/jmd-spec/blob/main/jmd-over-http.md
 
-    An Internet-Draft describing JMD is in preparation and will be
-    submitted to the IETF Datatracker. This registration request
-    should be treated as provisional until the Internet-Draft is
-    published, at which point the registration can be promoted under
-    the Specification Required or Standards Action procedures.
+    An Internet-Draft describing JMD is available in the IETF
+    Datatracker:
+        draft-ostermeyer-jmd-00
+        https://datatracker.ietf.org/doc/draft-ostermeyer-jmd/
+    This registration request should be treated as provisional until
+    the Internet-Draft is published as an RFC, at which point the
+    registration can be promoted under the Specification Required or
+    Standards Action procedures.
 
 Applications that use this media type:
     - MCP (Model Context Protocol) servers for LLM tool integration
@@ -201,13 +216,20 @@ andreas@ostermeyer.de
 ## Review Checklist Before Sending
 
 - [ ] The "Published specification" URLs resolve and point to the
-      expected files.
+      expected files — in particular, the repository must be public and
+      show v0.3.5 (push before sending).
 - [ ] The contact e-mail is current.
-- [ ] The `charset` wording aligns with how the implementations actually
-      behave (reject non-UTF-8, or accept?).
-- [ ] The depth bound mentioned in security considerations (32) matches
-      what the reference implementations enforce, or a reasonable value
-      you want to recommend.
+- [x] Parameters: `charset` and `version` removed (2026-07-03),
+      following the precedent of RFC 8259 (`application/json`) and
+      RFC 9512 (`application/yaml`); neither reference implementation
+      consumed them.
+- [x] Depth bound (32) is phrased as a SHOULD-recommendation with no
+      implementation claim — the reference implementations currently
+      enforce no bound (verified 2026-07-03); wording matches
+      Specification Section 24.3.
+- [x] Security considerations mirror Specification Section 24
+      (single source; template summarizes).
+- [x] Line-ending statement matches Specification Section 11.2.
 - [ ] Any concerns about the provisional-vs-standards wording.
 
 ## Expected Process After Sending

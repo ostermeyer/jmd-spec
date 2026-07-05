@@ -1,7 +1,7 @@
 # JMD over HTTP — REST Integration Proposal
 
 **Status:** Proposal / Draft
-**Version:** 0.1 (tracks JMD Specification v0.3.3)
+**Version:** 0.1 (tracks JMD Specification v0.3.5)
 **Copyright** © 2026 Andreas Ostermeyer <andreas@ostermeyer.de>
 **License:** CC BY 4.0 (same as the JMD Specification)
 
@@ -55,43 +55,28 @@ The key words *MUST*, *MUST NOT*, *SHOULD*, *SHOULD NOT*, *MAY* are used in the 
 
 ## 2. Media Type
 
-### 2.1 Proposed Registration: `application/jmd`
+### 2.1 Registration: `application/jmd`
 
-We propose registering the media type `application/jmd` with IANA, using the following template (RFC 6838):
+The **authoritative registration template** for `application/jmd` is maintained in exactly one place: [`iana/application-jmd.md`](iana/application-jmd.md) in the specification repository. A provisional registration request based on that template is under review with IANA. This document deliberately does not duplicate the template — wherever a summary here and the template could diverge, the template wins.
 
-| Field | Value |
-|---|---|
-| Type name | `application` |
-| Subtype name | `jmd` |
-| Required parameters | *none* |
-| Optional parameters | `charset` (default: `utf-8`), `version` (default: latest stable JMD spec) |
-| Encoding considerations | Text; UTF-8 strongly recommended |
-| Security considerations | Analogous to `application/json`; see §2.3 |
-| Interoperability considerations | See §2.2 regarding fallback to JSON |
-| Published specification | JMD Specification (latest), plus this document |
-| Applications using this media type | LLM-to-server communication, MCP servers, REST APIs, streaming data pipelines, configuration files, service-to-service structured data exchange |
-| Fragment identifier considerations | None defined by this specification |
-| Restrictions on usage | None |
-| Provisional registration | Yes (during proposal phase) |
+Non-normative summary: type `application/jmd`; no required or optional parameters; UTF-8 (RFC 3629); file extension `.jmd`; security considerations are defined normatively in Section 24 of the core specification.
 
-Until registration is complete, the type may be used as `application/vnd.jmd` or `application/x-jmd` by early implementers who prefer to avoid the unqualified form. We recommend the unqualified `application/jmd` as the target name.
+Until registration is complete, early implementers who prefer to avoid the unqualified form may use `application/x-jmd`. We recommend the unqualified `application/jmd` as the target name.
 
-### 2.2 Structured Syntax Suffix
+### 2.2 Structured Syntax Suffix (Proposal — Not Part of the Registration)
 
-Analogous to `application/vnd.example+json`, we propose the structured syntax suffix `+jmd` for domain-specific JMD types:
+The suffix described here is a **separate, later registration step** (RFC 6839), not part of the `application/jmd` registration under review — see the note at the end of `iana/application-jmd.md`. Analogous to `application/vnd.example+json`, we propose the structured syntax suffix `+jmd` for domain-specific JMD types:
 
 ```
 application/vnd.example.order+jmd
-application/vnd.ostermeyer.smartsuite.record+jmd
+application/vnd.acme.invoice+jmd
 ```
 
 A generic JMD parser recognises any media type ending in `+jmd` as structurally equivalent to `application/jmd`, allowing domain-specific types to declare their schema without requiring consumers to learn a new parser.
 
 ### 2.3 Security Considerations
 
-JMD inherits the security posture of `application/json` with one addition: because JMD permits prose in certain fields (blockquote multiline values, frontmatter text fields), implementations that render these fields to HTML without escaping are vulnerable to injection attacks in the same way that a JSON-carrying application would be. The mitigation is identical: treat string content as data, not markup, at every rendering boundary.
-
-JMD has no constructs analogous to YAML's anchor/alias mechanism or JSON-LD's `@context`, so there are no implicit reference-following or schema-loading attack surfaces. Parsers are line-oriented and stateless beyond the heading-depth stack — there is no ambient context to poison.
+Security considerations for the media type are defined normatively in **Section 24 of the JMD core specification** and summarized in the registration template; this document does not restate them. Two points deserve emphasis in the HTTP context: untrusted content MUST be emitted as quoted strings and never interpolated into structural position (spec §24.1), and endpoints SHOULD execute `#-` delete documents only from allowlisted sources (spec §24.2). Transport-level concerns (TLS, authentication, CORS) are covered later in this document.
 
 ---
 
