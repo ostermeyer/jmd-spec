@@ -1,0 +1,2 @@
+# Conformance fixtures are byte-exact serializer output; never translate line endings.
+conformance/** -text

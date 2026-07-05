@@ -1,5 +1,5 @@
 # JMD – JSON Markdown
-## Format Specification v0.3.4
+## Format Specification v0.3.5
 
 Copyright (c) 2026 Andreas Ostermeyer <andreas@ostermeyer.de>.
 Licensed under CC BY 4.0 — see [LICENSE](LICENSE) for details.
@@ -11,7 +11,7 @@ Code samples in this document are licensed under Apache 2.0 — see [LICENSE-COD
 
 JMD (JSON Markdown) is a lossless data serialization format for the era of LLM-driven infrastructure, designed for workflows where structured data moves between servers and language models.
 
-LLM compute cost scales directly with token count — for both consumed input and generated output. JMD reduces tokens at both ends. As **input**, a JMD document contains 19–29% fewer tokens than its pretty-printed JSON equivalent (the real-world API default); once the data is in context, the reasoning cost is identical regardless of format. As **output**, JMD is the only format that is both token-efficient and reliably generatable — LLMs cannot produce minified JSON consistently, reproducing pretty-printed patterns regardless of instruction. Quantitative benchmark results are provided in the companion document *JMD Efficiency Analysis*.
+LLM compute cost scales directly with token count — for both consumed input and generated output. JMD reduces tokens at both ends. As **input**, a JMD document contains on average 19% fewer tokens than its pretty-printed JSON equivalent (10–22% depending on model tokenizer; the real-world API default); once the data is in context, the reasoning cost is identical regardless of format. As **output**, JMD is token-efficient where no JSON variant can be: LLMs cannot produce minified JSON consistently, reproducing pretty-printed patterns regardless of instruction. Among the emerging generation of token-optimized formats (TOON, JTON, ONTO), JMD's distinguishing combination is token efficiency, reliable generatability, *and* line-level streamability (Section 18) — tabular encodings compact uniform arrays further, but front-load column headers that an incremental generator must commit to before emitting data. Quantitative benchmark results are provided in the companion document *JMD Efficiency Analysis*.
 
 **The design philosophy** behind JMD is to work with the natural behavior of language models, not against it. LLMs are autoregressive text generators trained on vast corpora of Markdown, code, and structured documents. They have deeply internalized patterns like headings for hierarchy, `key: value` for fields, `- ` for list items, and blank lines for section boundaries. JMD does not invent new syntax for these structures — it formalizes the patterns that LLMs already produce when generating structured output. Every syntax decision in this specification passes a single test: *Would an LLM produce this naturally, without special instruction?* Where the answer is no, the design is reconsidered. This methodology is called *AI Whispering* throughout this specification.
 
@@ -48,7 +48,7 @@ Multiple valid JMD representations may exist for the same JSON value (different 
 
 Three properties distinguish JMD from JSON. The first two are co-equal design goals; the third is a structural consequence of the same syntax choice:
 
-**Compute efficiency.** LLM compute cost scales with token count at both ends of the pipeline. As **input**, JMD eliminates quoted keys and structural delimiters entirely — not just whitespace — achieving 19–29% fewer tokens than pretty-printed JSON (the real-world API default). Once parsed, the reasoning cost is identical regardless of format; the gain is at the tokenization boundary. As **output**, JMD is the only efficient format LLMs can reliably generate: they reproduce pretty-printed patterns regardless of instruction, making minification impractical. Quantitative benchmark results are provided in the companion document *JMD Efficiency Analysis*.
+**Compute efficiency.** LLM compute cost scales with token count at both ends of the pipeline. As **input**, JMD eliminates quoted keys and structural delimiters entirely — not just whitespace — achieving on average 19% fewer tokens than pretty-printed JSON (10–22% depending on model tokenizer; the real-world API default). Once parsed, the reasoning cost is identical regardless of format; the gain is at the tokenization boundary. As **output**, JMD achieves what no JSON variant can: LLMs reproduce pretty-printed patterns regardless of instruction, making minification impractical — JMD's compactness, by contrast, is the form models produce naturally. Quantitative benchmark results are provided in the companion document *JMD Efficiency Analysis*.
 
 **Native streamability.** JMD's line-oriented syntax allows a receiver to process each field as soon as its line is complete — no closing delimiters required. JSON cannot offer this without buffering or non-standard extensions. For large collections and multi-agent pipelines, the streaming advantage is substantial.
 
@@ -73,7 +73,7 @@ Together, these properties make JMD a natural fit for the infrastructure that is
 - Streamable by design: each completed line advances the parse state (co-equal with compute efficiency)
 - Unambiguous grammar; parseable line by line with minimal state (heading depth stack)
 - No indentation-based hierarchy: nesting expressed entirely through heading depth (indentation used only for list item continuation within arrays)
-- Generator-strict, parser-tolerant: serializers produce canonical syntax; parsers accept natural LLM variations (see Section 20)
+- Generator-strict, parser-tolerant: serializers produce canonical syntax; parsers accept natural LLM variations (see Section 22)
 - Self-describing via schema documents and query templates
 
 ---
@@ -151,7 +151,24 @@ Bare fields immediately after `#` belong to the root object. No `##` prefix is n
 
 ### 3.2a Anonymous Headings (Empty Labels)
 
-A heading with no label text — e.g., a line containing only `#` followed by a space — is a valid **anonymous heading**. It opens a scope with an empty string as the label. At root level, an anonymous heading is equivalent to any labeled root heading: it opens the root object scope. At deeper levels, an anonymous heading like `##` followed by a space opens an anonymous nested object (keyed by `""`).
+A heading with no label text — e.g., a line containing only `#` characters, optionally followed by trailing whitespace — is a valid **anonymous heading**. Its meaning depends on depth:
+
+- **At root level (`#`):** an anonymous heading is equivalent to any labeled root heading — it opens the root scope, with the empty string as the label. Since root labels carry no serialization semantics (§3.2.1), this imposes no ambiguity.
+- **At depth ≥ 2 (`##`, `###`, …):** an anonymous heading is a **level-pop** (§8.6): it *returns to* the scope already established at that depth, closing all deeper scopes. It never opens a nested object.
+
+To represent an object keyed by the empty string — `{"": …}` — use a **quoted empty key** as the heading label: `## ""`. Quoted keys in headings follow the same JSON string escaping rules as quoted field keys (§4.2). This keeps the JSON↔JMD bijection intact:
+
+```markdown
+# Doc
+## ""
+x: 1
+```
+
+Serializes to:
+
+```json
+{"": {"x": 1}}
+```
 
 ```markdown
 #
@@ -165,7 +182,7 @@ Serializes to:
 {"id": 42, "status": "pending"}
 ```
 
-**Rationale:** LLMs sometimes produce headings without labels — particularly at root level, where the label is semantically irrelevant. A parser that rejects bare headings would fail on syntactically reasonable LLM output. Since labels carry no serialization semantics at root level, accepting an empty label imposes no ambiguity. A conforming parser MUST accept anonymous headings. A conforming generator SHOULD produce labeled headings for readability, but MAY produce anonymous headings when no meaningful label exists.
+**Rationale:** LLMs sometimes produce root headings without labels, where the label is semantically irrelevant; a parser that rejects them would fail on syntactically reasonable output. A conforming parser MUST accept anonymous root headings. A conforming generator SHOULD produce a labeled root heading for readability, but MAY produce an anonymous one when no meaningful label exists. At depth ≥ 2, the anonymous heading is not a tolerance but part of the canonical grammar: it is the level-pop that a conforming serializer MUST emit to return to an outer array scope (§8.6, §22.1). Earlier drafts (≤ v0.3.3) instead defined a deep anonymous heading as opening a nested object keyed by `""`; that semantics was withdrawn in v0.3.4 in favor of the level-pop, and the `""`-keyed object is now expressed by the quoted empty key shown above.
 
 ### 3.2.1 Label Namespacing
 
@@ -522,6 +539,8 @@ A string value **must** be quoted if it:
 | Starts with `- ` | `note: - item` | `note: "- item"` |
 | Is exactly `-` | `sep: -` | `sep: "-"` |
 | Parses as another type | `code: 42` | `code: "42"` |
+| Is an array item containing `: ` and intended as a string | `- Warning: disk full` (becomes the object `{"Warning": "disk full"}`) | `- "Warning: disk full"` (see §8.3) |
+| Has significant leading or trailing whitespace | `pad: two spaces  ` (trimmed, §11.2) | `pad: "two spaces  "` |
 
 The same rules apply to string values at any scope depth and to array items.
 
@@ -844,9 +863,11 @@ Serializes to:
 {"tags": ["backend", "api", "404"]}
 ```
 
+**The colon trap.** In an array body, `- ` followed by a `key: value` pattern starts an *object* item (§8.3). A natural-language string that happens to contain `: ` therefore silently changes type: `- Warning: disk full` is the object `{"Warning": "disk full"}`, not the string `"Warning: disk full"`. This is the format's largest remaining silent-misinterpretation risk, and it hits exactly the content — log lines, notes, titles — that generators tend to emit unquoted. A string item containing `: ` MUST be quoted (§6.1): `- "Warning: disk full"`. Both forms are valid JMD; only the quoting decides between object and string.
+
 ### 8.3 Array of Objects
 
-Each item is introduced by `- ` followed by its first field. Additional fields follow on indented continuation lines (2+ spaces):
+Each item is introduced by `- ` followed by its first field. Additional fields follow on indented continuation lines (canonically two spaces; see §11.2 for the tolerated forms):
 
 ```markdown
 ## items[]
@@ -890,7 +911,7 @@ qty: 2
 
 **Disambiguation:** After `- `, if the content matches a `key: value` pattern (bare or quoted key, followed by `: `, followed by a value), it is parsed as the first field of an object item. Otherwise, it is a scalar item. Scalar strings that look like `key: value` must be quoted: `- "name: Alice"`.
 
-An item's scope extends until the next `-`, a thematic break (`---`), `## -`, a heading at the array's depth or shallower, a scope-resetting blank line, or EOF.
+An item's scope extends until the next `-`, a `## -` depth-qualified marker, a heading at the array's depth or shallower (including anonymous level-pop headings), a scope-resetting blank line, or EOF. A thematic break (`---`) within an array body is decoration (§8.6) and does not end the item's scope.
 
 ### 8.4 Array of Arrays (Sub-Arrays)
 
@@ -1026,7 +1047,7 @@ Arrays of flat objects (no record opens a sub-structure) and scalar arrays use b
 
 #### Design Rationale
 
-1. **Self-describing.** Each `#`×*D* declares its own target depth. The parser tracks no state, and a generator cannot "forget to close" the way an indentation- or balanced-delimiter scheme can — the depth is *in the marker*.
+1. **Self-describing.** Each `#`×*D* declares its own target depth. The parser tracks no state beyond its scope stack, and a generator cannot "forget to close" the way an indentation- or balanced-delimiter scheme can — the depth is *in the marker*.
 2. **One-shot.** One marker pops through any number of nested levels to the named depth.
 3. **Consistent with the core principle.** JMD's hierarchy *is* heading depth (§1). The level-pop stays entirely within that model — it is the natural inverse of opening a deeper heading, and a strict generalization of the blank-line reset.
 4. **Clean records.** Item and field lines carry no depth bookkeeping (`- name`, `auth:`); only the pop carries a depth.
@@ -1038,7 +1059,7 @@ A line of three or more hyphens (`---`) is a CommonMark horizontal rule. JMD tre
 
 ### 8.6a Depth-Qualified Array Items (Parser Tolerance)
 
-A conforming parser MUST also accept **depth-qualified item markers** as an alternative to thematic breaks. When an array of objects contains nested arrays, a heading-prefixed `-` at the target depth explicitly starts a new item in the outer array:
+A conforming parser MUST also accept **depth-qualified item markers** as an alternative to the level-pop (§8.6). When an array of objects contains nested arrays, a heading-prefixed `-` at the target depth explicitly starts a new item in the outer array:
 
 ```markdown
 ## groups[]
@@ -1055,7 +1076,7 @@ A conforming parser MUST also accept **depth-qualified item markers** as an alte
 
 **Rule:** `## -`, `## - key: val`, `### -`, etc. start a new item in the array declared at that heading depth. Bare `-` or `- key: val` starts a new item in the innermost open array.
 
-A conforming generator SHOULD emit thematic breaks as the canonical separator; depth-qualified markers are accepted for backward compatibility and parser tolerance.
+The canonical generator form is bare `-` records with the level-pop (§8.6); depth-qualified markers are parser tolerance only and are never emitted by a conforming generator.
 
 ### 8.6b Depth+1 Items as Natural LLM Pattern
 
@@ -1064,7 +1085,7 @@ LLMs trained on Markdown have a strong preference for expressing array items one
 This pattern is valid JMD and is functionally equivalent to bare `-` items:
 
 ```markdown
-The canonical generator form is bare `-` records with the level-pop (§8.6); depth-qualified markers (`## -`, `### -`, …) are accepted as parser tolerance only and are never emitted.
+# products[]
 ## - name: Widget
   price: 29.99
   sku: A1
@@ -1096,7 +1117,7 @@ Both produce:
 
 Depth+1 items are not merely a disambiguation mechanism for nested arrays — they are the most natural way for LLMs to express array items, because the Markdown heading hierarchy implies that items "inside" an array belong at the next heading level. Benchmark testing confirms that LLMs produce depth+1 items consistently, even when bare `-` would be unambiguous.
 
-**A conforming parser MUST accept depth+1 items** (`## -` or `## - key: val` for an array at depth 1) as equivalent to bare items. A conforming generator MAY produce either form; bare `-` is more compact, but depth+1 items are equally valid.
+**A conforming parser MUST accept depth+1 items** (`## -` or `## - key: val` for an array at depth 1) as equivalent to bare items. The canonical generator form is bare `-` records with the level-pop (§8.6); depth-qualified markers (`## -`, `### -`, …) are accepted as parser tolerance only and are never emitted by a conforming generator (consistent with §7.4.3 and §22.1).
 
 ### 8.7 Heterogeneous Arrays
 
@@ -1315,15 +1336,27 @@ Simple root-level fields at the beginning (`id`, `status`, etc.) need no heading
 
 ## 11. Grammar (EBNF)
 
-The following grammar defines the syntax of JMD data documents.
+The following grammar defines the **canonical generator language** of JMD — the syntax a conforming serializer produces (§22.1, generator conformance). The parser-accepted language is a superset: each tolerance is normatively defined in prose (§22.1 lists them exhaustively) and marked below with a `tolerance:` comment where it touches a production. The complete formal parser grammar is deferred to the ABNF of the Internet-Draft.
 
 Heading depth determines hierarchy. A heading at depth N (encoded as N `#` characters followed by a space) opens a scope as a child of the scope at depth N-1. Bare fields belong to the innermost open object scope. Blank lines reset scope to root (see Section 7.2a).
 
 ```ebnf
 (* ===== Document ===== *)
 
-document        ::= frontmatter? root_heading NEWLINE body
-root_heading    ::= "# []" | "# " label?
+document        ::= BOM? frontmatter? root_heading NEWLINE body
+                     (* exactly one document per framing unit — §18.0.
+                        BOM: consumed and ignored, never emitted — §11.2. *)
+
+root_heading    ::= "#" mode_mark? " " ( "[]" | label )
+mode_mark       ::= "?" | "!" | "-"
+                     (* "#" data, "#?" query, "#!" schema, "#-" delete
+                        (§13–§15, §19). Mode marks are valid on the root
+                        heading only; mid-document they are a parse error
+                        (§18.0). Note: the marker forms are not CommonMark
+                        ATX headings — see §1 and §24.4.
+                        tolerance: an anonymous root heading (bare "#") is
+                        accepted and opens the root scope with an empty
+                        label — §3.2a, §22.1. *)
 
 (* ===== Frontmatter ===== *)
 (* Fields before the first heading are document-level metadata.
@@ -1333,9 +1366,8 @@ frontmatter     ::= (frontmatter_field NEWLINE)+ BLANK_LINE?
 frontmatter_field ::= key ": " value
                     | key                    (* bare key, e.g. 'count' *)
 label           ::= label_char+
-label_char      ::= (* any character except NEWLINE *)
-                     (* An absent label (anonymous heading) is valid;
-                        it is treated as an empty string. See Section 3.2a. *)
+label_char      ::= (* any character except NEWLINE; trailing whitespace
+                        is stripped — §11.2. Labels are opaque — §3.2.1. *)
 
 body            ::= (element | SCOPE_RESET)*
 element         ::= heading_element | bare_field | array_item | indent_field
@@ -1347,20 +1379,34 @@ SCOPE_RESET     ::= BLANK_LINE
 (* ===== Heading Elements ===== *)
 
 heading_element ::= scalar_heading | object_heading | array_heading
-                   | sub_array_heading | depth_item
+                   | sub_array_heading | level_pop | depth_item
 
 heading_prefix  ::= "#"+ " "
                      (* N '#' characters followed by a space, where N >= 2.
-                        N determines the heading depth.
-                        A heading_prefix with no following content is an
-                        anonymous heading — see Section 3.2a. *)
+                        N determines the heading depth. *)
 
 scalar_heading  ::= heading_prefix key ": " value NEWLINE
-object_heading  ::= heading_prefix key? NEWLINE
+object_heading  ::= heading_prefix key NEWLINE
+                     (* the key is required: an unlabelled deep heading is a
+                        level_pop, never an object opening — §3.2a, §8.6.
+                        The empty-string key is expressed as the quoted key
+                        '""' (e.g. '## ""') — §3.2a. *)
 array_heading   ::= heading_prefix key "[]" NEWLINE
 sub_array_heading ::= heading_prefix "[]" NEWLINE
+
+level_pop       ::= "#"+ NEWLINE
+                     (* anonymous heading at depth D: pops the scope stack
+                        back to the scope established at depth D, closing all
+                        deeper scopes in one step — §8.6. Part of the CANONICAL
+                        generator language: emitted after an array record that
+                        opened a sub-structure and is followed by further
+                        records. At depth 1 it returns to root scope. *)
+
 depth_item      ::= heading_prefix "-" NEWLINE
                    | heading_prefix "- " key ": " value NEWLINE
+                     (* tolerance: depth-qualified and depth+1 array items —
+                        §8.6a, §8.6b, §22.1. Accepted by parsers, never
+                        emitted by a conforming generator. *)
 
 (* ===== Bare Fields ===== *)
 
@@ -1370,6 +1416,10 @@ bare_field      ::= key ": " value NEWLINE
 (* ===== Multiline Values ===== *)
 
 multiline_value ::= blockquote_block
+                     (* tolerance: YAML-style block scalars 'key: |' and
+                        'key: >' are accepted as an alternative introduction
+                        of a multiline value — §5.2, §22.1. Canonical form
+                        is the blockquote block. *)
 
 blockquote_block ::= blockquote_line+
                      (* Each line starts with '> ' or is exactly '>'.
@@ -1392,13 +1442,11 @@ object_item     ::= "-" NEWLINE
                         follow as indented continuation lines. *)
 
 indent_field    ::= INDENT key ": " value NEWLINE
-                     (* INDENT = 2+ space characters. Indented fields
-                        belong to the current array item. The exact
-                        indentation depth is not significant — any line
-                        starting with 2+ spaces followed by a key: value
-                        pattern is a continuation field. *)
-INDENT          ::= " " " " " "*
-                     (* Two or more space characters. *)
+                     (* Indented fields belong to the current array
+                        item; depth and composition of the indent are
+                        insignificant — §11.2. *)
+INDENT          ::= (" " | U+0009)+   (* parser-accepted form. Canonical generator
+                                         form: exactly two spaces (§11.2). *)
 
 (* ===== Keys ===== *)
 
@@ -1445,9 +1493,26 @@ exp_sign        ::= "+" | "-"
 
 (* ===== Whitespace ===== *)
 
-NEWLINE         ::= U+000A
+NEWLINE         ::= U+000D? U+000A    (* canonical: bare U+000A; the optional U+000D
+                                         is parser tolerance (§11.2). A U+000D not
+                                         followed by U+000A is a parse error. *)
 BLANK_LINE      ::= NEWLINE           (* a line containing only whitespace or nothing;
                                          semantically resets scope to root level *)
+BOM             ::= U+FEFF            (* at document start only: consumed and ignored
+                                         (§11.2); never emitted *)
+
+(* ===== Parser Tolerances Outside This Grammar =====
+   The following inputs are accepted by a conforming parser but are not
+   part of the canonical generator language and have no productions here:
+   - thematic breaks '---': skipped as decoration within array bodies
+     (§8.6); tolerated around the frontmatter block (§3.5.1)
+   - anonymous root heading (bare '#'): opens root scope — §3.2a
+   - array promotion: repeated sibling headings without '[]' promote to an
+     array, subject to the three must-fail conditions — §7.4
+   - depth-qualified / depth+1 items: see depth_item above — §8.6a, §8.6b
+   - cosmetic blank lines before headings and between array items — §22.1
+   - CRLF line endings, BOM, tolerant INDENT forms — §11.2
+   The exhaustive normative list is §22.1 (parser conformance). *)
 ```
 
 ### 11.1 Parser State Model
@@ -1462,10 +1527,32 @@ A JMD parser maintains a **scope stack** — a stack of open scopes, each tagged
 5. **Bare `-`** (object item with no first-line field): Start a new item in the innermost open array scope.
 6. **Depth-qualified `-`** (e.g., `## -` or `## - key: val`): Pop scopes back to depth N, then start a new item in the array at depth N.
 7. **Blockquote line** (`>` ...): Append content (after stripping `>` prefix) to the current multiline field. A line containing only `>` appends a blank line. The multiline field ends when a line not starting with `>` is encountered. Each blockquote line emits a streaming event independently.
-8. **Indented field** (2+ spaces followed by `key: value`): Add field to the current array item. This is the Markdown list continuation pattern — indented lines belong to the current `- ` item. The exact indentation depth is not significant; any line starting with 2+ spaces followed by a `key: value` pattern is a continuation field.
+8. **Indented field** (INDENT followed by `key: value`): Add field to the current array item. This is the Markdown list continuation pattern — indented lines belong to the current `- ` item. The exact indentation depth and composition are not significant (§11.2): any line starting with one or more spaces/tabs followed by a `key: value` pattern is a continuation field. Canonical generator form: exactly two spaces.
 9. **Blank line**: Pop all scopes, returning to root scope (depth 1). **Exception:** within an array body, if the next non-blank line is `-` or `- value`, the blank line is cosmetic (visual separator between array items) and does not reset scope.
 
 This model uses indentation in exactly one context: list item continuation within arrays (rule 8). This is not hierarchy-encoding indentation — it means only "this field belongs to the current `- ` item." All hierarchy is still expressed exclusively through heading depth.
+
+### 11.2 Line Endings and Whitespace
+
+This section normatively defines the lexical layer: what constitutes a line, an indent, and insignificant whitespace. All rules follow the generator-strict/parser-tolerant principle (§22.1).
+
+**Line terminators.**
+
+- Canonical form uses a single U+000A (LF) as line terminator. A conforming generator MUST emit LF and MUST NOT emit U+000D (CR) in any position.
+- A conforming parser MUST consume one optional U+000D immediately preceding a U+000A as part of the line terminator (CRLF tolerance). CRLF documents are byte-level artifacts of transport and tooling (editors, `git autocrlf`, mail gateways), not a distinct dialect; they MUST parse to the same value as their LF equivalent.
+- A U+000D that is *not* immediately followed by U+000A MUST be rejected with a parse error. Rationale: a lone CR is invisible in most editors; silently treating it as content (or as a line break) would create documents that look identical but parse differently — the class of silent misinterpretation JMD is designed to exclude. A JSON string *value* containing U+000D is representable via a quoted string with RFC 8259 escaping (`"line1\rline2"`); losslessness is unaffected.
+
+**Byte order mark.** A single U+FEFF at the very start of the document MUST be consumed and ignored by a conforming parser; it is neither content nor an error. A conforming generator MUST NOT emit it. (This mirrors RFC 8259 §8.1, strengthened from MAY-ignore to MUST-ignore to prevent implementation divergence.) A U+FEFF anywhere else is an ordinary character: valid inside quoted strings, a parse error where structure is expected.
+
+**Trailing whitespace.** Spaces and tabs at the end of any line are insignificant and MUST be stripped before the line is interpreted. In particular, a bare value's content ends at the last non-whitespace character. A string value with significant leading or trailing whitespace MUST be emitted as a quoted string (this extends the mandatory-quoting triggers of §6.1). A conforming generator MUST NOT emit trailing whitespace.
+
+**Indentation (INDENT).**
+
+- Canonical form: a continuation line (§11.1 rule 8) is indented with exactly two spaces. A conforming generator MUST emit exactly two spaces and MUST NOT use tabs.
+- Parser tolerance: any non-empty run of spaces (U+0020) and/or tabs (U+0009) at the start of a line constitutes an INDENT. The depth and composition of the run are insignificant — one space, four spaces, a tab, or a mixed run all mark the same thing: "this line belongs to the current `- ` item."
+- An INDENT is only meaningful where a continuation is possible: the line after the INDENT MUST match a `key: value` pattern, and an array item MUST be open. An indented line that fails either condition is prose and MUST be rejected with a parse error (§3.6.2) — it MUST NOT be silently dropped.
+
+**Fixture coverage.** Every fixture under `conformance/data/` has a CRLF-transformed variant that MUST parse to the same JSON value; dedicated fixtures cover lone-CR rejection, BOM consumption, trailing-whitespace trimming, and tab/single-space/mixed indentation.
 
 ---
 
@@ -1517,7 +1604,7 @@ A conforming JMD parser returns query document values verbatim. The value `"> 50
 
 This is a deliberate design decision:
 
-- Different applications have fundamentally different filter semantics (SQL `WHERE`, Firestore queries, MongoDB `$gt`/`$in`, OData `$filter`, SmartSuite filter DSL, GraphQL where-clauses, …). Freezing one dialect as the JMD parse contract would unnecessarily exclude the others.
+- Different applications have fundamentally different filter semantics (SQL `WHERE`, Firestore queries, MongoDB `$gt`/`$in`, OData `$filter`, GraphQL where-clauses, …). Freezing one dialect as the JMD parse contract would unnecessarily exclude the others.
 - Applications that want structured interpretation of query values implement their own parser over the raw string, producing whatever filter representation their target backend requires.
 - JMD's role is carrier: deliver the document structure and string contents; leave semantic interpretation to the application layer.
 
@@ -1565,7 +1652,7 @@ A conforming JMD parser returns schema document values verbatim. The value `"int
 
 This is a deliberate design decision:
 
-- Different applications have fundamentally different type systems (TypeScript type literals, JSON Schema, OData EDM, Protocol Buffers, SmartSuite field types, Firestore security rules, GraphQL schemas, Pydantic models, …). Freezing one as the JMD parse contract would unnecessarily exclude the others.
+- Different applications have fundamentally different type systems (TypeScript type literals, JSON Schema, OData EDM, Protocol Buffers, Firestore security rules, GraphQL schemas, Pydantic models, …). Freezing one as the JMD parse contract would unnecessarily exclude the others.
 - Applications that want structured interpretation of schema values implement their own parser over the raw string, producing whatever type representation their target domain requires.
 - JMD's role is carrier: deliver the document structure and string contents; leave type interpretation to the application layer.
 
@@ -1640,10 +1727,11 @@ country: Germany
 
 ### 15.4 Delete Grammar (EBNF)
 
-A delete document reuses the data document grammar from Section 11 without modification. The root marker is the only syntactic difference.
+A delete document reuses the data document grammar from Section 11 without modification. The root marker is the only syntactic difference — it is the `mode_mark` `"-"` of the `root_heading` production (§11):
 
 ```ebnf
-delete_document  ::= "#- " label NEWLINE body
+delete_document  ::= "#- " ( "[]" | label ) NEWLINE body
+                      (* the "[]" form is the bulk delete — §15.2 *)
 ```
 
 ### 15.5 Design Rationale
@@ -1707,9 +1795,11 @@ The schema for a collection response body:
 
 ## 17. Error Documents
 
-Error documents use the same format as data documents. This ensures that a consumer processing a response stream never needs to switch parsers or handling modes based on external signals.
+Error documents use the same format as data documents. This ensures that a consumer processing a response never needs to switch parsers or handling modes.
 
-A JMD error document uses the reserved label `Error`:
+An error document is always a **complete response document** — it is never appended to, or embedded in, another document (see the one-document rule, §18.0).
+
+A JMD error document uses the label `Error` **by convention**:
 
 ```markdown
 # Error
@@ -1751,7 +1841,11 @@ context: This endpoint validates against the OrderItem schema, which requires qt
 
 Each item in `errors[]` carries `field` (the path to the offending field), `reason` (machine- or human-readable cause), and `value` (the rejected value as a string). Additional fields per error item are permitted and passed through.
 
-**Streaming errors:** In a streaming response, an error occurring mid-stream is signalled by emitting a `# Error` document as the next complete JMD document in the stream. The `# Error` heading implicitly closes all open scopes from the preceding data document. A consumer detects the transition by encountering a new root heading while the previous document's scope is still open.
+**Label convention, not reservation.** The label `Error` carries no parser semantics — labels are opaque (§3.2.1), and a data document about an entity that happens to be named "Error" remains a valid data document. Whether a response *is* an error is determined by, in order of precedence: (1) the transport signal where one exists (HTTP status code, SSE event type, MCP error result); (2) the `# Error` label convention, for transports without an error channel. Consumers SHOULD rely on the transport signal when available.
+
+**Streaming errors:** A JMD stream carries exactly one document (§18.0). An error can therefore not be signalled *in-band* after a partial data document — a root heading or mode marker appearing mid-document is a parse error, not a document transition. If generation of a response fails partway, the failure is signalled by the transport (connection termination, SSE error event, HTTP trailer or status mechanism), and the truncated document is handled under the truncation-safety rule (§24). A complete error *response* is simply an error document in its own framing unit.
+
+> **Forward note (v0.4):** The label convention is scheduled to be replaced by a dedicated error root marker, making Error a first-class document mode alongside `#`, `#!`, `#?`, `#-` (mode `error` in the envelope, label freed for the error classification, e.g. `#~ ValidationError`). Working candidate: `#~`; final character choice follows the marker-generation benchmark planned for the next benchmark wave. See ROADMAP.
 
 **Error code vocabulary:** JMD deliberately does not define a standard set of error codes. Error codes are domain-specific — a database API, an e-commerce platform, and a medical records system have fundamentally different failure modes. The `code` field carries whatever snake_case identifier the server defines. Common conventions (`not_found`, `validation_failed`, `unauthorized`, `rate_limited`) will emerge naturally through usage, not through specification mandate.
 
@@ -1760,6 +1854,18 @@ Each item in `errors[]` carries `field` (the path to the offending field), `reas
 ## 18. Streaming
 
 JMD is designed to be streamed and parsed incrementally. This is not an optional feature or a compatibility mode — it is a structural consequence of the format's syntax, and one of its most significant architectural advantages over JSON for LLM-native systems.
+
+### 18.0 The One-Document Rule
+
+A JMD byte sequence — a file, an HTTP body, an SSE event payload, an MCP message — contains **exactly one document**. Multiplexing multiple documents is the transport's job, not the format's: SSE frames events, MCP frames messages, HTTP frames responses. One framing unit, one document. (This is the same layering that NDJSON applies to JSON: the line is the frame; the format itself stays single-valued.)
+
+Normative consequences:
+
+- After the root heading, a second labelled depth-1 heading or a mode marker (`#!`, `#?`, `#-`) MUST be rejected with a parse error. It MUST NOT be silently ignored, and it MUST NOT open a second document.
+- An *anonymous* `#` at depth 1 remains the level-pop to root scope (§8.6) — with the one-document rule, this reading is unambiguous.
+- A parser encountering EOF or transport termination with open scopes closes them implicitly (§18.2); whether the truncated document is *acted upon* is governed by the truncation-safety rule (§24).
+
+This rule also has a security effect: structural markers injected into the middle of a document (for example a smuggled `#- Order` line) produce a parse error instead of a second, destructive document — failure instead of data loss. See §24.
 
 ### 18.1 Why JSON is Streaming-Hostile
 
@@ -1832,7 +1938,7 @@ FIELD           total = 84.99              (bare root-level field)
 DOCUMENT_END
 ```
 
-The parser maintains a scope stack driven by heading depth and blank-line scope resets. No indentation tracking, no look-ahead, no buffering for closing delimiters.
+The parser maintains a scope stack driven by heading depth and blank-line scope resets. No indentation tracking and no buffering for closing delimiters. A single line of lookahead is required in exactly one case: a blank line inside an array body defers its scope decision until the next non-blank line is known — cosmetic before an array item, `SCOPE_RESET` otherwise (§11.1 rule 9). No other construct requires lookahead.
 
 ### 18.2a Streaming Advantage by Payload Size
 
@@ -2035,15 +2141,15 @@ JSON established itself as the dominant API format in an era when APIs were cons
 
 JMD exists in a world where JSON is deeply entrenched in LLM pretraining data. A fair evaluation must address the question: does JSON's familiarity give it an inherent advantage that a new format cannot overcome?
 
-**Minification is not a practical alternative.** The efficiency argument must distinguish input from output. For **output**, minification is simply unavailable: LLMs cannot reliably produce minified JSON even when explicitly instructed — they reproduce the pretty-printed patterns learned during training. Five of six LLMs tested revert to pretty-printed JSON regardless of instruction. For **input**, minification does reduce token count compared to pretty-printed JSON — and true minified JSON has marginally fewer tokens than JMD for static serialization (~12% fewer). However, APIs return pretty-printed JSON by default, making pretty-printed the real-world baseline. Against that baseline, JMD achieves 19–29% fewer input tokens. Crucially, once structured data has been parsed and sits in the LLM's context window, the reasoning cost is identical regardless of source format — the efficiency advantage is captured entirely at the tokenization boundary.
+**Minification is not a practical alternative.** The efficiency argument must distinguish input from output. For **output**, minification is simply unavailable: LLMs cannot reliably produce minified JSON even when explicitly instructed — they reproduce the pretty-printed patterns learned during training. Five of six LLMs tested revert to pretty-printed JSON regardless of instruction. For **input**, minification does reduce token count compared to pretty-printed JSON — and true minified JSON has marginally fewer tokens than JMD for static serialization (~12% fewer). However, APIs return pretty-printed JSON by default, making pretty-printed the real-world baseline. Against that baseline, JMD achieves on average 19% fewer input tokens (10–22% depending on model tokenizer). Crucially, once structured data has been parsed and sits in the LLM's context window, the reasoning cost is identical regardless of source format — the efficiency advantage is captured entirely at the tokenization boundary.
 
-**JMD's efficiency is structural, not cosmetic.** JMD reduces tokens not by stripping whitespace from the same structure, but by eliminating structural overhead entirely: headings replace nested brace pairs, bare keys replace quoted keys, line breaks replace comma-delimiters. This delivers token savings at both ends — as consumed input and as generated output — making it the only format that is simultaneously efficient and reliably generatable by LLMs.
+**JMD's efficiency is structural, not cosmetic.** JMD reduces tokens not by stripping whitespace from the same structure, but by eliminating structural overhead entirely: headings replace nested brace pairs, bare keys replace quoted keys, line breaks replace comma-delimiters. This delivers token savings at both ends — as consumed input and as generated output — combined with a property no tabular encoding offers: every completed line is independently parseable, so efficiency does not come at the cost of streamability (Section 18).
 
 **The training-data advantage is conceptual, not syntactic.** LLMs have deeply internalized the *concept* of structured data serialization — not the specific syntax of JSON. They can fluently produce novel serialization formats with no measurable penalty, as long as the structural concepts (hierarchy, fields, collections) map to familiar patterns. JMD's Markdown-based syntax maps directly to patterns that LLMs have deeply internalized from training data: headings for hierarchy, `key: value` for fields, `- ` for list items. JMD does not face a syntax-familiarity penalty — it leverages the same deep capability that makes JSON work.
 
 **Three design pillars** emerge as structural consequences of the same underlying choice — hierarchy through Markdown headings rather than through matched delimiters:
 
-1. **Compute efficiency through structural simplification.** JMD reduces token count at both ends of the pipeline — as input (19–29% fewer tokens than pretty-printed JSON, the real-world default) and as output (the only efficient format LLMs can reliably generate). The mechanism is structural: headings replace nested brace pairs, bare keys replace quoted keys, line breaks replace comma-delimiters. Every GPU-millisecond saved per request compounds at infrastructure scale.
+1. **Compute efficiency through structural simplification.** JMD reduces token count at both ends of the pipeline — as input (on average 19% fewer tokens than pretty-printed JSON, the real-world default) and as output (an efficient form LLMs generate reliably, where minified JSON fails). The mechanism is structural: headings replace nested brace pairs, bare keys replace quoted keys, line breaks replace comma-delimiters. Every GPU-millisecond saved per request compounds at infrastructure scale.
 
 2. **Streaming.** Every completed JMD line is immediately parseable. Truncated output degrades gracefully — a partial JMD document contains all fields received so far. JSON cannot offer this without non-standard extensions or workarounds.
 
@@ -2100,7 +2206,7 @@ If an application needs annotations that travel with the data, the correct JMD a
 
 **Sorting (ORDER BY):** An LLM can sort any result set as a reasoning step. Formalizing sort syntax in QBE would add grammar productions and require the LLM to learn an ordering convention (`_sort: -date`, `+name`?) that varies across every existing query language. Since QBE's purpose is domain reduction — narrowing the result set to context-window size — sort order is irrelevant to that goal. The LLM sorts the reduced set itself, in whatever order its task requires.
 
-**A JMD-normative query language:** Earlier drafts of this specification prescribed a specific QBE dialect as part of §13 (regex-based pattern matching, explicit comparison operators, `~` contains, `!` negation, `?` projection). In v0.3.2 the normative prescription was withdrawn: JMD is a carrier format, and the interpretation of filter expressions is application-defined. The common dialect that was previously normative is preserved non-normatively in Appendix A.1. Freezing one dialect as required would have excluded applications whose backends use different filter semantics (SQL, MongoDB, Firestore, OData, SmartSuite, GraphQL), which is exactly the over-specification this revision corrects.
+**A JMD-normative query language:** Earlier drafts of this specification prescribed a specific QBE dialect as part of §13 (regex-based pattern matching, explicit comparison operators, `~` contains, `!` negation, `?` projection). In v0.3.2 the normative prescription was withdrawn: JMD is a carrier format, and the interpretation of filter expressions is application-defined. The common dialect that was previously normative is preserved non-normatively in Appendix A.1. Freezing one dialect as required would have excluded applications whose backends use different filter semantics (SQL, MongoDB, Firestore, OData, GraphQL), which is exactly the over-specification this revision corrects.
 
 **Fenced code blocks for multiline strings:** An earlier version of JMD included fenced code blocks (triple-backtick delimiters) as a second multiline string form alongside blockquotes. Fenced blocks were intended for raw text — code, config, logs — where Markdown interpretation should be suppressed. They were removed in v0.3 for a fundamental reason: fenced blocks are the only Markdown construct that uses matched delimiters (an opening fence and a closing fence). This directly contradicts JMD's core anti-delimiter principle — the same principle that motivates the elimination of `{}`, `[]`, and `()` throughout the format. More importantly, matched delimiters break the streaming guarantee: a parser must buffer all content between the opening and closing fence, unable to emit any events until the closing fence arrives. Every other JMD construct is a position marker — a line that self-identifies its role without reference to any future line. Fenced blocks are the sole exception, and removing them makes JMD's streaming guarantee complete and unconditional. Blockquotes handle all multiline use cases, including code and raw text. The `>` prefix on each line is a position marker, not a delimiter pair, and each line can be processed independently as it arrives.
 
@@ -2146,13 +2252,13 @@ If an application needs annotations that travel with the data, the correct JMD a
 
 **Why QBE for queries?** QBE is not a query language — it is a domain reduction mechanism. Its purpose is to narrow a potentially large result set to a size that fits the LLM's context window. The LLM then performs precise filtering, sorting, aggregation, and transformation as reasoning steps on the reduced set. This distinction is fundamental: a query language must be complete and exact (every expressible query must return exactly the right rows); a domain reduction mechanism only needs to be *sufficient* (the result set must be small enough and must contain the relevant data). This dramatically lowers the bar for what QBE syntax must express. The LLM does not need `ORDER BY` because it can sort. It does not need `GROUP BY` because it can aggregate. It does not need subqueries because it can issue sequential calls. QBE handles the one thing the LLM cannot do for itself: tell the server which subset of data to transmit.
 
-**Why no JMD-normative sub-language for filter and type expressions?** Queries and schemas are both cases where a field value carries a *sub-language expression* (a filter condition, a type specifier) rather than a plain data value. The temptation is to formalize the sub-language in the JMD spec and require parsers to return a structured representation. Earlier drafts did this in §13 and §14, with EBNF grammars and prescribed vocabularies. This was wrong for three compounding reasons: (1) *Applications have genuinely different needs.* A SmartSuite adapter, a TypeScript codegen, a SQL adapter, and an OData bridge each require a different filter and type representation to map cleanly to their target backend — no single spec-mandated AST can serve all of them without imposing conversion overhead on every consumer. (2) *We cannot anticipate future needs.* The set of applications that will consume JMD is unbounded. A frozen AST shape excludes every application whose requirements were not foreseen at spec-authorship time — a prognosis the spec has no business making. (3) *Token inflation defeats JMD's own purpose.* A structured AST for `total: > 50` inflates from ~10 characters to ~70 characters in serialized form, directly contradicting JMD's token-efficiency mandate; and LLMs naturally write the string form, not the AST form, so the AST is a layer of *added* translation cost with no originating benefit. The correct layering is: JMD delivers the document structure and string contents; the application interprets the sub-language strings per its own needs. Common conventions for both QBE and schema are collected non-normatively in Appendix A.
+**Why no JMD-normative sub-language for filter and type expressions?** Queries and schemas are both cases where a field value carries a *sub-language expression* (a filter condition, a type specifier) rather than a plain data value. The temptation is to formalize the sub-language in the JMD spec and require parsers to return a structured representation. Earlier drafts did this in §13 and §14, with EBNF grammars and prescribed vocabularies. This was wrong for three compounding reasons: (1) *Applications have genuinely different needs.* A CRM adapter, a TypeScript codegen, a SQL adapter, and an OData bridge each require a different filter and type representation to map cleanly to their target backend — no single spec-mandated AST can serve all of them without imposing conversion overhead on every consumer. (2) *We cannot anticipate future needs.* The set of applications that will consume JMD is unbounded. A frozen AST shape excludes every application whose requirements were not foreseen at spec-authorship time — a prognosis the spec has no business making. (3) *Token inflation defeats JMD's own purpose.* A structured AST for `total: > 50` inflates from ~10 characters to ~70 characters in serialized form, directly contradicting JMD's token-efficiency mandate; and LLMs naturally write the string form, not the AST form, so the AST is a layer of *added* translation cost with no originating benefit. The correct layering is: JMD delivers the document structure and string contents; the application interprets the sub-language strings per its own needs. Common conventions for both QBE and schema are collected non-normatively in Appendix A.
 
 **Why regex autodetection was removed (v0.3.2).** The earlier §13.3 specified: *a value containing regex metacharacters (`|`, `.`, `*`, `+`, `?`, `^`, `$`, `[`, `]`, `(`, `)`, `\`) is interpreted as a regex pattern.* A common LLM input like `name: Max.Mustermann` (a personal name with a literal dot) would silently become a regex where the dot matches any character, producing surprise matches. The autodetection rule failed the AI-Whispering test: it interpreted natural LLM output against the LLM's actual intent. v0.3.2 removes this mechanism entirely — not only from the normative spec but also as a recommended convention. Applications that need regex-based filters SHOULD signal regex intent explicitly (e.g., a `~re:` prefix or `/.../ `-style delimiters), not via content sniffing.
 
 **Why free-form fields in error documents?** Error documents serve two audiences: machines (routing, retry logic, monitoring) and LLMs (understanding what went wrong and how to recover). The `status` and `code` fields serve machines; `message`, `suggestion`, and `context` serve LLMs. Like the epistemic `source` field in frontmatter, the free-form error fields carry the generator's perspective rather than a standardized vocabulary. A database server writes `suggestion: Check foreign key constraints`; an LLM-powered API writes `suggestion: The customer name looks like a typo — did you mean "Müller"?`. Prescribing the content of these fields would suppress the very information that makes them valuable. The error code vocabulary is similarly left to domain convention rather than specification mandate, because error taxonomies are inherently domain-specific and will converge through usage patterns rather than top-down standardization.
 
-**Why no comments?** JMD deliberately omits comments. Every other JMD construct maps bijectively to JSON; comments would be the sole exception — silently discarded during serialization, invisible in the JSON roundtrip, yet adding parser complexity at every grammar level. JMD's primary audience is LLMs, which read all tokens and gain nothing from out-of-band annotations. Where metadata about data is valuable, it belongs in a data field (`_note: ...`) that survives serialization. See Section 18 for the full rationale.
+**Why no comments?** JMD deliberately omits comments. Every other JMD construct maps bijectively to JSON; comments would be the sole exception — silently discarded during serialization, invisible in the JSON roundtrip, yet adding parser complexity at every grammar level. JMD's primary audience is LLMs, which read all tokens and gain nothing from out-of-band annotations. Where metadata about data is valuable, it belongs in a data field (`_note: ...`) that survives serialization. See Section 20 for the full rationale.
 
 **Why is frontmatter an open extension point?** JMD's frontmatter channel carries transport-level metadata that the implementation — not the format — interprets. Different backends have fundamentally different metadata needs: a query server uses `page` and `page-size` for pagination; a database adapter uses `group` and `sum` for aggregation; an LLM generator uses `confidence` and `source` for epistemic self-assessment. Prescribing a fixed vocabulary would force every implementation to work within a common denominator that fits none of them well. An open channel lets each implementation define exactly the keys it needs, without format changes. The epistemic conventions (`confidence`, `source`, `uncertain`) are a particularly valuable example: LLMs operate with personas and have a contextual self-understanding of how they arrived at each piece of data. Providing a channel for this self-assessment — rather than suppressing it into prose — makes the metadata honest and machine-processable. But these are conventions, not format definitions. `source` is deliberately free-form: a RAG agent writes `source: vector search, 3 documents matched`; a database adapter writes `source: postgresql`; a medical assistant writes `source: clinical guidelines 2024`. The receiver interprets this contextually. Forcing diverse generator perspectives into a fixed enum would lose the very information that makes the field valuable.
 
@@ -2198,7 +2304,7 @@ This is not a loose guideline — it is a formal conformance requirement. JMD de
 
 - Root headings MUST include a label (e.g., `# Order`, not bare `#` followed by a space)
 - Root markers `#?`, `#!`, and `#-` MUST be followed by a space and a label
-- Array items SHOULD use bare `-` when unambiguous; a thematic break (`---`) MUST be emitted between items that contain nested sub-structures (Section 8.6); depth-qualified items (`## -`) MAY be used as an alternative
+- Array items MUST use bare `-`; a level-pop (anonymous heading at the array's heading depth) MUST be emitted after any record that opened a nested sub-structure and is followed by further records (Section 8.6); `---` and depth-qualified items (`## -`) are parser tolerance only and MUST NOT be emitted
 - Blank lines SHOULD be used intentionally for scope reset, not inserted arbitrarily
 - Keys and values MUST be correctly quoted per Sections 4.2 and 6
 - Scalar values (bare or quoted) SHOULD NOT contain inline Markdown formatting (`**bold**`, `*italic*`, `` `code` ``, `[text](url)`, `~~strike~~`); rich-text content belongs in the blockquote multiline form (Sections 5.1, 9.1)
@@ -2207,9 +2313,9 @@ Strict generation ensures maximum interoperability and minimizes the parsing eff
 
 **Parser conformance (tolerant).** A conforming JMD parser MUST accept all documents that a strict generator would produce, and additionally MUST accept the following variations that LLMs naturally produce:
 
-- **Anonymous headings** (Section 3.2a): headings with empty labels at any depth
-- **Thematic breaks** (Section 8.6): `---` as item separator in arrays with nested sub-structures
-- **Depth-qualified array items** (Section 8.6a): `## -` as an alternative to thematic breaks for starting new items in outer arrays
+- **Anonymous root headings** (Section 3.2a): a root heading with an empty label opens the root scope; at depth ≥ 2 an anonymous heading is a level-pop (Section 8.6), part of the canonical grammar rather than a tolerance
+- **Thematic breaks** (Section 8.6): `---` within an array body is consumed as decoration and has no structural effect
+- **Depth-qualified array items** (Section 8.6a): `## -` as an alternative to the level-pop for starting new items in outer arrays
 - **Depth+1 array items** (Section 8.6b): items written one heading level deeper than the array heading, even when bare `-` would be unambiguous
 - **Cosmetic blank lines before headings**: blank lines followed by a heading have no additional effect beyond the heading's own scope semantics
 - **Cosmetic blank lines between array items**: blank lines followed by `-` within an array body are visual separators, not scope resets
@@ -2227,9 +2333,10 @@ An implementation claiming **JMD v0.3** conformance must:
 - Correctly track heading depth and maintain a scope stack to determine field ownership.
 - Treat blank lines as scope reset to root level, except within array bodies where a blank line followed by `-` is cosmetic.
 - Support bare fields within scope and scalar headings for scope return.
-- Support anonymous headings with empty labels (Section 3.2a).
-- Support thematic breaks (`---`) as array item separators for arrays with nested sub-structures (Section 8.6).
-- Support depth-qualified array items (`## -`, `### -`, etc.) as an alternative to thematic breaks (Section 8.6a), including depth+1 items as described in Section 8.6b.
+- Support anonymous root headings with empty labels (Section 3.2a).
+- Support level-pops: an anonymous heading at depth *D* returns to the scope established at depth *D*, closing all deeper scopes in a single step (Section 8.6), including multi-level pops.
+- Consume thematic breaks (`---`) within array bodies as decoration, without structural effect (Section 8.6).
+- Support depth-qualified array items (`## -`, `### -`, etc.) as an alternative to the level-pop (Section 8.6a), including depth+1 items as described in Section 8.6b.
 - Support anonymous sub-array headings (`### []`, `#### []`, etc.).
 - Support multiline string values in blockquote form (Section 9).
 - Support document frontmatter: fields before the first heading are document-level metadata, not serialized into JSON (Section 3.5). Unknown frontmatter fields MUST be preserved in the parsed frontmatter map and surfaced to the application layer. The parser MUST NOT reject them, and MUST NOT drop them before the application can inspect them. Silent drop at the parser layer is non-conformant; the decision whether to silently tolerate, echo, or reject an unknown frontmatter key belongs to the application layer (Section 3.5).
@@ -2242,7 +2349,8 @@ An implementation claiming **JMD v0.3** conformance must:
 
 Recommended test cases:
 
-- **Anonymous headings:** root heading with empty label, nested heading with empty label (Section 3.2a)
+- **Anonymous headings:** root heading with empty label opens the root scope (Section 3.2a); anonymous heading at depth ≥ 2 acts as a level-pop, never opens an object (Section 8.6)
+- **Empty-string key:** `## ""` (quoted empty key) opens a nested object keyed by `""` — the only representation of `{"": …}` (Section 3.2a)
 - **Strings with escapes:** `\"`, `\\`, `\n`, `\t`, `\uXXXX`, and literal backslash in bare strings
 - **Empty structures:** empty root object, empty root array, empty nested object, empty nested array
 - **Deep nesting:** objects nested 5+ levels using heading depth
@@ -2254,7 +2362,10 @@ Recommended test cases:
 - **Object item with first field:** `- sku: A1` followed by indented `qty: 2` on next line
 - **Object vs. scalar disambiguation:** `- "name: Alice"` as scalar string vs. `- name: Alice` as object
 - **Indented continuation fields:** `- sku: A1` followed by `  qty: 2` and `  price: 29.99` on indented lines
-- **Indentation depth insignificant:** 2 spaces, 4 spaces, and mixed indentation all parsed as continuation fields
+- **Indentation depth insignificant:** 1 space, 2 spaces, 4 spaces, a single tab, and mixed space/tab indentation all parsed as continuation fields (§11.2)
+- **Line endings:** every data fixture in CRLF form parses to the same value as its LF form; a lone CR (not followed by LF) is a parse error (§11.2)
+- **BOM:** a document with a leading U+FEFF parses identically to the same document without it; serializer output never begins with U+FEFF (§11.2)
+- **Trailing whitespace:** `key: value  ` (trailing spaces) parses to `"value"`; a value with significant trailing whitespace roundtrips only as a quoted string (§11.2)
 - **Depth+1 array items:** `## - name: Widget` for items in a `# products[]` array, even without nesting ambiguity (Section 8.6b)
 - **Frontmatter (request):** `page: 1` and `page-size: 50` before `#? Order` heading are parsed as metadata, not serialized into JSON
 - **Frontmatter (response):** `total: 4832`, `page: 1`, `pages: 97`, `page-size: 50` before `# Orders` heading are parsed as response metadata, not as body fields of the Orders document
@@ -2265,11 +2376,13 @@ Recommended test cases:
 - **Application-layer strict refusal is conformant:** an application that rejects a delete operation carrying an unrecognized directive key (e.g. `dry-run: true` on `#- Order`) with a `# Error` response is spec-conformant — the parser accepted the key, the application declined to act on it (Section 3.5)
 - **Ignored-keys echo (short form):** a response carrying `ignored-keys: foo, bar` before the root heading is a valid observable-tolerance response
 - **Ignored-keys echo (long form):** a response carrying `## ignored-keys[]` with `- foo` and `- bar` items before the root heading is equally valid (Section 23.7)
-- **Thematic break separator:** `---` between items of an array with nested sub-structures (Section 8.6)
-- **Thematic break roundtrip:** serialize array of objects with nested lists, parse back, verify lossless
-- **Thematic break with blank lines:** `---` preceded and followed by blank lines is correctly parsed
-- **Thematic break in nested array:** `---` does not affect inner scalar arrays (e.g., Members array breaks before `---`)
-- **No thematic break for flat arrays:** serializer does not emit `---` between items of flat object arrays
+- **Level-pop returns to outer array:** anonymous `#`×*D* after a nested sub-structure starts the next item of the depth-*D* array (Section 8.6)
+- **Multi-level pop:** a single anonymous heading pops through multiple open scopes to its declared depth (Section 8.6)
+- **Level-pop roundtrip:** serialize array of objects with nested lists, parse back, verify lossless — serializer emits the level-pop, never `---`
+- **Thematic break skipped:** `---` within an array body is skipped without structural effect (Section 8.6)
+- **Thematic break with blank lines:** `---` preceded and followed by blank lines is equally skipped
+- **Thematic break in nested array:** `---` inside an inner array body does not close or split the inner array
+- **Serializer never emits `---`:** no thematic break appears in serializer output for any array shape
 - **Depth-qualified items with first field:** `## - name: B` after nested arrays (backward compatibility, Section 8.6a)
 - **Depth-qualified items:** `## -` after nested arrays within array-of-objects (backward compatibility)
 - **Anonymous sub-arrays:** `### []` within `## matrix[]`
@@ -2365,7 +2478,7 @@ page-size: 50
   ...
 ```
 
-**Why `page-size` and not `size` or `limit`?** Frontmatter is an open extension point — any implementation may define keys for its own needs. Generic names like `size` or `limit` carry no inherent binding to pagination: `size` could equally mean maximum response size in bytes, maximum expand depth, or maximum error count; `limit` is similarly overloaded across rate limiting, result caps, and resource quotas. A key that could mean anything is ambiguous at best and, at worst, blocks future conventions from using the same name for a legitimately different purpose. The name `page-size` is self-documenting and context-bound: it can only mean the number of records per page. This is consistent with JMD's broader naming philosophy — preferring readable, unambiguous identifiers over terse ones (cf. `optional` instead of `?`, `readonly` instead of a sigil in §10).
+**Why `page-size` and not `size` or `limit`?** Frontmatter is an open extension point — any implementation may define keys for its own needs. Generic names like `size` or `limit` carry no inherent binding to pagination: `size` could equally mean maximum response size in bytes, maximum expand depth, or maximum error count; `limit` is similarly overloaded across rate limiting, result caps, and resource quotas. A key that could mean anything is ambiguous at best and, at worst, blocks future conventions from using the same name for a legitimately different purpose. The name `page-size` is self-documenting and context-bound: it can only mean the number of records per page. This is consistent with JMD's broader naming philosophy — preferring readable, unambiguous identifiers over terse ones (cf. `optional` instead of `?`, `readonly` instead of a sigil in Appendix A.2.2).
 
 ### 23.2 Count Mode
 
@@ -2442,7 +2555,7 @@ sort: total desc
 
 ### 23.5 Linked Record Expansion
 
-When a document contains fields that reference other records (see Section 20, entity references), the caller MAY request inline resolution of those references using the `expand` frontmatter key.
+When a document contains fields that reference other records (see Appendix A.2.6, entity references), the caller MAY request inline resolution of those references using the `expand` frontmatter key.
 
 **Request frontmatter:**
 
@@ -2544,6 +2657,54 @@ Either form is valid. A consumer SHOULD accept both.
 | `ignored-keys` | response | Frontmatter keys received by the application and not acted on (Section 23.7) |
 
 All request keys appear before the root heading. All response keys appear before the root heading. Unknown keys in either direction MUST be preserved by the parser and passed to the application layer (Section 3.5); the application then chooses silent tolerance, observable tolerance (Section 23.7), or strict refusal based on the operation's destructiveness.
+
+---
+
+## 24. Security Considerations
+
+This section is the normative security reference for JMD. Companion documents (the IANA media-type registration, the Internet-Draft, transport proposals) reference this section rather than defining their own.
+
+### 24.1 Structure Injection in Naive Generation
+
+This is the JMD-specific risk. JMD assigns structural meaning to *line starts*: headings, mode markers, `- ` items, frontmatter position. A generator that interpolates untrusted text (user input, scraped web content, upstream tool output) into a JMD document without quoting hands that text structural power. An attacker-supplied string containing a newline followed by `# `, `#- `, or a `key: value` line can inject headings, fields, frontmatter directives (including epistemic signals such as `confidence: high`), or an attempted mode switch.
+
+**Normative requirements:**
+
+- Untrusted content MUST be emitted as quoted strings with RFC 8259 escaping (§6). A generator MUST NOT interpolate untrusted text into bare-value, key, label, or frontmatter position.
+- The one-document rule (§18.0) bounds the damage of a missed quoting step: an injected root heading or mode marker mid-document is a parse error, not a second (potentially destructive) document. Failure replaces silent data loss — but the parse error is still a denial of the operation, so quoting remains mandatory.
+
+Example — a comment field naively interpolated:
+
+```text
+comment: Nice article!
+#- Order
+```
+
+A conforming generator emits instead: `comment: "Nice article!\n#- Order"` — inert data.
+
+### 24.2 Delete Documents in Pipelines
+
+A `#-` document carries destructive intent *in the document itself*. It can traverse queues, logs, and relay agents, and act wherever it is eventually interpreted — a confused-deputy and replay risk unique to the delete mode. Sinks SHOULD execute `#-` documents only from sources on an explicit allowlist and respond with strict refusal (§23.7, §17) otherwise. Archived or logged `#-` documents SHOULD be treated as sensitive to replay.
+
+### 24.3 Parser Resource Consumption
+
+A conforming parser processes documents in O(n) time and O(d) stack depth (n = document length, d = maximum heading depth; implementations using key interning add O(k) memory for k distinct keys). The *grammar* places no limit on heading depth, line length, blockquote length, or field count (§21.1) — these are format properties, not implementation obligations. Implementations SHOULD enforce practical, configurable bounds (a reasonable default depth bound is 32) to prevent stack exhaustion and memory abuse from adversarial inputs. Rejecting a document that exceeds a resource bound is a resource-limit error, not a conformance violation.
+
+### 24.4 Content Confusion with Markdown
+
+JMD and Markdown share surface syntax. A receiver that renders a JMD document as Markdown produces misleading output; note also that JMD is *not* guaranteed to be valid CommonMark (heading depth beyond 6; the mode markers `#!`, `#?`, `#-` are not ATX headings — see §1). Implementations MUST dispatch on the declared media type (`application/jmd`), never on content sniffing.
+
+### 24.5 No Active Content
+
+JMD has no scripting, template expansion, external reference resolution, schema-validation directives, or anchor/alias mechanism. Parsing a JMD document does not trigger network access, code execution, or I/O. This matches the JSON security model. (Injection into *downstream* rendering contexts — HTML, SQL, shell — is the receiver's escaping responsibility, exactly as with JSON.)
+
+### 24.6 Privacy
+
+JMD documents are opaque structured data: no fragment identifiers, no implicitly-resolved references or URIs. URI-valued fields are application data; no conforming parser follows them.
+
+### 24.7 Streaming Truncation Safety
+
+Every completed line is independently parseable (§18), so a receiver may act on a document before it is complete. Implementations that act on streaming data MUST ensure such actions are safe under truncation — for example, committing a database write only when the framing unit terminates cleanly. A truncated document plus a transport error signal MUST NOT be treated as a complete document (§17, §18.0).
 
 ---
 
@@ -2794,4 +2955,4 @@ Applications whose backends need richer type systems (discriminated unions, gene
 
 ---
 
-*JMD Specification v0.3.4 – Draft*
+*JMD Specification v0.3.5*

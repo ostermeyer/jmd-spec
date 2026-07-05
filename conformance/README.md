@@ -88,13 +88,17 @@ the error's structured description matches the expected `kind` and
 `line`. Error message wording and exception class identity are
 implementation-specific.
 
-The canonical error kinds for v0.3.3 are:
+The canonical error kinds for v0.3.5 are:
 
 | `kind` | Specification section |
 |---|---|
 | `sigil_conflict` | §7.4.2(a) |
 | `repeated_explicit_array` | §7.4.2(b) |
 | `repeated_scalar_key` | §7.4.2(c) |
+| `prose_in_body` | §3.6.2, §11.2 |
+| `lone_carriage_return` | §11.2 |
+| `second_root_heading` | §18.0 |
+| `mode_marker_mid_document` | §18.0 |
 
 Additional kinds will be added as the specification gains new
 structured-error categories.
