@@ -96,6 +96,7 @@ The canonical error kinds for v0.3.5 are:
 | `repeated_explicit_array` | §7.4.2(b) |
 | `repeated_scalar_key` | §7.4.2(c) |
 | `prose_in_body` | §3.6.2, §11.2 |
+| `no_root_heading` | §3.1, §11.2 — no valid column-0 root heading (e.g. indented root) |
 | `lone_carriage_return` | §11.2 |
 | `second_root_heading` | §18.0 |
 | `mode_marker_mid_document` | §18.0 |
