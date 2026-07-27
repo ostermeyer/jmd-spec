@@ -149,12 +149,13 @@ Serializes to:
 
 Bare fields immediately after `#` belong to the root object. No `##` prefix is needed for simple scalar fields at root level — though `##` may be used to explicitly mark top-level fields. After a deeper heading has opened a nested scope, there are two ways to return to root scope: a `##` scalar heading (see Section 7.2) or a blank line (see Section 7.2a).
 
-### 3.2a Anonymous Headings (Empty Labels)
+### 3.2a Anonymous Headings (Level-Pops)
 
-A heading with no label text — e.g., a line containing only `#` characters, optionally followed by trailing whitespace — is a valid **anonymous heading**. Its meaning depends on depth:
+A heading with no label text — a line containing only `#` characters, optionally followed by trailing whitespace — is an **anonymous heading**. It is valid only after the document root has already been established.
 
-- **At root level (`#`):** an anonymous heading is equivalent to any labeled root heading — it opens the root scope, with the empty string as the label. Since root labels carry no serialization semantics (§3.2.1), this imposes no ambiguity.
-- **At depth ≥ 2 (`##`, `###`, …):** an anonymous heading is a **level-pop** (§8.6): it *returns to* the scope already established at that depth, closing all deeper scopes. It never opens a nested object.
+The document's first structural heading is its **root heading**. A root object MUST carry a non-empty label, and a root array MUST carry either a non-empty label plus the `[]` sigil or use a sigil-only root-array form such as `# []`. A bare `#` as the root heading is structurally invalid and MUST be rejected with `no_root_heading`. Frontmatter before it does not change this rule. Sigil-only root arrays (`# []`, `#? []`, `#! []`, `#- []`) are not anonymous headings: `[]` explicitly declares the root value's structure.
+
+After a valid root heading, an anonymous heading at depth *D* is a **level-pop** (§8.6): it returns to the scope already established at depth *D*, closing all deeper scopes. This applies at every valid depth, including `#` at depth 1. An anonymous heading never opens a nested object and never establishes a document root.
 
 To represent an object keyed by the empty string — `{"": …}` — use a **quoted empty key** as the heading label: `## ""`. Quoted keys in headings follow the same JSON string escaping rules as quoted field keys (§4.2). This keeps the JSON↔JMD bijection intact:
 
@@ -170,19 +171,7 @@ Serializes to:
 {"": {"x": 1}}
 ```
 
-```markdown
-#
-id: 42
-status: pending
-```
-
-Serializes to:
-
-```json
-{"id": 42, "status": "pending"}
-```
-
-**Rationale:** LLMs sometimes produce root headings without labels, where the label is semantically irrelevant; a parser that rejects them would fail on syntactically reasonable output. A conforming parser MUST accept anonymous root headings. A conforming generator SHOULD produce a labeled root heading for readability, but MAY produce an anonymous one when no meaningful label exists. At depth ≥ 2, the anonymous heading is not a tolerance but part of the canonical grammar: it is the level-pop that a conforming serializer MUST emit to return to an outer array scope (§8.6, §22.1). Earlier drafts (≤ v0.3.3) instead defined a deep anonymous heading as opening a nested object keyed by `""`; that semantics was withdrawn in v0.3.4 in favor of the level-pop, and the `""`-keyed object is now expressed by the quoted empty key shown above.
+**Rationale:** A root heading is the document's sole framing and mode-bearing heading, so omitting its label is a structural omission rather than harmless Markdown variation. Once the root exists, anonymous headings have one unambiguous purpose: they are level-pops that a conforming serializer emits when returning to an outer array scope (§8.6, §22.1). Earlier drafts (≤ v0.3.3) instead defined a deep anonymous heading as opening a nested object keyed by `""`; that semantics was withdrawn in v0.3.4 in favor of the level-pop, and the `""`-keyed object is now expressed by the quoted empty key shown above.
 
 ### 3.2.1 Label Namespacing
 
@@ -359,7 +348,7 @@ The envelope is the single entry point of the parser API. Applications that need
 
 - The mode-mark character (`!`, `?`, `-`) is stripped — it is already carried in `mode`.
 - A trailing `[]` sigil is stripped — the array nature of the body is carried by `value` being a list.
-- The empty string `""` is a valid label. Anonymous root headings (`#`, `# []`, `#- []`) all produce `label: ""`.
+- The empty string `""` is a valid normalized label for sigil-only root arrays: `# []`, `#? []`, `#! []`, and `#- []` all produce `label: ""`. A bare `#` is invalid and is not another spelling of an empty label.
 
 **`frontmatter`** is the map of frontmatter fields preserved verbatim (Section 3.5). Scalar values are parsed per Section 5; bare-key frontmatter (a line containing only a key with no `:`) is encoded as the boolean `true`. When the document has no frontmatter, `frontmatter` is the empty object `{}` — never `null`, never absent.
 
@@ -1354,9 +1343,6 @@ mode_mark       ::= "?" | "!" | "-"
                         heading only; mid-document they are a parse error
                         (§18.0). Note: the marker forms are not CommonMark
                         ATX headings — see §1 and §24.4.
-                        tolerance: an anonymous root heading (bare "#") is
-                        accepted and opens the root scope with an empty
-                        label — §3.2a, §22.1. *)
 
 (* ===== Frontmatter ===== *)
 (* Fields before the first heading are document-level metadata.
@@ -1506,7 +1492,6 @@ BOM             ::= U+FEFF            (* at document start only: consumed and ig
    part of the canonical generator language and have no productions here:
    - thematic breaks '---': skipped as decoration within array bodies
      (§8.6); tolerated around the frontmatter block (§3.5.1)
-   - anonymous root heading (bare '#'): opens root scope — §3.2a
    - array promotion: repeated sibling headings without '[]' promote to an
      array, subject to the three must-fail conditions — §7.4
    - depth-qualified / depth+1 items: see depth_item above — §8.6a, §8.6b
@@ -1520,17 +1505,18 @@ BOM             ::= U+FEFF            (* at document start only: consumed and ig
 A JMD parser maintains a **scope stack** — a stack of open scopes, each tagged with its heading depth and type (object or array). The parser processes lines as follows:
 
 0. **Frontmatter** (lines before the first heading): Any `key: value` or bare `key` lines encountered before the first `#` heading are document-level metadata (see Section 3.5). They are stored separately and not serialized into the JSON output.
-1. **Heading line** (`#`+ space ...): Determine heading depth N. Pop all scopes with depth ≥ N. Open a new scope at depth N.
-2. **Bare field** (`key: value`): Add field to the innermost open object scope.
-3. **Bare field with empty value** (`key:`): If the next line starts with `>`, enter multiline mode for this field (see rule 7).
-4. **`- key: val`** (object item): Start a new item in the innermost open array scope with its first field. If content after `- ` matches `key: value` pattern, it is an object item; otherwise it is a scalar item (`- value`). Additional fields follow as indented continuation lines (see rule 8).
-5. **Bare `-`** (object item with no first-line field): Start a new item in the innermost open array scope.
-6. **Depth-qualified `-`** (e.g., `## -` or `## - key: val`): Pop scopes back to depth N, then start a new item in the array at depth N.
-7. **Blockquote line** (`>` ...): Append content (after stripping `>` prefix) to the current multiline field. A line containing only `>` appends a blank line. The multiline field ends when a line not starting with `>` is encountered. Each blockquote line emits a streaming event independently.
-8. **Indented field** (INDENT followed by `key: value`): Add field to the current array item. This is the Markdown list continuation pattern — indented lines belong to the current `- ` item. The exact indentation depth and composition are not significant (§11.2): any line starting with one or more spaces/tabs followed by a `key: value` pattern is a continuation field. Canonical generator form: exactly two spaces.
-9. **Blank line**: Pop all scopes, returning to root scope (depth 1). **Exception:** within an array body, if the next non-blank line is `-` or `- value`, the blank line is cosmetic (visual separator between array items) and does not reset scope.
+1. **Root heading:** The first heading MUST match `root_heading`: it carries a non-empty label or the root-array sigil `[]`. A bare `#` MUST be rejected with `no_root_heading` (§3.2a).
+2. **Subsequent heading line** (`#`+ space ...): Determine heading depth N. If the heading is anonymous, close all scopes deeper than N and resume the scope already established at depth N; this is the level-pop (§8.6) and opens no scope. Otherwise, pop all scopes with depth ≥ N and open the labelled scope at depth N.
+3. **Bare field** (`key: value`): Add field to the innermost open object scope.
+4. **Bare field with empty value** (`key:`): If the next line starts with `>`, enter multiline mode for this field (see rule 8).
+5. **`- key: val`** (object item): Start a new item in the innermost open array scope with its first field. If content after `- ` matches `key: value` pattern, it is an object item; otherwise it is a scalar item (`- value`). Additional fields follow as indented continuation lines (see rule 9).
+6. **Bare `-`** (object item with no first-line field): Start a new item in the innermost open array scope.
+7. **Depth-qualified `-`** (e.g., `## -` or `## - key: val`): Pop scopes back to depth N, then start a new item in the array at depth N.
+8. **Blockquote line** (`>` ...): Append content (after stripping `>` prefix) to the current multiline field. A line containing only `>` appends a blank line. The multiline field ends when a line not starting with `>` is encountered. Each blockquote line emits a streaming event independently.
+9. **Indented field** (INDENT followed by `key: value`): Add field to the current array item. This is the Markdown list continuation pattern — indented lines belong to the current `- ` item. The exact indentation depth and composition are not significant (§11.2): any line starting with one or more spaces/tabs followed by a `key: value` pattern is a continuation field. Canonical generator form: exactly two spaces.
+10. **Blank line**: Pop all scopes, returning to root scope (depth 1). **Exception:** within an array body, if the next non-blank line is `-` or `- value`, the blank line is cosmetic (visual separator between array items) and does not reset scope.
 
-This model uses indentation in exactly one context: list item continuation within arrays (rule 8). This is not hierarchy-encoding indentation — it means only "this field belongs to the current `- ` item." All hierarchy is still expressed exclusively through heading depth.
+This model uses indentation in exactly one context: list item continuation within arrays (rule 9). This is not hierarchy-encoding indentation — it means only "this field belongs to the current `- ` item." All hierarchy is still expressed exclusively through heading depth.
 
 ### 11.2 Line Endings and Whitespace
 
@@ -1548,7 +1534,7 @@ This section normatively defines the lexical layer: what constitutes a line, an 
 
 **Indentation (INDENT).**
 
-- Canonical form: a continuation line (§11.1 rule 8) is indented with exactly two spaces. A conforming generator MUST emit exactly two spaces and MUST NOT use tabs.
+- Canonical form: a continuation line (§11.1 rule 9) is indented with exactly two spaces. A conforming generator MUST emit exactly two spaces and MUST NOT use tabs.
 - Parser tolerance: any non-empty run of spaces (U+0020) and/or tabs (U+0009) at the start of a line constitutes an INDENT. The depth and composition of the run are insignificant — one space, four spaces, a tab, or a mixed run all mark the same thing: "this line belongs to the current `- ` item."
 - An INDENT is only meaningful where a continuation is possible: the line after the INDENT MUST match a `key: value` pattern, and an array item MUST be open. An indented line that fails either condition is prose and MUST be rejected with a parse error (§3.6.2) — it MUST NOT be silently dropped.
 
@@ -1861,8 +1847,9 @@ A JMD byte sequence — a file, an HTTP body, an SSE event payload, an MCP messa
 
 Normative consequences:
 
+- The root heading MUST carry a non-empty label or be a sigil-only root array (`# []`, `#? []`, `#! []`, or `#- []`). A bare `#` as the root heading MUST be rejected with `no_root_heading` (§3.2a).
 - After the root heading, a second labelled depth-1 heading or a mode marker (`#!`, `#?`, `#-`) MUST be rejected with a parse error. It MUST NOT be silently ignored, and it MUST NOT open a second document.
-- An *anonymous* `#` at depth 1 remains the level-pop to root scope (§8.6) — with the one-document rule, this reading is unambiguous.
+- After a valid root heading, an *anonymous* `#` at depth 1 is the level-pop to root scope (§8.6) — with the one-document rule, this reading is unambiguous.
 - A parser encountering EOF or transport termination with open scopes closes them implicitly (§18.2); whether the truncated document is *acted upon* is governed by the truncation-safety rule (§24).
 
 This rule also has a security effect: structural markers injected into the middle of a document (for example a smuggled `#- Order` line) produce a parse error instead of a second, destructive document — failure instead of data loss. See §24.
@@ -2266,7 +2253,7 @@ If an application needs annotations that travel with the data, the correct JMD a
 
 (Rationales for the specific schema-vocabulary conventions — entity references, keyword modifiers, delimiter-free enums, format hints, inline objects — were previously listed here and have been moved to Appendix A.2 alongside the conventions themselves. The meta-rationale for why no such vocabulary is normative appears above under "Why no JMD-normative sub-language for filter and type expressions?")
 
-**Why generator-strict, parser-tolerant?** JMD is consumed by parsers but generated by LLMs. These two roles have different capabilities: a parser sees the complete text and can apply flexible rules; an LLM generates sequentially and cannot correct earlier output. Postel's Law — "be conservative in what you send, be liberal in what you accept" — is the natural conformance model for this asymmetry. A strict generator ensures interoperability; a tolerant parser ensures reliability with real LLM output. Benchmark testing confirms that tolerant parsing eliminates syntax-related failures without introducing ambiguity: anonymous headings, depth+1 array items, and cosmetic blank lines are all unambiguously parseable. The alternative — requiring LLMs to produce pixel-perfect syntax — forces retry loops, corrective prompting, and post-processing that negate JMD's latency and token advantages.
+**Why generator-strict, parser-tolerant?** JMD is consumed by parsers but generated by LLMs. These two roles have different capabilities: a parser sees the complete text and can apply flexible rules; an LLM generates sequentially and cannot correct earlier output. Postel's Law — "be conservative in what you send, be liberal in what you accept" — is the natural conformance model for this asymmetry. A strict generator ensures interoperability; a tolerant parser ensures reliability with real LLM output. Benchmark testing confirms that tolerant parsing eliminates syntax-related failures without introducing ambiguity: thematic-break decoration, depth+1 array items, and cosmetic blank lines are all unambiguously parseable. The alternative — requiring LLMs to produce pixel-perfect syntax — forces retry loops, corrective prompting, and post-processing that negate JMD's latency and token advantages.
 
 **Why no canonical form?** LLMs generate text token by token, sequentially, without the ability to retroactively reorder output. A canonical form requiring lexicographic key sorting or normalized number formatting would mean every LLM-generated JMD document needs post-processing — directly contradicting the "LLM-native" design goal. Since JMD parsing is unambiguous regardless of key order, canonicity adds no value to the primary use case and would impose an unnecessary burden on generators.
 
@@ -2302,8 +2289,9 @@ This is not a loose guideline — it is a formal conformance requirement. JMD de
 
 **Generator conformance (strict).** A conforming JMD generator (serializer, LLM primer, code emitter) MUST produce output that matches the canonical grammar defined in Section 11. Specifically:
 
-- Root headings MUST include a label (e.g., `# Order`, not bare `#` followed by a space)
-- Root markers `#?`, `#!`, and `#-` MUST be followed by a space and a label
+- Root object headings MUST include a non-empty label (for example, `# Order`); bare `#` is invalid
+- Root arrays MUST use either a non-empty label plus `[]` (for example, `# Orders[]`) or the sigil-only form `# []`
+- Root markers `#?`, `#!`, and `#-` MUST be followed by a space and either a non-empty label or `[]`
 - Array items MUST use bare `-`; a level-pop (anonymous heading at the array's heading depth) MUST be emitted after any record that opened a nested sub-structure and is followed by further records (Section 8.6); `---` and depth-qualified items (`## -`) are parser tolerance only and MUST NOT be emitted
 - Blank lines SHOULD be used intentionally for scope reset, not inserted arbitrarily
 - Keys and values MUST be correctly quoted per Sections 4.2 and 6
@@ -2313,7 +2301,6 @@ Strict generation ensures maximum interoperability and minimizes the parsing eff
 
 **Parser conformance (tolerant).** A conforming JMD parser MUST accept all documents that a strict generator would produce, and additionally MUST accept the following variations that LLMs naturally produce:
 
-- **Anonymous root headings** (Section 3.2a): a root heading with an empty label opens the root scope; at depth ≥ 2 an anonymous heading is a level-pop (Section 8.6), part of the canonical grammar rather than a tolerance
 - **Thematic breaks** (Section 8.6): `---` within an array body is consumed as decoration and has no structural effect
 - **Depth-qualified array items** (Section 8.6a): `## -` as an alternative to the level-pop for starting new items in outer arrays
 - **Depth+1 array items** (Section 8.6b): items written one heading level deeper than the array heading, even when bare `-` would be unambiguous
@@ -2322,7 +2309,7 @@ Strict generation ensures maximum interoperability and minimizes the parsing eff
 
 A parser MAY reject input that is structurally invalid (e.g., a `-` line outside any array scope), but MUST NOT reject input solely because it uses a tolerant variation listed above. Note that bare fields before the first heading are valid frontmatter (Section 3.5), not structural errors.
 
-**Rationale.** This asymmetry is not a workaround — it is the central design insight for LLM-native formats. LLMs generate text based on deeply internalized patterns from training data. When an LLM writes a bare `#` heading without a label, or uses `## -` for an item that could be bare `-`, it is not making an error — it is following the Markdown conventions it has internalized. A format that rejects this output forces every LLM interaction to include corrective prompting, retry loops, or post-processing. A format that accepts it natively achieves 100% reliability on syntactically reasonable LLM output. Benchmark testing across multiple scenarios confirms that parser-tolerant handling eliminates all syntax-related chain breaks without introducing any parsing ambiguity.
+**Rationale.** This asymmetry is not a workaround — it is the central design insight for LLM-native formats. LLMs generate text based on deeply internalized patterns from training data. When an LLM uses `## -` for an item that could be bare `-`, inserts a decorative thematic break, or varies cosmetic whitespace, it is following familiar Markdown conventions. Accepting these unambiguous variations avoids corrective prompting, retries, and post-processing. An anonymous root heading is different: it omits the document's sole type-bearing label without adding useful structure, so it is structurally invalid rather than parser tolerance.
 
 ### 22.2 Specific Requirements
 
@@ -2333,7 +2320,7 @@ An implementation claiming **JMD v0.3** conformance must:
 - Correctly track heading depth and maintain a scope stack to determine field ownership.
 - Treat blank lines as scope reset to root level, except within array bodies where a blank line followed by `-` is cosmetic.
 - Support bare fields within scope and scalar headings for scope return.
-- Support anonymous root headings with empty labels (Section 3.2a).
+- Reject an anonymous root heading (bare `#`) with `no_root_heading` (Section 3.2a); sigil-only root arrays such as `# []` remain valid.
 - Support level-pops: an anonymous heading at depth *D* returns to the scope established at depth *D*, closing all deeper scopes in a single step (Section 8.6), including multi-level pops.
 - Consume thematic breaks (`---`) within array bodies as decoration, without structural effect (Section 8.6).
 - Support depth-qualified array items (`## -`, `### -`, etc.) as an alternative to the level-pop (Section 8.6a), including depth+1 items as described in Section 8.6b.
@@ -2349,7 +2336,7 @@ An implementation claiming **JMD v0.3** conformance must:
 
 Recommended test cases:
 
-- **Anonymous headings:** root heading with empty label opens the root scope (Section 3.2a); anonymous heading at depth ≥ 2 acts as a level-pop, never opens an object (Section 8.6)
+- **Anonymous headings:** a bare `#` as the root heading is rejected with `no_root_heading`; after a valid root, an anonymous heading at any depth acts as a level-pop and never opens an object (Sections 3.2a, 8.6)
 - **Empty-string key:** `## ""` (quoted empty key) opens a nested object keyed by `""` — the only representation of `{"": …}` (Section 3.2a)
 - **Strings with escapes:** `\"`, `\\`, `\n`, `\t`, `\uXXXX`, and literal backslash in bare strings
 - **Empty structures:** empty root object, empty root array, empty nested object, empty nested array
@@ -2403,7 +2390,7 @@ Recommended test cases:
 - **Filter-like prefixes in data scalars:** `deleted: !true`, `note: > urgent`, `search: ~berlin`, `status: >= 5` in a data document (`#`) are valid scalar strings — the values are `"!true"`, `"> urgent"`, `"~berlin"`, `">= 5"` respectively; the `!`, `>`, `~` characters have no JMD-normative meaning in scalar position
 - **Envelope shape for data:** `# Order\nid: 42` returns `{mode: "data", label: "Order", frontmatter: {}, value: {id: 42}}` (§3.6)
 - **Envelope shape for schema:** `#! Order\nid: integer` returns `{mode: "schema", label: "Order", frontmatter: {}, value: {id: "integer"}}` — the `#!` mode-mark is in `mode`, not `label`
-- **Envelope shape for delete bulk:** `#- []\n- 42\n- 43` returns `{mode: "delete", label: "", frontmatter: {}, value: [42, 43]}` — anonymous bulk delete yields `label: ""` (both the mode-mark and the `[]` sigil are stripped)
+- **Envelope shape for delete bulk:** `#- []\n- 42\n- 43` returns `{mode: "delete", label: "", frontmatter: {}, value: [42, 43]}` — sigil-only bulk delete yields `label: ""` (both the mode-mark and the `[]` sigil are stripped)
 - **Envelope shape with frontmatter:** `page: 1\n\n#? Order\nstatus: pending` returns `{mode: "query", label: "Order", frontmatter: {page: 1}, value: {status: "pending"}}`
 - **Prose body rejected:** `# Answer\n\n42\n` MUST produce a parse error — the bare line `42` is prose, not a JMD field; silently returning `{}` is non-conformant (§3.6.2)
 - **Whitespace-only body accepted:** `# Order\n\n` returns `value: {}` — whitespace and blank lines without non-structural content are not prose and are parsed as empty body

@@ -57,8 +57,8 @@ depth+1 items (`## - key: val` under a depth-1 array heading, §8.6b).
 Only the **Parse** test applies: `parse(jmd).value` deep-equals the
 value in `.json`. The Serialize and Round-trip tests are not run against
 tolerance fixtures, because serializing the parsed value re-canonicalizes
-it (to bare `-` items with thematic-break separators) and so will not
-match the non-canonical input byte-for-byte.
+it (to bare `-` items with anonymous-heading level-pops where needed) and
+so will not match the non-canonical input byte-for-byte.
 
 ## Must-Fail Fixtures
 
@@ -96,7 +96,7 @@ The canonical error kinds for v0.3.5 are:
 | `repeated_explicit_array` | §7.4.2(b) |
 | `repeated_scalar_key` | §7.4.2(c) |
 | `prose_in_body` | §3.6.2, §11.2 |
-| `no_root_heading` | §3.1, §11.2 — no valid column-0 root heading (e.g. indented root) |
+| `no_root_heading` | §3.1, §3.2a, §11.2 — no valid column-0 root heading (e.g. indented or bare anonymous root) |
 | `lone_carriage_return` | §11.2 |
 | `second_root_heading` | §18.0 |
 | `mode_marker_mid_document` | §18.0 |
@@ -130,11 +130,14 @@ documents for the same input:
 - **Arrays of objects** place the first scalar field on the `- ` line;
   remaining scalar fields follow as 2-space-indented continuation
   lines; nested structures come last as headings at the item's depth.
-  When items contain nested structures, a thematic break (`---`) on its
-  own line — preceded by one blank line and followed directly by the
-  next `- ` — separates successive items (§8.6).
+  When a record that opened nested content is followed by another record
+  of the same array, an anonymous heading at the array's depth performs
+  the required level-pop before the next bare `-` item (§8.6). Thematic
+  breaks are decoration only and are never emitted as separators.
+- **Root objects** require a non-empty label; bare `#` is structurally
+  invalid and must be rejected with `no_root_heading`.
 - **Root arrays** use `# <label>[]`; when no meaningful label is
-  available, the canonical form is `# []`.
+  available, the canonical sigil-only form is `# []`.
 - **Multiline strings** (any string containing `\n`) use the blockquote
   (`> `) form.
 - **Frontmatter** appears above the root heading, separated by one

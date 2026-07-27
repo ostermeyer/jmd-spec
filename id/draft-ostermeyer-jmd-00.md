@@ -316,11 +316,12 @@ The following constraints are normative but not expressed in the ABNF:
    expressed by indentation. An `indent-field` is valid only while an
    array object item is open, and appends a field to that item.
 
-4. A `level-pop` (anonymous heading) at depth N returns to the scope
-   established at depth N, closing all deeper scopes. At depth 1 it
-   returns to the root scope. An anonymous heading never opens an
-   object; an object keyed by the empty string is expressed with a
-   quoted empty key (`## ""`).
+4. After a valid root heading, a `level-pop` (anonymous heading) at
+   depth N returns to the scope established at depth N, closing all
+   deeper scopes. At depth 1 it returns to the root scope. An anonymous
+   heading never opens an object or establishes the root; a bare `#` as
+   the root heading is invalid. An object keyed by the empty string is
+   expressed with a quoted empty key (`## ""`).
 
 5. A `blank-line` resets the scope stack to the root scope, except
    within an array body where a blank line followed by an array item
@@ -484,20 +485,19 @@ in what you accept.
 
 A conforming generator MUST produce output matching the grammar of
 Section {{core-grammar}} including its prose constraints. In
-particular it MUST: label the root heading; quote all values and keys
-that the mandatory-quoting rules require; emit bare `-` array items
-with a level-pop after any record that opened a nested sub-structure
-and is followed by further records; emit LF line endings, two-space
-indents, no trailing whitespace, and no byte order mark; and emit
-untrusted content only as quoted strings (Section
-{{security-considerations}}).
+particular it MUST: use a non-empty label for a root object or the
+`[]` sigil for a sigil-only root array; quote all values and keys that
+the mandatory-quoting rules require; emit bare `-` array items with a
+level-pop after any record that opened a nested sub-structure and is
+followed by further records; emit LF line endings, two-space indents,
+no trailing whitespace, and no byte order mark; and emit untrusted
+content only as quoted strings (Section {{security-considerations}}).
 
 ## Parser Conformance (Tolerant)
 
 A conforming parser MUST accept everything a conforming generator
 produces, and additionally MUST accept:
 
-- anonymous root headings (empty label);
 - thematic breaks (`---`): consumed as decoration within array
   bodies, tolerated around the frontmatter block -- never an item
   separator, never a scope terminator;
@@ -511,11 +511,11 @@ produces, and additionally MUST accept:
 - CRLF line endings, a single leading BOM, and tolerant indent forms
   (Section {{core-grammar}}, prose constraints 7 and 8).
 
-A parser MUST reject with a visible parse error: prose in the body
-(Section {{parse-result}}), a lone CR, a second root heading or
-mid-document mode marker (Section {{one-document}}), and the
-structured error conditions of array promotion. Silent dropping of
-input is non-conformant in every case.
+A parser MUST reject with a visible parse error: an anonymous root
+heading (bare `#`), prose in the body (Section {{parse-result}}), a
+lone CR, a second root heading or mid-document mode marker (Section
+{{one-document}}), and the structured error conditions of array
+promotion. Silent dropping of input is non-conformant in every case.
 
 A conformance fixture suite covering the canonical grammar, every
 tolerance, and the must-reject cases is maintained with {{JMD-SPEC}}

@@ -327,11 +327,12 @@ opens (or, for <spanx style="verb">level-pop</spanx>, returns to) a scope at dep
 parser maintains a depth-indexed scope stack; hierarchy is never
 expressed by indentation. An <spanx style="verb">indent-field</spanx> is valid only while an
 array object item is open, and appends a field to that item.</t>
-  <t>A <spanx style="verb">level-pop</spanx> (anonymous heading) at depth N returns to the scope
-established at depth N, closing all deeper scopes. At depth 1 it
-returns to the root scope. An anonymous heading never opens an
-object; an object keyed by the empty string is expressed with a
-quoted empty key (<spanx style="verb">## ""</spanx>).</t>
+  <t>After a valid root heading, a <spanx style="verb">level-pop</spanx> (anonymous heading) at
+ depth N returns to the scope established at depth N, closing all
+ deeper scopes. At depth 1 it returns to the root scope. An anonymous
+ heading never opens an object or establishes the root; a bare <spanx style="verb">#</spanx> as
+ the root heading is invalid. An object keyed by the empty string is
+ expressed with a quoted empty key (<spanx style="verb">## ""</spanx>).</t>
   <t>A <spanx style="verb">blank-line</spanx> resets the scope stack to the root scope, except
 within an array body where a blank line followed by an array item
 is cosmetic.</t>
@@ -541,13 +542,13 @@ in what you accept.</t>
 
 <t>A conforming generator <bcp14>MUST</bcp14> produce output matching the grammar of
 Section <xref target="core-grammar"/> including its prose constraints. In
-particular it <bcp14>MUST</bcp14>: label the root heading; quote all values and keys
-that the mandatory-quoting rules require; emit bare <spanx style="verb">-</spanx> array items
-with a level-pop after any record that opened a nested sub-structure
-and is followed by further records; emit LF line endings, two-space
-indents, no trailing whitespace, and no byte order mark; and emit
-untrusted content only as quoted strings (Section
-<xref target="security-considerations"/>).</t>
+particular it <bcp14>MUST</bcp14>: use a non-empty label for a root object or the
+<spanx style="verb">[]</spanx> sigil for a sigil-only root array; quote all values and keys that
+the mandatory-quoting rules require; emit bare <spanx style="verb">-</spanx> array items with a
+level-pop after any record that opened a nested sub-structure and is
+followed by further records; emit LF line endings, two-space indents,
+no trailing whitespace, and no byte order mark; and emit untrusted
+content only as quoted strings (Section <xref target="security-considerations"/>).</t>
 
 </section>
 <section anchor="parser-conformance-tolerant"><name>Parser Conformance (Tolerant)</name>
@@ -556,7 +557,6 @@ untrusted content only as quoted strings (Section
 produces, and additionally <bcp14>MUST</bcp14> accept:</t>
 
 <t><list style="symbols">
-  <t>anonymous root headings (empty label);</t>
   <t>thematic breaks (<spanx style="verb">---</spanx>): consumed as decoration within array
 bodies, tolerated around the frontmatter block -- never an item
 separator, never a scope terminator;</t>
@@ -571,11 +571,11 @@ Section 7.4;</t>
 (Section <xref target="core-grammar"/>, prose constraints 7 and 8).</t>
 </list></t>
 
-<t>A parser <bcp14>MUST</bcp14> reject with a visible parse error: prose in the body
-(Section <xref target="parse-result"/>), a lone CR, a second root heading or
-mid-document mode marker (Section <xref target="one-document"/>), and the
-structured error conditions of array promotion. Silent dropping of
-input is non-conformant in every case.</t>
+<t>A parser <bcp14>MUST</bcp14> reject with a visible parse error: an anonymous root
+heading (bare <spanx style="verb">#</spanx>), prose in the body (Section <xref target="parse-result"/>), a
+lone CR, a second root heading or mid-document mode marker (Section
+<xref target="one-document"/>), and the structured error conditions of array
+promotion. Silent dropping of input is non-conformant in every case.</t>
 
 <t>A conformance fixture suite covering the canonical grammar, every
 tolerance, and the must-reject cases is maintained with <xref target="JMD-SPEC"/>
