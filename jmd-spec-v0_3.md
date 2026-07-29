@@ -2402,7 +2402,7 @@ Recommended test cases:
 - **Error document minimal:** `# Error` with `status: 404` and `code: not_found` is a valid error document
 - **Error document with free-form fields:** `suggestion` and `context` are parsed as regular bare string fields
 - **Error document with errors array:** `## errors[]` with `- field: x` + indented `reason: y`, `value: z` parsed correctly
-- **Streaming error:** `# Error` after partial data document closes all open scopes
+- **In-band error after partial data rejected:** `# []\n- id: 1\n# Error\ncode: internal_error` MUST produce a visible parse error at the second root heading; it MUST NOT close scopes or start a second document (§17, §18.0, §24.7)
 - **Query document — values are raw strings:** `#? Order` with `total: > 50` returns `value: {"total": "> 50"}` — the value is the literal string `"> 50"`, not a parsed comparison; the parser does not interpret filter vocabulary (Section 13, Appendix A.1)
 - **Query document — projection marker is opaque:** `email: ?` returns `value: {"email": "?"}` — the `?` is a literal string value, not a parsed projection
 - **Query mode detection:** `#?` root marker is recognized; envelope reports `mode: "query"`, `label: "Order"`, with values as raw strings

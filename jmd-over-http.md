@@ -341,22 +341,11 @@ The `code` column is a **suggestion**. The error code vocabulary is application-
 
 ### 6.3 Streaming Errors
 
-If a server encounters an error after it has already begun emitting a streaming response, it SHOULD emit a JMD error document at the end of the partial stream:
+An HTTP response body is one JMD framing unit and therefore carries exactly one document (core spec §18.0). If a server encounters an error after it has begun emitting that document, it MUST NOT append a `# Error` document: the second root heading would be a parse error and would make the label `Error` syntactically special contrary to the core grammar.
 
-```
-# []
-- id: 1
-  status: pending
-- id: 2
-  status: active
+The server SHOULD make the response fail at the transport or framing layer — for example by resetting the HTTP/2 or HTTP/3 stream, ending an HTTP/1.1 chunked response without the terminating chunk, or using a previously negotiated trailer that explicitly marks failure. An SSE endpoint MAY send an error as a separate SSE event because every event payload is its own JMD framing unit. A server that can still select an HTTP status before emitting body bytes SHOULD instead return an ordinary 4xx/5xx response containing one complete `# Error` document (§6.1).
 
-# Error
-status: 500
-code: internal_error
-message: Backend connection lost after row 2.
-```
-
-The stream-then-error pattern allows the client to retain the data it has already received while understanding that the stream did not complete. Clients SHOULD treat a trailing `# Error` document as a termination signal and a diagnostic, not as a reason to discard the partial data.
+Clients MAY retain already parsed events for diagnostics or explicitly truncation-safe processing, but MUST treat a partial JMD document followed by a transport error as incomplete. They MUST NOT commit effects that require a complete document or interpret the partial data as a successful response (core spec §§17 and 24.7).
 
 ### 6.4 Non-Fatal Warnings
 
