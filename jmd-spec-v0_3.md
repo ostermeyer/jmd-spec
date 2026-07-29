@@ -2361,8 +2361,7 @@ Recommended test cases:
 - **Unknown frontmatter key preserved:** `dry-run: true` before `#- Order` heading is a valid frontmatter field and MUST be present in the parser output — a parser that drops it before the application layer sees it is non-conformant (Section 3.5, §22.2)
 - **Unknown frontmatter key preserved with bare value:** `verbose` (bare key, no value) before `# Order` is preserved in the frontmatter map as `{"verbose": true}` and surfaced to the application layer
 - **Application-layer strict refusal is conformant:** an application that rejects a delete operation carrying an unrecognized directive key (e.g. `dry-run: true` on `#- Order`) with a `# Error` response is spec-conformant — the parser accepted the key, the application declined to act on it (Section 3.5)
-- **Ignored-keys echo (short form):** a response carrying `ignored-keys: foo, bar` before the root heading is a valid observable-tolerance response
-- **Ignored-keys echo (long form):** a response carrying `## ignored-keys[]` with `- foo` and `- bar` items before the root heading is equally valid (Section 23.7)
+- **Ignored-keys echo:** a response carrying `ignored-keys: foo, bar` before the root heading is a valid observable-tolerance response (Section 23.7)
 - **Level-pop returns to outer array:** anonymous `#`×*D* after a nested sub-structure starts the next item of the depth-*D* array (Section 8.6)
 - **Multi-level pop:** a single anonymous heading pops through multiple open scopes to its declared depth (Section 8.6)
 - **Level-pop roundtrip:** serialize array of objects with nested lists, parse back, verify lossless — serializer emits the level-pop, never `---`
@@ -2588,9 +2587,7 @@ When an application chooses to tolerate unknown directive frontmatter keys (rath
 
 | Key | Type | Meaning |
 | --- | --- | --- |
-| `ignored-keys` | string or array | Comma-separated list, or array, of frontmatter keys received by the application and not acted on. |
-
-**Short form** (few keys, inline list):
+| `ignored-keys` | string | Comma-separated list of frontmatter keys received by the application and not acted on. |
 
 ```markdown
 ignored-keys: dry-run, limit
@@ -2599,19 +2596,11 @@ ignored-keys: dry-run, limit
 ...
 ```
 
-**Long form** (many keys or programmatic consumption):
-
-```markdown
-## ignored-keys[]
-- dry-run
-- limit
-- group_by
-
-# Result
-...
-```
-
-Either form is valid. A consumer SHOULD accept both.
+JMD v0.3.5 defines frontmatter as scalar fields before the root heading. It does
+not define collection-valued frontmatter: JMD arrays are heading-scoped, while
+the first heading in a document establishes the root. A future version MAY add
+a general collection-frontmatter syntax, but consumers MUST NOT interpret a
+headed array before the root as v0.3.5 frontmatter.
 
 **Interaction with destructive operations.** Applications performing destructive operations (`#-` delete, schema drop, and similar) MAY instead reject unknown directive keys with a structured error document (Section 17) rather than echo them. This choice is per-operation, not per-server: a server MAY use observable tolerance for reads and strict refusal for deletes within the same session. The selection of policy is a domain decision — the spec does not mandate one policy per operation type. The conventional mapping is:
 
