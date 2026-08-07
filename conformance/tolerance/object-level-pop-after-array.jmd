@@ -1,0 +1,8 @@
+# Doc
+## config
+retries: 3
+### hosts[]
+- alpha
+- beta
+##
+timeout: 30

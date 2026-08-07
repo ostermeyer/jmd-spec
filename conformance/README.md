@@ -54,6 +54,15 @@ parser-tolerance rules — inputs a conforming generator would not emit
 accept. Examples include depth-qualified array items (`## -`, §8.6a) and
 depth+1 items (`## - key: val` under a depth-1 array heading, §8.6b).
 
+**Object-scope level-pops** (`object-level-pop*`, `level-pop-noop-*`)
+belong here for a structural reason rather than a stylistic one: a
+conforming serializer writes a field following a nested object as a
+scalar heading (`## note: gift wrap`, §7.2) and never emits a level-pop
+outside an array (§8.6, Canonical Form). These documents are therefore
+input-only — they arise from hand-written and model-generated JMD, and
+an implementation that tests only round-trips over its own output will
+never reach the code path.
+
 Only the **Parse** test applies: `parse(jmd).value` deep-equals the
 value in `.json`. The Serialize and Round-trip tests are not run against
 tolerance fixtures, because serializing the parsed value re-canonicalizes

@@ -949,9 +949,11 @@ Serializes to:
 }
 ```
 
-### 8.6 Level-Pop (Returning to an Outer Array)
+### 8.6 Level-Pop (Returning to an Outer Scope)
 
-When an array of objects contains items with nested sub-structures (child objects or child arrays), a problem arises: after the nested structure has been written at a deeper heading level, how does the *next* item return to the **outer** array? Going **deeper** is self-describing — a `##`/`###` heading declares its own depth. Coming back **up** needs an equally self-describing signal. JMD uses the **level-pop**.
+When a structure contains nested sub-structures, a problem arises: after the nested structure has been written at a deeper heading level, how does the *next* item or field return to the **outer** scope? Going **deeper** is self-describing — a `##`/`###` heading declares its own depth. Coming back **up** needs an equally self-describing signal. JMD uses the **level-pop**.
+
+The motivating case is an array of objects whose records open sub-structures, and the examples below lead with it. The mechanism itself is **scope-kind-agnostic**: it returns to object scopes on exactly the same terms.
 
 #### Syntax
 
@@ -959,18 +961,42 @@ A **level-pop** is an **anonymous heading** (§3.2a): a line containing only `#`
 
 #### Semantics
 
-An anonymous heading at depth *D* **pops the scope stack back to depth *D*** and continues there. It is the depth-aware generalization of the blank-line reset (§3.3): a blank line returns to the root; an anonymous `#`×*D* returns to depth *D*.
+An anonymous heading at depth *D* **pops the scope stack back to depth *D*** and continues there. It is the depth-aware generalization of the blank-line reset (§7.2a): a blank line returns to the root; an anonymous `#`×*D* returns to depth *D*.
 
 - A **labelled** heading at depth *D* *opens* a scope at depth *D*.
 - An **anonymous** heading at depth *D* *returns to* the scope already established at depth *D*.
 
-So within an array whose heading is at depth *D*, after an item has opened a deeper sub-structure, an anonymous heading `#`×*D* closes that sub-structure (and any deeper ones, in a single step) and returns to the array — the next `- ` line is then a new item of *that* array.
+Stated as one rule: an anonymous heading at depth *D* closes every open scope deeper than *D*, and parsing continues in the innermost scope that remains.
+
+A level-pop **never opens a scope**. In particular it never opens an object keyed by the empty string; that reading was withdrawn in v0.3.4 (§3.2a), and `{"": …}` is now written with the quoted empty key `## ""`.
+
+##### Target Scope Kind
+
+The pop target is whatever scope was established at depth *D* — **object or array**. The pop does not distinguish them; only what may legally follow does:
+
+| Scope at depth *D* | After the pop, subsequent lines …                      |
+| ------------------ | ------------------------------------------------------ |
+| **Array**          | `- ` items are appended to that array.                  |
+| **Object**         | `key: value` lines are added as fields of that object.  |
+
+So within an array whose heading is at depth *D*, after an item has opened a deeper sub-structure, an anonymous heading `#`×*D* closes that sub-structure (and any deeper ones, in a single step) and returns to the array — the next `- ` line is then a new item of *that* array. Within an object at depth *D*, the same marker closes the sub-structure and the next `key: value` line is a field of *that* object.
+
+`#` at depth 1 returns to the **root** scope, object or array alike. A parser MUST NOT treat a post-root `#` as a second root heading (§18.0) or as a document-level defect; only a bare `#` *as* the root heading is invalid (§3.2a).
+
+##### Degenerate Targets
+
+Both follow from the one-rule statement above and MUST NOT be rejected:
+
+- **Already at depth *D*.** If the innermost open scope is the scope at depth *D*, there is nothing deeper to close and the pop is a **no-op**.
+- **No scope at depth *D*.** If the document never went that deep, no scope is closed and parsing continues in the deepest established scope — `###` in a document that has only reached depth 2 continues at depth 2. An over-deep pop carries no information a parser can act on, and clamping discards no data.
 
 #### Canonical Form
 
 Records of an array stay **bare `-` items** with plain `key: value` fields; their sub-structures are deeper headings. The serializer emits a level-pop `#`×*D* (where *D* is the array's heading depth) **after** any record that opened a sub-structure **and** that is followed by further records. The last record needs no pop — end-of-scope closes it. Flat object arrays and scalar arrays need no level-pop at all.
 
-#### Example
+**Object scopes are input-only.** A conforming serializer does **not** emit level-pops for object scopes: a scalar field following a nested object is written as a scalar heading (`## note: gift wrap`, §7.2), which is unambiguous and one line shorter. Object-scope level-pops therefore never appear in canonical output — they appear in hand-written and model-generated documents. Parsers MUST accept them all the same; round-trip tests over serializer output alone will not exercise this path.
+
+#### Example — Array Scope
 
 ```markdown
 # Api[]
@@ -995,6 +1021,48 @@ Parses to:
 ```
 
 The `#` after the `## headers[]` sub-array pops back to the depth-1 `# Api[]` array, so `- name: ifs` is a new API record, not another header.
+
+#### Example — Object Scope
+
+The same marker returns to an object scope. Here `#` closes the depth-2 `## address` object and returns to the root object, so `note` is a root field:
+
+```markdown
+# Order
+id: 42
+## address
+city: Berlin
+zip: 10115
+#
+note: gift wrap
+```
+
+Parses to:
+
+```json
+{
+  "id": 42,
+  "address": {"city": "Berlin", "zip": 10115},
+  "note": "gift wrap"
+}
+```
+
+Without the `#`, `note` would be a field of `address`. A blank line (§7.2a) would work equally well *here*, because the target happens to be the root — but only the level-pop can return to an **intermediate** depth:
+
+```markdown
+# Doc
+## a
+x: 1
+### b
+y: 2
+##
+z: 3
+```
+
+`##` closes `### b` and returns to the depth-2 `## a` object, so `z` joins `x` there rather than landing in `b` or at the root:
+
+```json
+{"a": {"x": 1, "b": {"y": 2}, "z": 3}}
+```
 
 #### Multi-Level Pop
 
@@ -2321,7 +2389,7 @@ An implementation claiming **JMD v0.3** conformance must:
 - Treat blank lines as scope reset to root level, except within array bodies where a blank line followed by `-` is cosmetic.
 - Support bare fields within scope and scalar headings for scope return.
 - Reject an anonymous root heading (bare `#`) with `no_root_heading` (Section 3.2a); sigil-only root arrays such as `# []` remain valid.
-- Support level-pops: an anonymous heading at depth *D* returns to the scope established at depth *D*, closing all deeper scopes in a single step (Section 8.6), including multi-level pops.
+- Support level-pops: an anonymous heading at depth *D* returns to the scope established at depth *D*, closing all deeper scopes in a single step (Section 8.6), including multi-level pops. This applies to **object** scopes exactly as to array scopes — after a pop to an object at depth *D*, subsequent `key: value` lines are fields of that object, and `#` at depth 1 returns to the root. A pop to a depth that is already current, or deeper than any established scope, is a no-op and MUST NOT be rejected (Section 8.6).
 - Consume thematic breaks (`---`) within array bodies as decoration, without structural effect (Section 8.6).
 - Support depth-qualified array items (`## -`, `### -`, etc.) as an alternative to the level-pop (Section 8.6a), including depth+1 items as described in Section 8.6b.
 - Support anonymous sub-array headings (`### []`, `#### []`, etc.).
@@ -2337,6 +2405,7 @@ An implementation claiming **JMD v0.3** conformance must:
 Recommended test cases:
 
 - **Anonymous headings:** a bare `#` as the root heading is rejected with `no_root_heading`; after a valid root, an anonymous heading at any depth acts as a level-pop and never opens an object (Sections 3.2a, 8.6)
+- **Level-pop into an object scope:** `#` after a nested object returns to the root and the next `key: value` is a root field; `##` returns to an intermediate object. Since no serializer emits these (Section 8.6, Canonical Form), round-trip tests do not cover them — parse them from fixture text (Sections 8.6, 7.2a)
 - **Empty-string key:** `## ""` (quoted empty key) opens a nested object keyed by `""` — the only representation of `{"": …}` (Section 3.2a)
 - **Strings with escapes:** `\"`, `\\`, `\n`, `\t`, `\uXXXX`, and literal backslash in bare strings
 - **Empty structures:** empty root object, empty root array, empty nested object, empty nested array
