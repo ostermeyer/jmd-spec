@@ -1978,24 +1978,27 @@ Two consequences a parser MUST honour:
   `ITEM_END`. Emitting `ITEM_END` when the item's own `key: value` lines
   end — before the nested scope opens — breaks well-formedness and makes
   `ITEM_END` unusable as a completion signal (§18.5).
-> **Open: how the root scope appears in the stream.** This version does
-> not settle it, and implementations diverge. The worked example below
-> shows a root *object* with no closing event, terminated by
-> `DOCUMENT_END`. A root *array* has no worked example, and the reference
-> implementations disagree: one emits an explicit `ARRAY_START` /
-> `ARRAY_END` pair whose key is the root label (`# Orders[]` → key
-> `Orders`, `# []` → key `[]`), the other emits a keyless `OBJECT_END`
-> before `DOCUMENT_END` even for a root object. A consumer therefore
-> cannot reliably tell a root array from a child array that happens to
-> share the label, nor learn the root's kind for an empty document, since
-> `DOCUMENT_START` carries the label with any `[]` sigil already stripped
-> (§3.6). Resolving this requires either a uniform open/close pair for the
-> root or a root-kind field on `DOCUMENT_START`; both are breaking changes
-> for existing consumers and are deferred to a future version.
+- **The root scope is opened and closed like any other.** The first event
+  after `DOCUMENT_START` MUST be the root's `OBJECT_START` or
+  `ARRAY_START`, and the last event before `DOCUMENT_END` MUST be its
+  matching close. Both carry **no key**: a key names the slot a scope
+  occupies in its parent, and the root has no parent. The label belongs to
+  `DOCUMENT_START` (§3.6) and MUST NOT be repeated here.
+
+  This makes the root unambiguous in two ways a consumer needs. Its kind —
+  object or array — is explicit even for an empty document, which the
+  label cannot convey because `DOCUMENT_START` carries it with any `[]`
+  sigil already stripped. And because the root is the only scope opened
+  while the stack is empty, it can never be confused with a child that
+  happens to share the label.
+
+  A keyless `ARRAY_START` is otherwise the anonymous sub-array `### []`
+  (§8.4); the two never collide, because that one opens inside an array
+  scope and the root opens into an empty stack.
 
 The blockquote form for multiline strings preserves this streaming property: each `>` line emits a `FIELD_CONTENT` event independently. Every JMD construct — without exception — is fully streamable. No buffering is ever required.
 
-`SCOPE_RESET` is followed by implicit `OBJECT_END` / `ARRAY_END` events for each scope on the stack, in reverse order. A blank line within an array body that is followed by a `-` item is cosmetic and does not emit `SCOPE_RESET`.
+`SCOPE_RESET` is followed by implicit `OBJECT_END` / `ARRAY_END` / `ITEM_END` events for each scope **above the root**, in reverse order. The root scope survives — a blank line returns to it (§7.2a), it does not end the document — and is closed only by its own terminal event before `DOCUMENT_END`. A blank line within an array body that is followed by a `-` item is cosmetic and does not emit `SCOPE_RESET`.
 
 The `DOCUMENT_START` event carries the full envelope header (mode, label, frontmatter) — the same three fields that appear on the envelope returned by a non-streaming parser (§3.6). A receiver that buffers only the first event has complete document-level metadata before any body event arrives. Subsequent events (`FIELD`, `OBJECT_START`, `ARRAY_START`, …) carry only body content; they do not re-transmit the envelope header. This mirrors standard streaming conventions (SAX, Server-Sent Events, gRPC streaming): the header is transmitted once, the body streams.
 
@@ -2003,6 +2006,7 @@ The complete event sequence for a typical Order document:
 
 ```
 DOCUMENT_START  mode="data", label="Order", frontmatter={}
+OBJECT_START                               (the root scope — no key)
 FIELD           id = 42
 FIELD           status = "pending"
 FIELD           paid = false
@@ -2033,6 +2037,7 @@ ITEM_END
 ARRAY_END       items
 SCOPE_RESET                                (blank line → return to root)
 FIELD           total = 84.99              (bare root-level field)
+OBJECT_END                                 (the root scope — no key)
 DOCUMENT_END
 ```
 
@@ -2054,6 +2059,7 @@ item:
 
 ```
 DOCUMENT_START  mode="data", label="Registry", frontmatter={}
+OBJECT_START                               (the root scope — no key)
 ARRAY_START     apis                       (## apis[])
 ITEM_START                                 (- name: clockodo)
 FIELD           name = "clockodo"
@@ -2067,13 +2073,17 @@ ITEM_START                                 (- name: public)
 FIELD           name = "public"
 ITEM_END
 ARRAY_END       apis                       (EOF)
+OBJECT_END                                 (the root scope — no key)
 DOCUMENT_END
 ```
 
 The `headers` array is nested **within** the `clockodo` item's
 `ITEM_START` / `ITEM_END` pair, because it is that item's data. The level-pop
-`##` closes the sub-array and the item together, in that order. Note that
-no `OBJECT_END` closes the root: `DOCUMENT_END` does.
+`##` closes the sub-array and the item together, in that order.
+
+A root array is the same shape with the outermost pair inverted — `# []`
+and `# Orders[]` both emit a keyless `ARRAY_START` immediately after
+`DOCUMENT_START`, and its `ARRAY_END` immediately before `DOCUMENT_END`.
 
 ### 18.2a Streaming Advantage by Payload Size
 
@@ -2481,13 +2491,14 @@ An implementation claiming **JMD v0.3** conformance must:
 - Reject structurally invalid input with a clear error indicating the offending line. Tolerant variations (Section 22.1) are NOT structurally invalid.
 - Reject prose in the document body with a parse error (§3.6.2). A bare line that is not a key-value field, indented continuation, bullet (`-`), blockquote (`>`), heading, or thematic break (`---`) is invalid JMD and MUST NOT be silently dropped or returned as an empty value.
 - Not apply Markdown rendering to string content; only JSON string escaping rules apply. (Note: inline Markdown in blockquote multiline values is preserved as literal text in the parsed string, not rendered.)
-- Emit a well-formed event stream, if the implementation offers a streaming surface (Section 18.2): every `OBJECT_START` / `ARRAY_START` / `ITEM_START` matched, closes in reverse order of opens, and sub-structures of an item nested **inside** that item's `ITEM_START` / `ITEM_END` pair. A streaming surface MUST accept and reject exactly what the batch surface accepts and rejects, with the same error kinds. How the root scope itself appears in the stream is not settled in this version (Section 18.2), and neither is the representation of repeated headings promoted to an implicit array (Section 7.4) — a promotion the parser cannot know about until the second heading arrives, by which point the first scope has already been emitted.
+- Emit a well-formed event stream, if the implementation offers a streaming surface (Section 18.2): every `OBJECT_START` / `ARRAY_START` / `ITEM_START` matched, closes in reverse order of opens, sub-structures of an item nested **inside** that item's `ITEM_START` / `ITEM_END` pair, and the root opened and closed by a keyless pair bracketing the whole body. A streaming surface MUST accept and reject exactly what the batch surface accepts and rejects, with the same error kinds. The one construct a stream cannot express is the promotion of repeated headings to an implicit array (Section 7.4): the parser cannot know of the promotion until the second heading arrives, by which point the first scope has been emitted as an object. A folded stream therefore legitimately differs from the batch value for those documents, and only for those.
 
 Recommended test cases:
 
 - **Anonymous headings:** a bare `#` as the root heading is rejected with `no_root_heading`; after a valid root, an anonymous heading at any depth acts as a level-pop and never opens an object (Sections 3.2a, 8.6)
 - **Level-pop into an object scope:** `#` after a nested object returns to the root and the next `key: value` is a root field; `##` returns to an intermediate object. Since no serializer emits these (Section 8.6, Canonical Form), round-trip tests do not cover them — parse them from fixture text (Sections 8.6, 7.2a)
 - **Streaming event nesting:** an array item that opens a sub-array or sub-object emits that sub-structure between its own `ITEM_START` and `ITEM_END`, and the level-pop closing it emits `ARRAY_END`/`OBJECT_END` before `ITEM_END` (Section 18.2). Fold the stream back into a value with a plain stack and compare against the batch parse — a stream that cannot be folded is not well-formed
+- **Streaming root scope:** a keyless `OBJECT_START` / `ARRAY_START` immediately after `DOCUMENT_START` and its close immediately before `DOCUMENT_END`, for a root object, a labelled root array (`# Orders[]`), an anonymous root array (`# []`), and an empty document of each kind — the empty cases are the ones where the stream is the only carrier of the root's type (Section 18.2)
 - **Empty-string key:** `## ""` (quoted empty key) opens a nested object keyed by `""` — the only representation of `{"": …}` (Section 3.2a)
 - **Strings with escapes:** `\"`, `\\`, `\n`, `\t`, `\uXXXX`, and literal backslash in bare strings
 - **Empty structures:** empty root object, empty root array, empty nested object, empty nested array
