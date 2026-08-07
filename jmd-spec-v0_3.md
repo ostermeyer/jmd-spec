@@ -1948,7 +1948,50 @@ The line types and their streaming semantics:
 | `- value` | `ITEM_VALUE` | Parsed scalar item value |
 | blank line (non-cosmetic) | `SCOPE_RESET` | All open scopes closed; parser at root |
 
+Scopes are closed by the line that ends them rather than by a token of
+their own, so the closing events are not triggered by a line type of their
+own either:
+
+| Closing event | Emitted when |
+|---|---|
+| `OBJECT_END` | A nested object scope closes. Carries the key it was opened under. |
+| `ARRAY_END` | An array scope closes. Carries the key it was opened under. |
+| `ITEM_END` | An object item closes. Carries no key. |
+| `DOCUMENT_END` | End of input. Terminates the root scope. |
+
 A scope closes implicitly when a heading at the same or shallower depth arrives, when a non-cosmetic blank line is encountered, or at EOF. No explicit closing token is ever needed. A consumer can act on each event the moment the line's newline arrives.
+
+#### Well-Formedness
+
+The event stream is a **well-formed traversal** of the document tree.
+Every `OBJECT_START`, `ARRAY_START`, and `ITEM_START` has exactly one
+matching close, and the closes arrive in reverse order of their opens. A
+consumer may therefore maintain a plain stack and reconstruct the document
+without lookahead or buffering beyond the current scope.
+
+Two consequences a parser MUST honour:
+
+- **An item closes after the sub-structures it opened.** When a `- ` item
+  opens a nested object or array at a deeper heading depth, that
+  sub-structure belongs to the item, so its `OBJECT_START` / `ARRAY_START`
+  and matching close fall **between** the item's `ITEM_START` and its
+  `ITEM_END`. Emitting `ITEM_END` when the item's own `key: value` lines
+  end — before the nested scope opens — breaks well-formedness and makes
+  `ITEM_END` unusable as a completion signal (§18.5).
+> **Open: how the root scope appears in the stream.** This version does
+> not settle it, and implementations diverge. The worked example below
+> shows a root *object* with no closing event, terminated by
+> `DOCUMENT_END`. A root *array* has no worked example, and the reference
+> implementations disagree: one emits an explicit `ARRAY_START` /
+> `ARRAY_END` pair whose key is the root label (`# Orders[]` → key
+> `Orders`, `# []` → key `[]`), the other emits a keyless `OBJECT_END`
+> before `DOCUMENT_END` even for a root object. A consumer therefore
+> cannot reliably tell a root array from a child array that happens to
+> share the label, nor learn the root's kind for an empty document, since
+> `DOCUMENT_START` carries the label with any `[]` sigil already stripped
+> (§3.6). Resolving this requires either a uniform open/close pair for the
+> root or a root-kind field on `DOCUMENT_START`; both are breaking changes
+> for existing consumers and are deferred to a future version.
 
 The blockquote form for multiline strings preserves this streaming property: each `>` line emits a `FIELD_CONTENT` event independently. Every JMD construct — without exception — is fully streamable. No buffering is ever required.
 
@@ -1994,6 +2037,43 @@ DOCUMENT_END
 ```
 
 The parser maintains a scope stack driven by heading depth and blank-line scope resets. No indentation tracking and no buffering for closing delimiters. A single line of lookahead is required in exactly one case: a blank line inside an array body defers its scope decision until the next non-blank line is known — cosmetic before an array item, `SCOPE_RESET` otherwise (§11.1 rule 9). No other construct requires lookahead.
+
+Every item in that document is flat. Where an item opens a sub-structure,
+the nesting rule above applies — the level-pop (§8.6) is what closes the
+item:
+
+```markdown
+# Registry
+## apis[]
+- name: clockodo
+### headers[]
+- name: X-Api-User
+##
+- name: public
+```
+
+```
+DOCUMENT_START  mode="data", label="Registry", frontmatter={}
+ARRAY_START     apis                       (## apis[])
+ITEM_START                                 (- name: clockodo)
+FIELD           name = "clockodo"
+ARRAY_START     headers                    (### headers[]) — inside the item
+ITEM_START                                 (- name: X-Api-User)
+FIELD           name = "X-Api-User"
+ITEM_END
+ARRAY_END       headers
+ITEM_END                                   (##) — the clockodo item is now complete
+ITEM_START                                 (- name: public)
+FIELD           name = "public"
+ITEM_END
+ARRAY_END       apis                       (EOF)
+DOCUMENT_END
+```
+
+The `headers` array is nested **within** the `clockodo` item's
+`ITEM_START` / `ITEM_END` pair, because it is that item's data. The level-pop
+`##` closes the sub-array and the item together, in that order. Note that
+no `OBJECT_END` closes the root: `DOCUMENT_END` does.
 
 ### 18.2a Streaming Advantage by Payload Size
 
@@ -2401,11 +2481,13 @@ An implementation claiming **JMD v0.3** conformance must:
 - Reject structurally invalid input with a clear error indicating the offending line. Tolerant variations (Section 22.1) are NOT structurally invalid.
 - Reject prose in the document body with a parse error (§3.6.2). A bare line that is not a key-value field, indented continuation, bullet (`-`), blockquote (`>`), heading, or thematic break (`---`) is invalid JMD and MUST NOT be silently dropped or returned as an empty value.
 - Not apply Markdown rendering to string content; only JSON string escaping rules apply. (Note: inline Markdown in blockquote multiline values is preserved as literal text in the parsed string, not rendered.)
+- Emit a well-formed event stream, if the implementation offers a streaming surface (Section 18.2): every `OBJECT_START` / `ARRAY_START` / `ITEM_START` matched, closes in reverse order of opens, and sub-structures of an item nested **inside** that item's `ITEM_START` / `ITEM_END` pair. A streaming surface MUST accept and reject exactly what the batch surface accepts and rejects, with the same error kinds. How the root scope itself appears in the stream is not settled in this version (Section 18.2), and neither is the representation of repeated headings promoted to an implicit array (Section 7.4) — a promotion the parser cannot know about until the second heading arrives, by which point the first scope has already been emitted.
 
 Recommended test cases:
 
 - **Anonymous headings:** a bare `#` as the root heading is rejected with `no_root_heading`; after a valid root, an anonymous heading at any depth acts as a level-pop and never opens an object (Sections 3.2a, 8.6)
 - **Level-pop into an object scope:** `#` after a nested object returns to the root and the next `key: value` is a root field; `##` returns to an intermediate object. Since no serializer emits these (Section 8.6, Canonical Form), round-trip tests do not cover them — parse them from fixture text (Sections 8.6, 7.2a)
+- **Streaming event nesting:** an array item that opens a sub-array or sub-object emits that sub-structure between its own `ITEM_START` and `ITEM_END`, and the level-pop closing it emits `ARRAY_END`/`OBJECT_END` before `ITEM_END` (Section 18.2). Fold the stream back into a value with a plain stack and compare against the batch parse — a stream that cannot be folded is not well-formed
 - **Empty-string key:** `## ""` (quoted empty key) opens a nested object keyed by `""` — the only representation of `{"": …}` (Section 3.2a)
 - **Strings with escapes:** `\"`, `\\`, `\n`, `\t`, `\uXXXX`, and literal backslash in bare strings
 - **Empty structures:** empty root object, empty root array, empty nested object, empty nested array
