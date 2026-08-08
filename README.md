@@ -119,6 +119,8 @@ position zero before any field is generated.
 | --- | --- |
 | [jmd-spec-v0_3.md](jmd-spec-v0_3.md) | Full format specification |
 | [jmd-over-xml.md](jmd-over-xml.md) | JMD over XML — companion specification for lossless XML↔JMD conversion |
+| [jmd-over-http.md](jmd-over-http.md) | JMD over HTTP — companion specification for transport, content negotiation, and streaming |
+| [jmd-over-jsonc.md](jmd-over-jsonc.md) | JMD over JSONC — companion specification for lossless JSONC↔JMD conversion, including the comment markers core JMD omits |
 | [BENCHMARKS.md](BENCHMARKS.md) | Methodology, all prompts, and raw results |
 | [ai-whispering.md](ai-whispering.md) | The design practice behind JMD |
 | [jmd-efficiency-analysis.md](jmd-efficiency-analysis.md) | Performance data and projections |
@@ -148,6 +150,14 @@ The [JMD over XML companion specification](jmd-over-xml.md) (Draft 0.4)
 defines lossless XML↔JMD conversion for data XML formats (OOXML, SOAP,
 XBRL, …). Implemented in [jmd-impl](https://github.com/ostermeyer/jmd-impl)
 as of v0.4.
+
+The [JMD over JSONC companion specification](jmd-over-jsonc.md) (Draft 0.1)
+defines lossless JSONC↔JMD conversion. Because JSONC carries comments, the
+mapping needs somewhere to put them, so this companion introduces the `#/`
+line-comment and `#*` block-comment markers — the one place in the JMD
+ecosystem where comments exist. Core JMD deliberately has none (§20).
+Implemented in [jmd-sublime](https://github.com/ostermeyer/jmd-sublime);
+the core parsers do not yet recognise the markers.
 
 ---
 
