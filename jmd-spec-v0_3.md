@@ -1,5 +1,5 @@
 # JMD – JSON Markdown
-## Format Specification v0.3.5
+## Format Specification v0.3.6
 
 Copyright (c) 2026 Andreas Ostermeyer <andreas@ostermeyer.de>.
 Licensed under CC BY 4.0 — see [LICENSE](LICENSE) for details.
@@ -1655,6 +1655,8 @@ Body syntax is identical to Sections 7–9. Each field-value pair is a string pa
 ### 13.2 Values Are Raw Strings
 
 A conforming JMD parser returns query document values verbatim. The value `"> 50"` in `total: > 50` is the string `"> 50"`; it is not parsed into a comparison object, operator tuple, or filter AST by JMD. The parser reports the raw string in `value`; any structured interpretation is performed by the application that consumes the envelope.
+
+A valueless field such as `status:` is still a field. Unless immediately followed by one or more blockquote lines (which makes it a multiline field under §5), its raw query value is the empty string. A parser MUST preserve that field and MUST NOT silently discard it; the consuming application defines whether an empty condition is meaningful or rejects it.
 
 This is a deliberate design decision:
 

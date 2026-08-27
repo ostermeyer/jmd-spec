@@ -12,7 +12,7 @@ Fixtures are organized by document mode:
     conformance/
     ├── data/        # # Label — data documents
     ├── schema/      # #! Label — schema documents (planned)
-    ├── query/       # #? Label — query documents (planned)
+    ├── query/       # #? Label — query documents
     ├── delete/      # #- Label — delete documents (planned)
     ├── tolerance/   # parser-tolerance cases (non-canonical input)
     └── must-fail/   # inputs a conforming parser MUST reject

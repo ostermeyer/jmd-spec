@@ -20,7 +20,7 @@ Previous refinements:
 
 What exists today:
 
-- Full format specification ([jmd-spec-v0_3.md](jmd-spec-v0_3.md) — currently v0.3.5)
+- Full format specification ([jmd-spec-v0_3.md](jmd-spec-v0_3.md) — currently v0.3.6)
 - Benchmark methodology and raw results ([BENCHMARKS.md](BENCHMARKS.md), [benchmark_results/](benchmark_results/))
 - Python reference implementation with C-accelerated parser and serializer ([jmd-impl](https://github.com/ostermeyer/jmd-impl), v0.4.4)
 - JavaScript reference implementation, pure ESM, zero dependencies ([jmd-js](https://github.com/ostermeyer/jmd-js), v0.1.2)
