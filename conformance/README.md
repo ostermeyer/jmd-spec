@@ -28,11 +28,23 @@ Each fixture is a pair of files that share a base name:
 `<name>.json` is the value a conforming parser must extract. Both files
 end with a single newline.
 
+A fixture that tests an explicit generator rendering choice additionally has:
+
+    <name>.render.json  # generator-only controls; never JMD data
+
+At present, the supported control is `blockquote-paths[]`. Each path starts
+at the JSON value root; object-key segments use JSON Pointer escaping and `*`
+matches exactly one array item. A selected string is emitted in JMD's existing
+blockquote form, even when its value contains no newline. The parser still
+returns the ordinary string. The control is deliberately outside `.json`:
+JMD has no rich-text value type, and this is a caller's rendering choice rather
+than a property of the data model.
+
 Mode, label, and frontmatter live in the `.jmd` file only (the `.json`
 represents only the data value). A test runner parses the `.jmd` to
 learn these — Parse-test validates the data, Serialize-test
 reconstructs the full `.jmd` from the `.json` value plus the extracted
-mode, label, and frontmatter.
+mode, label, frontmatter, and optional render controls.
 
 ## The Three Tests
 
