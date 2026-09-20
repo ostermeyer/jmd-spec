@@ -115,7 +115,7 @@ The canonical error kinds for v0.3.5 are:
 |---|---|
 | `sigil_conflict` | §7.4.2(a) |
 | `repeated_explicit_array` | §7.4.2(b) |
-| `repeated_scalar_key` | §7.4.2(c) |
+| `repeated_scalar_key` | §3.5 (frontmatter), §7.4.2(c) (body) |
 | `prose_in_body` | §3.6.2, §11.2 |
 | `no_root_heading` | §3.1, §3.2a, §11.2 — no valid column-0 root heading (e.g. indented or bare anonymous root) |
 | `lone_carriage_return` | §11.2 |

@@ -227,6 +227,8 @@ Fields that appear *before* the first heading in a JMD document are **frontmatte
 
 Frontmatter fields are syntactically identical to bare fields — no new syntax is required. The parser treats any `key: value` lines before the first `#` heading as document metadata. A blank line between frontmatter and the root heading is optional but recommended for readability.
 
+**Unique keys.** Frontmatter is one object scope. The repeated-scalar-key rule (§7.4.2c) applies here too: a parser MUST reject a second declaration of the same key with a structured parse error identifying the key and the second occurrence's source line. This applies even when both values are equal, and includes bare-key flags, empty values and blockquote values. Keys are compared after JSON string decoding (§4.2), so `page-size` and `"page-size"` are the same key. Blank lines and tolerated `---` markers do not start a new frontmatter scope. A key appearing once in frontmatter and once in the document body is valid: those are separate scopes.
+
 Frontmatter fields are **not serialized** into the JSON output. They are transport-level metadata passed through to the implementation, analogous to HTTP headers.
 
 **JMD does not define a fixed set of frontmatter keys.** The parser collects all frontmatter fields into a key-value map and makes them available to the implementation; the implementation decides which keys it recognizes and how it interprets their values. This makes frontmatter a fully open extension point — different implementations may use entirely different frontmatter vocabularies for their specific needs.
