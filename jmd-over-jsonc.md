@@ -8,10 +8,11 @@ Licensed under CC BY 4.0 — see [LICENSE](LICENSE) for details.
 **Status:** Draft. Promoted from `jmd-sublime/specs/` to this repository
 so it sits with the other companion specifications; the mapping itself is
 still being validated against real Sublime Text configuration files. The
-reference implementation is `jmd/_jsonc*.py` in
-[jmd-sublime](https://github.com/ostermeyer/jmd-sublime); the core parsers
-(`jmd-impl`, `jmd-js`) do not yet recognise the comment markers this
-document defines.
+reference implementation is the `jmd.jsonc` module of
+[jmd-impl](https://github.com/ostermeyer/jmd-impl) (since v0.11.0; it
+originated in `jmd-sublime`). The core parsers (`jmd.parse` in `jmd-impl`,
+`jmd-js`) do not recognise the comment markers this document defines; the
+comment-bearing form is read only through `jmd.jsonc`.
 
 ---
 

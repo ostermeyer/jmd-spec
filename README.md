@@ -130,8 +130,8 @@ position zero before any field is generated.
 ## Implementations
 
 A Python reference implementation with C-accelerated parser and serializer is
-available at [jmd-impl](https://github.com/ostermeyer/jmd-impl).
-Parser throughput: **1.7–2.1× faster than Python's stdlib `json.loads`**
+available at [jmd-impl](https://github.com/ostermeyer/jmd-impl) and on PyPI
+(`pip install jmd-format`). Parser throughput: **1.7–2.1× faster than Python's stdlib `json.loads`**
 across payload sizes (C extension vs. C implementation; see BENCHMARKS.md §8).
 
 A JavaScript reference implementation (pure ESM, zero dependencies) is available
@@ -142,8 +142,8 @@ Python reference, with streaming support for both parsing and serialization.
 
 ## Status
 
-**Current version: v0.3.5** — this line is the single source of truth for the
-specification version; all companion documents reference it. Benchmarks completed against the v0.3.1–v0.3.3 dialect (see the dialect note in BENCHMARKS.md); a full re-measurement against v0.3.5 is planned. A research preprint
+**Current version: v0.3.6** — this line is the single source of truth for the
+specification version; all companion documents reference it. Benchmarks completed against the v0.3.1–v0.3.3 dialect (see the dialect note in BENCHMARKS.md); a full re-measurement against the current version is planned. A research preprint
 describing the empirical findings is forthcoming on arXiv.
 
 The [JMD over XML companion specification](jmd-over-xml.md) (Draft 0.4)
@@ -156,8 +156,9 @@ defines lossless JSONC↔JMD conversion. Because JSONC carries comments, the
 mapping needs somewhere to put them, so this companion introduces the `#/`
 line-comment and `#*` block-comment markers — the one place in the JMD
 ecosystem where comments exist. Core JMD deliberately has none (§20).
-Implemented in [jmd-sublime](https://github.com/ostermeyer/jmd-sublime);
-the core parsers do not yet recognise the markers.
+Implemented as `jmd.jsonc` in [jmd-impl](https://github.com/ostermeyer/jmd-impl)
+as of v0.11.0; the core parsers do not recognise the markers, so the
+comment-bearing form is read only through that companion module.
 
 ---
 
