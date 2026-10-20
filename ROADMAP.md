@@ -4,9 +4,17 @@ This document describes the current state of the specification and the direction
 
 ---
 
-## Current Status — v0.3.5
+## Current Status — v0.3.7
 
 The specification version is maintained in exactly one place — the README status line — and referenced everywhere else.
+
+v0.3.7 (2026-10) clarifies canonical blockquotes in array object items: quote
+markers are indented by two spaces, and an available first field stays on the
+item-marker line. Legacy unindented quotes and separate item openers remain
+accepted input. This patch changes canonical output layout, not the data model
+or accepted legacy input. Matching canonical and tolerance fixtures accompany
+the clarification. See the [qualification record](conformance/blockquote-qualification-2026-10-20.md)
+for verification and the remaining repeated-heading streaming questions.
 
 v0.3.5 (2026-07) is a consolidation release. It resolves the normative self-contradictions introduced by the v0.3.4 level-pop transition (§8.6a, §22.1, §22.2 and the recommended test cases now consistently describe the level-pop as canonical, `---` as parser-consumed decoration), unifies anonymous-heading semantics (root: opens root scope; depth ≥ 2: level-pop; `{"": …}` via quoted empty key `## ""`), adds the normative lexical layer §11.2 (canonical LF, CRLF tolerance, lone CR as parse error, BOM consumption, trailing-whitespace trimming, tolerant INDENT), the one-document rule (§18.0), a Security Considerations section (§24) including the structure-injection rule, an updated EBNF covering all four mode markers and the level-pop, and the reframing of `# Error` from reserved label to convention (§17). **Honest compatibility note:** two changes are breaking relative to v0.3.3 — a deep anonymous heading no longer opens a `""`-keyed object (it pops), and a second root heading or mid-document mode marker is now a parse error instead of implementation-defined behavior. Both breaks close silent-data-loss classes; both were already the behavior of the JavaScript reference implementation.
 
@@ -20,7 +28,7 @@ Previous refinements:
 
 What exists today:
 
-- Full format specification ([jmd-spec-v0_3.md](jmd-spec-v0_3.md) — currently v0.3.6)
+- Full format specification ([jmd-spec-v0_3.md](jmd-spec-v0_3.md) — currently v0.3.7)
 - Benchmark methodology and raw results ([BENCHMARKS.md](BENCHMARKS.md), [benchmark_results/](benchmark_results/))
 - Python reference implementation with C-accelerated parser and serializer ([jmd-impl](https://github.com/ostermeyer/jmd-impl), v0.4.4)
 - JavaScript reference implementation, pure ESM, zero dependencies ([jmd-js](https://github.com/ostermeyer/jmd-js), v0.1.2)

@@ -1,0 +1,10 @@
+[
+  {
+    "message": "Please review.\n\nCheck the **totals**.",
+    "author": "Alice"
+  },
+  {
+    "author": "Bob",
+    "message": "Approved.\nReady to send."
+  }
+]

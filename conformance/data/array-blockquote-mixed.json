@@ -1,0 +1,9 @@
+[
+  7,
+  {
+    "message": "First\nline.",
+    "other message": "Second\nfield.",
+    "tail": "after"
+  },
+  false
+]

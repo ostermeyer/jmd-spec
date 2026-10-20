@@ -142,7 +142,7 @@ Python reference, with streaming support for both parsing and serialization.
 
 ## Status
 
-**Current version: v0.3.6** — this line is the single source of truth for the
+**Current version: v0.3.7** — this line is the single source of truth for the
 specification version; all companion documents reference it. Benchmarks completed against the v0.3.1–v0.3.3 dialect (see the dialect note in BENCHMARKS.md); a full re-measurement against the current version is planned. A research preprint
 describing the empirical findings is forthcoming on arXiv.
 

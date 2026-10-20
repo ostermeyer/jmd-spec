@@ -151,6 +151,11 @@ documents for the same input:
 - **Arrays of objects** place the first scalar field on the `- ` line;
   remaining scalar fields follow as 2-space-indented continuation
   lines; nested structures come last as headings at the item's depth.
+  Blockquote-valued first fields also stay on the `- ` line. Every blockquote
+  line directly belonging to an item has two leading spaces, including empty
+  paragraph markers (`  >`). Headed object fields retain column-zero quotes
+  (§9.1). Separate item openers before an available field and unindented item
+  blockquotes are covered by tolerance fixtures.
   When a record that opened nested content is followed by another record
   of the same array, an anonymous heading at the array's depth performs
   the required level-pop before the next bare `-` item (§8.6). Thematic

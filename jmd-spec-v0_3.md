@@ -1,5 +1,5 @@
 # JMD – JSON Markdown
-## Format Specification v0.3.6
+## Format Specification v0.3.7
 
 Copyright (c) 2026 Andreas Ostermeyer <andreas@ostermeyer.de>.
 Licensed under CC BY 4.0 — see [LICENSE](LICENSE) for details.
@@ -890,7 +890,9 @@ This is standard Markdown list continuation: indented lines belong to the curren
 - A new `- `, a heading, a scope-resetting blank line, or EOF ends the current item.
 - The indentation level is not significant beyond "2+ spaces". The parser does not track or enforce consistent indentation depth — any line starting with 2+ spaces followed by a `key: value` pattern belongs to the current item.
 
-**Bare `-`** on its own line remains valid for items that have no first-line field (e.g., items consisting entirely of nested sub-structures):
+A blockquote-valued field follows the same item rules: the first field is introduced by `- key:`, subsequent fields by `  key:`, and every blockquote content line is indented by exactly two spaces (§9.1). A generator MUST put an available first field on the item-marker line; it MUST NOT insert a separate bare `-` solely because that field has a blockquote value. Parsers MUST also accept the separate-opener form as input tolerance.
+
+**Bare `-`** on its own line remains valid for items that have no field to put on the first line (e.g., empty objects or items consisting entirely of nested sub-structures):
 
 ```markdown
 ## items[]
@@ -1255,12 +1257,35 @@ Serializes to:
 **Parse rules:**
 
 - The key line MUST have an empty value (nothing after the colon and space, i.e. `key:` alone on its line, or `key:` followed by only trailing whitespace).
+- Apply the quote-prefix checks below after removing any structural indentation permitted for this field (see array object items below).
 - All immediately following lines starting with `> ` belong to the field value.
-- The block ends at the first line that does not start with `>`.
-- A line containing only `>` represents a blank line (paragraph break) within the value.
+- The block ends at the first line that does not start with `>` after that indentation is removed.
+- A line containing only `>` after that indentation is removed represents a blank line (paragraph break) within the value.
 - Inline Markdown (emphasis, links, lists) is preserved verbatim in the parsed string value.
 - Each blockquote prefix (the `>` character and the following space) is stripped; the remainder is the content.
 - Leading and trailing blank lines within the block are trimmed.
+
+#### Blockquotes in Array Object Items
+
+For a field directly belonging to an array object item, a conforming generator MUST indent **every** blockquote line by exactly two spaces, including paragraph-break lines (`  >`). This applies to a first field on the `- ` line and to subsequent indented fields. The indentation marks membership in the item; it is not part of the string value.
+
+```markdown
+# Comment[]
+- message:
+  > Please review.
+  >
+  > Check the **totals**.
+  author: Alice
+- author: Bob
+  message:
+  > Approved.
+```
+
+The first field stays on the item-marker line (§8.3). A separate opener such as `-\n  message:\n  > Please review.` is accepted input, but generators use the compact form above.
+
+This two-space rule follows the field's **immediate scope**, not the heading depth. It applies equally to root arrays, nested arrays and object items in mixed arrays. Fields of a separate object opened by a heading retain the ordinary unindented blockquote form, even when that object is nested below an array item. Frontmatter and ordinary object fields also retain that form.
+
+**Parser tolerance.** After an empty-valued item field, parsers MUST accept both the canonical indented blockquote and the legacy unindented `>` form. Non-empty runs of spaces or tabs before `>` are accepted under §11.2; mixed indentation within a block is accepted too. Strip only the structural indentation and blockquote prefix before interpreting the content. Paragraph breaks, inline Markdown and block termination otherwise follow the rules above. Re-serialization MUST use the canonical two-space indentation.
 
 **Important distinction — inline `>` is NOT a blockquote:**
 
@@ -1270,7 +1295,7 @@ A field with a non-empty value that happens to start with `>` is a regular scala
 body: > This is NOT a blockquote
 ```
 
-This parses as the literal string value `"> This is NOT a blockquote"`. In standard Markdown, blockquotes are block-level constructs that begin at the start of a line — not inline within a key-value pair. JMD follows this convention exactly: blockquote mode is entered only when the key has an empty value and the *next line* starts with `>`.
+This parses as the literal string value `"> This is NOT a blockquote"`. In standard Markdown, blockquotes are block-level constructs that begin at the start of a line — not inline within a key-value pair. JMD follows this convention: blockquote mode is entered only when the key has an empty value and the *next line* starts with `>` after removing any permitted structural indentation.
 
 ```markdown
 body:
@@ -1467,7 +1492,7 @@ depth_item      ::= heading_prefix "-" NEWLINE
 (* ===== Bare Fields ===== *)
 
 bare_field      ::= key ": " value NEWLINE
-                   | key ": " NEWLINE multiline_value
+                   | key ":" NEWLINE multiline_value
 
 (* ===== Multiline Values ===== *)
 
@@ -1494,13 +1519,23 @@ scalar_item     ::= "- " value NEWLINE
                         strings that look like key-value pairs must be quoted. *)
 object_item     ::= "-" NEWLINE
                    | "- " key ": " value NEWLINE
-                     (* First field on the '- ' line. Additional fields
-                        follow as indented continuation lines. *)
+                   | "- " key ":" NEWLINE item_blockquote
+                     (* Put an available first field on the '- ' line.
+                        A bare opener is canonical only when no direct field
+                        is available; separate opener + first indent_field
+                        is parser tolerance otherwise — §8.3. *)
 
 indent_field    ::= INDENT key ": " value NEWLINE
+                   | INDENT key ":" NEWLINE item_blockquote
                      (* Indented fields belong to the current array
                         item; depth and composition of the indent are
                         insignificant — §11.2. *)
+
+item_blockquote ::= (INDENT blockquote_line)+
+                     (* Canonical INDENT is exactly two spaces, including
+                        paragraph-break lines. Parsers also accept legacy
+                        unindented blockquote_line and mixed indentation
+                        within this block — §9.1. *)
 INDENT          ::= (" " | U+0009)+   (* parser-accepted form. Canonical generator
                                          form: exactly two spaces (§11.2). *)
 
@@ -1606,7 +1641,7 @@ This section normatively defines the lexical layer: what constitutes a line, an 
 
 - Canonical form: a continuation line (§11.1 rule 9) is indented with exactly two spaces. A conforming generator MUST emit exactly two spaces and MUST NOT use tabs.
 - Parser tolerance: any non-empty run of spaces (U+0020) and/or tabs (U+0009) at the start of a line constitutes an INDENT. The depth and composition of the run are insignificant — one space, four spaces, a tab, or a mixed run all mark the same thing: "this line belongs to the current `- ` item."
-- An INDENT is only meaningful where a continuation is possible: the line after the INDENT MUST match a `key: value` pattern, and an array item MUST be open. An indented line that fails either condition is prose and MUST be rejected with a parse error (§3.6.2) — it MUST NOT be silently dropped.
+- Outside an active multiline value, an INDENT is only meaningful where a field continuation is possible: the line after the INDENT MUST match a field pattern (`key: value` or an empty-valued `key:`), and an array item MUST be open. An indented line that fails either condition is prose and MUST be rejected with a parse error (§3.6.2) — it MUST NOT be silently dropped. Within an item field’s blockquote value, indented `>` content and paragraph-break lines follow §9.1 instead; they are not continuation fields.
 
 **Fixture coverage.** Every fixture under `conformance/data/` has a CRLF-transformed variant that MUST parse to the same JSON value; dedicated fixtures cover lone-CR rejection, BOM consumption, trailing-whitespace trimming, and tab/single-space/mixed indentation.
 
@@ -2459,6 +2494,7 @@ This is not a loose guideline — it is a formal conformance requirement. JMD de
 - Array items MUST use bare `-`; a level-pop (anonymous heading at the array's heading depth) MUST be emitted after any record that opened a nested sub-structure and is followed by further records (Section 8.6); `---` and depth-qualified items (`## -`) are parser tolerance only and MUST NOT be emitted
 - Blank lines SHOULD be used intentionally for scope reset, not inserted arbitrarily
 - Keys and values MUST be correctly quoted per Sections 4.2 and 6
+- Blockquote lines belonging directly to an array object item MUST carry exactly two leading spaces (§9.1); an available first field MUST stay on the item-marker line (§8.3)
 - Scalar values (bare or quoted) SHOULD NOT contain inline Markdown formatting (`**bold**`, `*italic*`, `` `code` ``, `[text](url)`, `~~strike~~`); rich-text content belongs in the blockquote multiline form (Sections 5.1, 9.1)
 
 Strict generation ensures maximum interoperability and minimizes the parsing effort for consumers.

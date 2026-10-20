@@ -1,0 +1,14 @@
+{
+  "body": "Outside\nthe array.",
+  "comments": [
+    {
+      "message": "Inside\nthe item.",
+      "details": {
+        "body": "Inside\nthe headed object."
+      }
+    },
+    {
+      "message": "Next\nitem."
+    }
+  ]
+}

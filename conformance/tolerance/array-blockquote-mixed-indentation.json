@@ -1,0 +1,9 @@
+[
+  {
+    "message": "First\n\nsecond\nthird",
+    "tail": "after"
+  },
+  {
+    "id": "next"
+  }
+]

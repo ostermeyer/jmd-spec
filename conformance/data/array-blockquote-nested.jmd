@@ -1,0 +1,18 @@
+# Document
+body:
+> Outside
+> the array.
+
+## comments[]
+- message:
+  > Inside
+  > the item.
+
+### details
+body:
+> Inside
+> the headed object.
+##
+- message:
+  > Next
+  > item.

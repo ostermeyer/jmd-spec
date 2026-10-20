@@ -1,0 +1,10 @@
+# Values[]
+- 7
+- message:
+  > First
+  > line.
+  "other message":
+  > Second
+  > field.
+  tail: after
+- false

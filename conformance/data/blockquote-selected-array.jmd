@@ -1,7 +1,7 @@
 # Note[]
 - id: first
   body:
-> [First](mention://Members/Andreas%20Ostermeyer)
+  > [First](mention://Members/Andreas%20Ostermeyer)
 - id: second
   body:
-> [Second](mention://Teams/Smartsuite-ELO-Integration)
+  > [Second](mention://Teams/Smartsuite-ELO-Integration)
